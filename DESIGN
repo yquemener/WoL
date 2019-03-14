@@ -1,0 +1,35 @@
+This is a Work of Love
+
+Making things I enjoy, curled into my little universe of code.
+Starting processes, sharing code with friends, fine-tuning my machines and the little universe we design together.
+
+
+I copied edoga/ here, because I experimented with some stuff in C++ for this. Not much actually...
+
+I'll do everything in python. Much easier. And leverage other people's work. Bricks so far:
+
+- Ghost (Or just directly PyQt) to draw interfaces and web rendering in textures
+- ~~Panda3D to display the textures~~ ~~ModernGL seems better~~ Fuck it, let's go raw
+- Python's multiprocessing module to handle execution of different codes
+- exec() everywhere!
+
+To check:
+- flask as a web server
+- something to seccomp untrusted process?
+- Will probably need something for fast serving of 'players' positions
+
+
+2019-03-09 Update: OK, Panda3D is not that easy to tune for my needs. I realized that
+Qt is central to what I need: good UI, international inputs. And for that, Qt needs to
+be the host of the main window, in order to receive raw events.
+
+I guess I'll have to make my own renderer for now until I find a good 3d engine that do
+not ask to be the creator of the context.
+
+
+pyqt_raw_gl is what works the best right now
+
+
+
+Dependencies
+- PyQt5
