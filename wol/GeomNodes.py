@@ -18,6 +18,7 @@ class Grid(SceneNode):
             self.vertices.append(QVector3D(0.0, 32.0, i - 32))
 
         self.collider = Collisions.Plane()
+        self.program = None
 
     def initialize_gl(self):
         self.program = ShadersLibrary.create_program('simple_color_white')
@@ -52,16 +53,18 @@ class CardNode(SceneNode):
         SceneNode.__init__(self, name, parent)
         if filename:
             self.texture_image = QImage(filename)
+        else:
+            self.texture_image = None
         self.texture = None
 
         self.vertices = list()
         self.texCoords = list()
         self.vertices.append([0.0, -1.0, -1.0])
-        self.texCoords.append([0.0,  0.0])
+        self.texCoords.append([1.0,  1.0])
         self.vertices.append([0.0, -1.0, +1.0])
         self.texCoords.append([0.0,  1.0])
         self.vertices.append([0.0, +1.0, +1.0])
-        self.texCoords.append([1.0,  1.0])
+        self.texCoords.append([0.0,  0.0])
         self.vertices.append([0.0, +1.0, -1.0])
         self.texCoords.append([1.0,  0.0])
 
@@ -70,15 +73,16 @@ class CardNode(SceneNode):
             self.collider.add_3d_point(QVector3D(*v))
 
     def initialize_gl(self):
-        self.texture = QOpenGLTexture(self.texture_image)
+        if self.texture_image:
+            self.texture = QOpenGLTexture(self.texture_image)
 
     def paint(self, program):
         program.bind()
         program.setAttributeArray(0, self.vertices)
         program.setAttributeArray(1, self.texCoords)
-        self.texture.bind()
+        if self.texture:
+            self.texture.bind()
         program.setUniformValue('matrix', self.prog_matrix)
 
         GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
-
 

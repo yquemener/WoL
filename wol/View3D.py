@@ -98,3 +98,6 @@ class View3D(QOpenGLWidget):
                         (mid.y() - evt.pos().y()) / mid.y())
         self.context.old_mouse_position = self.context.mouse_position
         self.context.mouse_position = pos
+
+    def closeEvent(self, evt):
+        self.updateTimer.stop()

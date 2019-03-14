@@ -50,18 +50,18 @@ class Outline3D(Plane):     # Flat polygon
         self.points.append(self.project_2d(point))
 
 
-def collision_ray_plane(ray, plane_, transform=QMatrix4x4()):
+def collision_ray_plane(ray, plane_, transform=QMatrix4x4(), double_sided=False):
     plane = Plane()
     plane.orig = transform.map(plane_.orig)
     plane.normale = transform.mapVector(plane_.normale)
 
     # Looking toward each other?
-    if QVector3D.dotProduct(plane.normale, ray.dir) > 0:
+    if QVector3D.dotProduct(plane.normale, ray.dir) > 0 and not double_sided:
         return False, None
 
     # Distance from ray.pos to the plane
     dist = QVector3D.dotProduct(plane.normale, (plane.orig-ray.pos))
-    if dist > 0:
+    if dist > 0 and not double_sided:
         return False, None
 
     factor = QVector3D.dotProduct(ray.dir, plane.normale)
@@ -140,12 +140,12 @@ def is_inside_outline_2d(outline, point):
         return False
 
 
-def collision_ray_outline_3d(ray, outline_, transform=QMatrix4x4()):
+def collision_ray_outline_3d(ray, outline_, transform=QMatrix4x4(), double_sided=False):
     outline = Outline3D()
     outline.orig = transform.map(outline_.orig)
     outline.normale = transform.mapVector(outline_.normale)
     outline.points = outline_.points
-    v, inters = collision_ray_plane(ray, outline)
+    v, inters = collision_ray_plane(ray, outline, double_sided=double_sided)
     if not v:
         return False, None
     inters2d = outline.project_2d(inters)
@@ -154,7 +154,7 @@ def collision_ray_outline_3d(ray, outline_, transform=QMatrix4x4()):
 
 def collision_ray(ray, obj, transform):
     if isinstance(obj, Outline3D):
-        return collision_ray_outline_3d(ray, obj, transform)
+        return collision_ray_outline_3d(ray, obj, transform=transform, double_sided=True)
     if isinstance(obj, Plane):
         return collision_ray_plane(ray, obj, transform)
     raise NotImplementedError("Collision between a ray and a "+str(type(obj))+" has not been implemented")

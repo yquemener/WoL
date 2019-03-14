@@ -5,6 +5,7 @@ from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4
 from PyQt5.QtWidgets import QApplication
 
 from wol.GeomNodes import Grid, CardNode, Sphere
+from wol.GuiNode import GuiNode
 from wol.View3D import View3D
 
 
@@ -41,7 +42,8 @@ if __name__ == '__main__':
     window = View3D()
 
     for k in range(40):
-        o = CardNode(filename="/home/yves/path4787.png", parent=window.scene, name="Card#"+str(k))
+        #o = CardNode(filename="/home/yves/path4787.png", parent=window.scene, name="Card#"+str(k))
+        o = GuiNode(parent=window.scene, name="GuiNode#" + str(k))
         o.position = QVector3D(random.uniform(-1.0, 1.0),
                                random.uniform(-1.0, 1.0),
                                random.uniform(1.0, 30.0))
