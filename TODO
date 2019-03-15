@@ -1,0 +1,10 @@
+- Collision transforms cleaner
+- Clean up the order of the updates
+- Put the collision logic in a saner place
+- Find a better code highliter
+- Fix the mouse position when entering window/grab/hide pointer
+- infinite X movement with mouse + Y gimbal limit
+- Re-establish ctrl-c
+- Remove the monkey patching
+
+- Skybox
