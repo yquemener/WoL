@@ -1,7 +1,10 @@
 #!/usr/bin/env python
-import sys, random
+import sys
+import random
+import signal
 
-from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4
+from PyQt5.QtCore import QPoint, Qt
+from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4, QCursor
 from PyQt5.QtWidgets import QApplication
 
 from wol.GeomNodes import Grid, CardNode, Sphere
@@ -34,6 +37,11 @@ def camera_update(self, dt=0.0):
             ('right',   right)):
         if self.context.abstract_input.get(action, False):
             self.context.current_camera.position += delta
+
+    if self.context.abstract_input.get('active_action', False):
+        print("action")
+        QCursor.setPos(QPoint(100, 100))
+
     self.sphere.position = self.context.debug_point
 
 
@@ -52,8 +60,9 @@ if __name__ == '__main__':
     g.orientation = QQuaternion.fromEulerAngles(0.0, 0.0, 90.0)
     sph = Sphere(parent=window.scene)
     window.scene.sphere = sph
-    sph.size = 0.1
+    sph.size = 0.03
     # Monkey patching!
     window.scene.update = camera_update.__get__(window.scene)
     window.show()
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     sys.exit(app.exec_())

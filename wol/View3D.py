@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from PyQt5.QtCore import Qt, QTimer, QPoint
-from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QMatrix4x4
+from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QMatrix4x4, QCursor
 from PyQt5.QtWidgets import QOpenGLWidget
 from OpenGL import GL
 
@@ -34,8 +34,11 @@ class View3D(QOpenGLWidget):
             'w': 'forward',
             's': 'back',
             'a': 'left',
-            'd': 'right'}
+            'd': 'right',
+            'e': 'active_action'}
         self.setMouseTracking(True)
+        self.skipNextMouseMove = True
+        self.keepMouseCentered = True
 
     def initializeGL(self):
         GL.glEnable(GL.GL_DEPTH_TEST)
@@ -55,6 +58,8 @@ class View3D(QOpenGLWidget):
     def resizeGL(self, width, height):
         side = min(width, height)
         GL.glViewport((width - side) // 2, (height - side) // 2, side, side)
+        print("resize")
+        self.context.current_camera.ratio = width / height
 
     def scene_update(self):
         # Put the collision detection in a more appropriate place (RootNode? Context?)
@@ -79,6 +84,15 @@ class View3D(QOpenGLWidget):
         self.repaint()
 
     def keyPressEvent(self, evt):
+        if evt.key() == Qt.Key_Escape:
+            self.close()
+        if evt.key() == Qt.Key_Tab:
+            self.releaseMouse()
+            self.keepMouseCentered = not self.keepMouseCentered
+            if self.keepMouseCentered:
+                self.setCursor(Qt.BlankCursor)
+            else:
+                self.setCursor(Qt.ArrowCursor)
         if evt.isAutoRepeat():
             return
         action = self.key_map.get(evt.text(), None)
@@ -93,11 +107,27 @@ class View3D(QOpenGLWidget):
             self.context.abstract_input[action] = False
 
     def mouseMoveEvent(self, evt):
-        mid = QPoint(self.width()/2, self.height()/2)
-        pos = QVector2D((mid.x() - evt.pos().x()) / mid.x(),
-                        (mid.y() - evt.pos().y()) / mid.y())
-        self.context.old_mouse_position = self.context.mouse_position
-        self.context.mouse_position = pos
+        if self.skipNextMouseMove or not self.keepMouseCentered:
+            self.skipNextMouseMove = False
+            return
+        mid = QVector2D(self.width()/2, self.height()/2)
+        delta = (1.0/self.width()) * (mid - QVector2D(evt.pos().x(), evt.pos().y()))
+        c = QCursor()
+        self.skipNextMouseMove = True
+        c.setPos(QPoint(int(mid.x()), int(mid.y()))+self.geometry().topLeft())
+        self.context.mouse_position += delta
+        y = self.context.mouse_position.y()
+        self.context.mouse_position.setY(max(-0.95, min(0.95, y)))
 
     def closeEvent(self, evt):
         self.updateTimer.stop()
+
+    def enterEvent(self, evt):
+        mid = QPoint(self.width() / 2, self.height() / 2)
+        c = QCursor()
+        self.skipNextMouseMove = True
+        c.setPos(mid)
+        self.setCursor(Qt.BlankCursor)
+
+    def leaveEvent(self, evt):
+        self.setCursor(Qt.ArrowCursor)

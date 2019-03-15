@@ -78,13 +78,13 @@ class RootNode(SceneNode):
 class CameraNode(SceneNode):
     def __init__(self, parent):
         super(CameraNode, self).__init__(name="Camera", parent=parent)
-        m = QMatrix4x4()
-        m.perspective(30.0, 4.0 / 3.0, 1.0, 100.0)
-        self.projection_matrix = m
+        self.angle = 30.0
+        self.ratio = 4.0/3.0
+        self.projection_matrix = QMatrix4x4()
 
     def compute_transform(self):
         m = QMatrix4x4()
-        m.perspective(30.0, 4.0 / 3.0, 1.0, 100.0)
+        m.perspective(self.angle, self.ratio, 1.0, 100.0)
         m.lookAt(self.position, self.position + self.look_at, QVector3D(0, 1, 0))
         self.projection_matrix = m
 
