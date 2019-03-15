@@ -58,7 +58,6 @@ class View3D(QOpenGLWidget):
     def resizeGL(self, width, height):
         side = min(width, height)
         GL.glViewport((width - side) // 2, (height - side) // 2, side, side)
-        print("resize")
         self.context.current_camera.ratio = width / height
 
     def scene_update(self):

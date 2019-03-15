@@ -6,11 +6,12 @@ from wol.GeomNodes import CardNode
 
 
 class GuiNode(CardNode):
-    def __init__(self, parent, name="GuiNode"):
+    def __init__(self, parent, name="GuiNode", filename="client.py"):
         CardNode.__init__(self, name=name, parent=parent)
         self.widget = QTextEdit()
         self.widget.setGeometry(0, 0, 512, 512)
-        self.widget.setText(open("server.py").read())
+        self.widget.setText(open(filename).read())
+        self.filename = filename
         self.needs_refresh = True
         self.highlight = PythonHighlighter(self.widget.document())
         self.widget.setTextColor(QColor(255, 255, 255))
@@ -188,7 +189,7 @@ class PythonHighlighter (QSyntaxHighlighter):
             # No; multi-line string
             else:
                 self.setCurrentBlockState(in_state)
-                length = text.length() - start + add
+                length = len(text) - start + add
             # Apply formatting
             self.setFormat(start, length, style)
             # Look for the next match
