@@ -40,7 +40,6 @@ def camera_update(self, dt=0.0):
 
     if self.context.abstract_input.get('active_action', False):
         print("action")
-        QCursor.setPos(QPoint(100, 100))
 
     self.sphere.position = self.context.debug_point
 

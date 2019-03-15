@@ -1,6 +1,6 @@
 - Collision transforms clean-up
-- Clean up the order of the updates
 - Put the collision logic in a saner place
+- Clean up the order of the updates
 - Remove the monkey patching
 
 - Skybox

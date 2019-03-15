@@ -15,12 +15,20 @@ class GuiNode(CardNode):
         self.highlight = PythonHighlighter(self.widget.document())
         self.widget.setTextColor(QColor(255, 255, 255))
         self.widget.setStyleSheet("QWidget{color: white; background-color: black;}");
+        self.focused = False
 
     def update(self, dt):
+        if self.focused:
+            self.needs_refresh = True
         if self.needs_refresh:
             self.texture = QOpenGLTexture(QImage(self.widget.grab()))
-            self.needs_refresh=False
+            self.needs_refresh = False
 
+    def focus(self):
+        self.focused = True
+        #self.widget.grabKeyboard()
+        self.context.focused = self
+        print("Focused! " + self.name)
 
 def format(color, style=''):
     """Return a QTextCharFormat with the given attributes.

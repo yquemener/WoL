@@ -8,3 +8,5 @@ class Context:
         self.old_mouse_position = QVector2D()
         self.debug_point = QVector3D()
         self.current_camera = None
+        self.hover_target = None
+        self.focused = None

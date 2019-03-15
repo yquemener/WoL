@@ -78,8 +78,10 @@ class View3D(QOpenGLWidget):
         colliders.sort(key=lambda s: s[2])
         if len(colliders) > 0:
             self.context.debug_point = colliders[0][0]
+            self.context.hover_target = colliders[0][1]
         else:
             self.context.debug_point = QVector3D(0, 0, -10)
+            self.context.hover_target = None
         self.scene.update_recurs(0.01)
         self.repaint()
 
@@ -93,6 +95,9 @@ class View3D(QOpenGLWidget):
                 self.setCursor(Qt.BlankCursor)
             else:
                 self.setCursor(Qt.ArrowCursor)
+        if self.context.focused is not None:
+            self.context.focused.widget.keyPressEvent(evt)
+            return
         if evt.isAutoRepeat():
             return
         action = self.key_map.get(evt.text(), None)
@@ -118,6 +123,11 @@ class View3D(QOpenGLWidget):
         self.context.mouse_position += delta
         y = self.context.mouse_position.y()
         self.context.mouse_position.setY(max(-0.95, min(0.95, y)))
+
+    def mousePressEvent(self, evt):
+        print(self.context.hover_target.name, evt.button())
+        if self.context.hover_target is not None:
+            self.context.hover_target.focus()
 
     def closeEvent(self, evt):
         self.updateTimer.stop()
