@@ -126,13 +126,14 @@ class View3D(QOpenGLWidget):
     def mousePressEvent(self, evt):
         print(self.context.hover_target.name, evt.button())
         if self.context.hover_target is not None:
-            self.context.hover_target.focus()
+            self.context.hover_target.onClick(self.context.debug_point)
+
 
     def closeEvent(self, evt):
         self.updateTimer.stop()
 
     def enterEvent(self, evt):
-        mid = QPoint(self.width() / 2, self.height() / 2)
+        mid = QPoint(self.pos().x() + self.width() / 2, self.pos().y() + self.height() / 2)
         c = QCursor()
         self.skipNextMouseMove = True
         c.setPos(mid)

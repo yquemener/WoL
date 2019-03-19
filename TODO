@@ -1,3 +1,5 @@
+- Bugfix window movement
+
 - Collision transforms clean-up
 - Put the collision logic in a saner place
 - Clean up the order of the updates
@@ -5,3 +7,6 @@
 
 - Skybox
 - Find a better code highliter
+- Widget borders
+- Text file names
+- UI logic

@@ -25,11 +25,11 @@ class GuiNode(CardNode):
             self.texture = QOpenGLTexture(QImage(self.widget.grab()))
             self.needs_refresh = False
 
-    def focus(self):
+    def onClick(self, pos):
         self.focused = True
-        #self.widget.grabKeyboard()
         self.context.focused = self
-        print("Focused! " + self.name)
+        print("Clicked! " + str(self.collider.project_2d(pos)))
+
 
 def format(color, style=''):
     """Return a QTextCharFormat with the given attributes.
