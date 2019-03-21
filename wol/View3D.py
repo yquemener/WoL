@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from PyQt5.QtCore import Qt, QTimer, QPoint
-from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QMatrix4x4, QCursor
+from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QMatrix4x4, QCursor, QMouseEvent
 from PyQt5.QtWidgets import QOpenGLWidget
 from OpenGL import GL
 
@@ -125,9 +125,14 @@ class View3D(QOpenGLWidget):
 
     def mousePressEvent(self, evt):
         print(self.context.hover_target.name, evt.button())
-        if self.context.hover_target is not None:
-            self.context.hover_target.onClick(self.context.debug_point)
-
+        if evt.button() == Qt.LeftButton:
+            if self.context.hover_target is not None:
+                self.context.hover_target.on_click(self.context.debug_point)
+        #e = QMouseEvent()
+        if evt.button() == Qt.RightButton:
+            if self.context.focused is not None:
+                self.context.focused.on_unfocus()
+                self.context.focused = None
 
     def closeEvent(self, evt):
         self.updateTimer.stop()

@@ -1,5 +1,3 @@
-- Bugfix window movement
-
 - Collision transforms clean-up
 - Put the collision logic in a saner place
 - Clean up the order of the updates

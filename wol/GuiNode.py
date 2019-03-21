@@ -25,13 +25,17 @@ class GuiNode(CardNode):
             self.texture = QOpenGLTexture(QImage(self.widget.grab()))
             self.needs_refresh = False
 
-    def onClick(self, pos):
+    def on_click(self, pos):
         self.focused = True
         self.context.focused = self
         print("Clicked! " + str(self.collider.project_2d(pos)))
 
+    def on_unfocus(self):
+        self.focused = False
 
-def format(color, style=''):
+
+
+def formatter(color, style=''):
     """Return a QTextCharFormat with the given attributes.
     """
     _color = QColor(255, 255, 255)
@@ -49,15 +53,15 @@ def format(color, style=''):
 
 # Syntax styles that can be shared by all languages
 STYLES = {
-    'comment': format('green', 'italic'),
-    'string': format('magenta'),
-    'string2': format('magenta'),
-    'keyword': format('blue'),
-    'operator': format('red'),
-    'brace': format('lightGray'),
-    'defclass': format('white', 'bold'),
-    'self': format('white', 'italic'),
-    'numbers': format('yellow'),
+    'comment': formatter('green', 'italic'),
+    'string': formatter('magenta'),
+    'string2': formatter('magenta'),
+    'keyword': formatter('blue'),
+    'operator': formatter('red'),
+    'brace': formatter('lightGray'),
+    'defclass': formatter('white', 'bold'),
+    'self': formatter('white', 'italic'),
+    'numbers': formatter('yellow'),
 }
 
 
