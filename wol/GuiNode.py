@@ -33,7 +33,11 @@ class GuiNode(CardNode):
     def on_unfocus(self):
         self.focused = False
 
+    def keyPressEvent(self, evt):
+        self.widget.keyPressEvent(evt)
 
+    def inputMethodEvent(self, evt):
+        return self.widget.inputMethodEvent(evt)
 
 def formatter(color, style=''):
     """Return a QTextCharFormat with the given attributes.

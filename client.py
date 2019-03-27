@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QApplication
 
 from wol.GeomNodes import Grid, CardNode, Sphere
 from wol.GuiNode import GuiNode
+from wol.ConsoleNode import ConsoleNode
 from wol.View3D import View3D
 
 
@@ -63,6 +64,9 @@ if __name__ == '__main__':
         o.position = QVector3D(10 + x, 2, x)
         x += 1
 
+    o = ConsoleNode(parent=window.scene, name="ConsoleNode#1")
+    o.position = QVector3D(0, 5, 0)
+
     g = Grid(parent=window.scene)
     g.orientation = QQuaternion.fromEulerAngles(0.0, 0.0, 90.0)
     sph = Sphere(parent=window.scene)
@@ -74,3 +78,4 @@ if __name__ == '__main__':
     window.show()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     sys.exit(app.exec_())
+

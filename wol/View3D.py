@@ -2,7 +2,7 @@
 
 from PyQt5.QtCore import Qt, QTimer, QPoint
 from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QMatrix4x4, QCursor, QMouseEvent
-from PyQt5.QtWidgets import QOpenGLWidget
+from PyQt5.QtWidgets import QOpenGLWidget, QApplication
 from OpenGL import GL
 
 from wol.Context import Context
@@ -39,6 +39,7 @@ class View3D(QOpenGLWidget):
         self.setMouseTracking(True)
         self.skipNextMouseMove = True
         self.keepMouseCentered = True
+        self.setAttribute(Qt.WA_InputMethodEnabled, True)
 
     def initializeGL(self):
         GL.glEnable(GL.GL_DEPTH_TEST)
@@ -95,13 +96,18 @@ class View3D(QOpenGLWidget):
             else:
                 self.setCursor(Qt.ArrowCursor)
         if self.context.focused is not None:
-            self.context.focused.widget.keyPressEvent(evt)
+            self.context.focused.keyPressEvent(evt)
             return
         if evt.isAutoRepeat():
             return
         action = self.key_map.get(evt.text(), None)
         if action:
             self.context.abstract_input[action] = True
+
+    def inputMethodEvent(self, evt):
+        if self.context.focused is not None:
+            return self.context.focused.inputMethodEvent(evt)
+
 
     def keyReleaseEvent(self, evt):
         if evt.isAutoRepeat():
