@@ -60,11 +60,12 @@ class ConsoleNode(CardNode):
                 result = "Exception: "+str(e)+"\n"
             finally:
                 sys.stdout = old_stdout
+            self.widget.moveCursor(QTextCursor.End)
             self.widget.insertPlainText("\n"+str(result))
             self.history_cursor = 0
-            self.widget.moveCursor(QTextCursor.End)
+
         else:
-           self.widget.keyPressEvent(evt);
+            self.widget.keyPressEvent(evt)
 
     def inputMethodEvent(self, evt):
         return self.widget.inputMethodEvent(evt)
