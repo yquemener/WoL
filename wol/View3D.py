@@ -108,7 +108,6 @@ class View3D(QOpenGLWidget):
         if self.context.focused is not None:
             return self.context.focused.inputMethodEvent(evt)
 
-
     def keyReleaseEvent(self, evt):
         if evt.isAutoRepeat():
             return
@@ -130,11 +129,9 @@ class View3D(QOpenGLWidget):
         self.context.mouse_position.setY(max(-0.95, min(0.95, y)))
 
     def mousePressEvent(self, evt):
-        print(self.context.hover_target.name, evt.button())
         if evt.button() == Qt.LeftButton:
             if self.context.hover_target is not None:
-                self.context.hover_target.on_click(self.context.debug_point)
-        #e = QMouseEvent()
+                self.context.hover_target.on_click(self.context.debug_point, evt)
         if evt.button() == Qt.RightButton:
             if self.context.focused is not None:
                 self.context.focused.on_unfocus()

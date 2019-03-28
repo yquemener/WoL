@@ -24,10 +24,9 @@ class ConsoleNode(CardNode):
             self.texture = QOpenGLTexture(QImage(self.widget.grab()))
             self.needs_refresh = False
 
-    def on_click(self, pos):
+    def on_click(self, pos, evt):
         self.focused = True
         self.context.focused = self
-        print("Clicked! " + str(self.collider.project_2d(pos)))
 
     def on_unfocus(self):
         self.focused = False

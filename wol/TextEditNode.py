@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QTextEdit
 from wol.GeomNodes import CardNode
 
 
-class GuiNode(CardNode):
+class TextEditNode(CardNode):
     def __init__(self, parent, name="GuiNode", filename="client.py"):
         CardNode.__init__(self, name=name, parent=parent)
         self.widget = QTextEdit()
@@ -25,10 +25,9 @@ class GuiNode(CardNode):
             self.texture = QOpenGLTexture(QImage(self.widget.grab()))
             self.needs_refresh = False
 
-    def on_click(self, pos):
+    def on_click(self, pos, evt):
         self.focused = True
         self.context.focused = self
-        print("Clicked! " + str(self.collider.project_2d(pos)))
 
     def on_unfocus(self):
         self.focused = False
@@ -38,6 +37,7 @@ class GuiNode(CardNode):
 
     def inputMethodEvent(self, evt):
         return self.widget.inputMethodEvent(evt)
+
 
 def formatter(color, style=''):
     """Return a QTextCharFormat with the given attributes.

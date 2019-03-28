@@ -3,6 +3,9 @@ This is a Work of Love
 Making things I enjoy, curled into my little universe of code.
 Starting processes, sharing code with friends, fine-tuning my machines and the little universe we design together.
 
+To run:
+
+> python3 client.py
 
 I copied edoga/ here, because I experimented with some stuff in C++ for this. Not much actually...
 
@@ -19,16 +22,33 @@ To check:
 - Will probably need something for fast serving of 'players' positions
 
 
-2019-03-09 Update: OK, Panda3D is not that easy to tune for my needs. I realized that
+2019-03-09 Update:
+-----------------
+OK, Panda3D is not that easy to tune for my needs. I realized that
 Qt is central to what I need: good UI, international inputs. And for that, Qt needs to
 be the host of the main window, in order to receive raw events.
 
 I guess I'll have to make my own renderer for now until I find a good 3d engine that do
 not ask to be the creator of the context.
 
-
 pyqt_raw_gl is what works the best right now
 
+2019-03-28
+----------
+On a bien avancé! :
+- Du texte unicode qui peut être entré dans les différents widgets
+- Une caméra controlée clavier souris
+- Un clic sur les éléments 3D qui fonctionne avec une lib de collision de rayons
+- Une console simple qui exec() des commandes
+
+Je ne suis pas tout à fait satisfait de ma façon de gérer les clips. Je trouve qu'un picker
+classique openGL (on fait un rendu de 1x1 et on voit les objets concernés) est plus versatile.
+Mais bon, une lib de collisions c'est toujours utile pour quand je voudrai de la physique.
+Ah tiens? Et si je trouvais une lib de physique d'aillqurs pour gérer ça? À voir.
+
+Mon focus à présent: parvenir à écrire du code depuis le projet. Pour ça:
+- Save de fichiers
+- Génération de nouveaux objets/fichiers
 
 
 Dependencies

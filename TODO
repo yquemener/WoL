@@ -1,5 +1,6 @@
 - Collision transforms clean-up
 - Put the collision logic in a saner place
+- Collision should traverse hierarchy, not just scene children
 - Clean up the order of the updates
 - Remove the monkey patching
 

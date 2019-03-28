@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 import sys
-import random
 import signal
 import os
 
-from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4, QCursor
+from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4
 from PyQt5.QtWidgets import QApplication
 
-from wol.GeomNodes import Grid, CardNode, Sphere
-from wol.GuiNode import GuiNode
+from wol.GeomNodes import Grid, Sphere
+from wol.CodeBumperNode import CodeBumperNode
 from wol.ConsoleNode import ConsoleNode
+from wol.TextEditNode import TextEditNode
 from wol.View3D import View3D
 
 
@@ -53,18 +53,21 @@ if __name__ == '__main__':
     for fn in os.listdir("."):
         if not fn.endswith(".py"):
             continue
-        o = GuiNode(parent=window.scene, name="GuiNode:" + str(fn), filename=fn)
+        o = TextEditNode(parent=window.scene, name="GuiNode:" + str(fn), filename=fn)
         o.position = QVector3D(x, 2, x)
         x += 1
     x = 0
     for fn in os.listdir("wol/"):
         if not fn.endswith(".py"):
             continue
-        o = GuiNode(parent=window.scene, name="GuiNode:" + str(fn), filename="wol/"+fn)
+        o = TextEditNode(parent=window.scene, name="GuiNode:" + str(fn), filename="wol/"+fn)
         o.position = QVector3D(10 + x, 2, x)
         x += 1
 
     o = ConsoleNode(parent=window.scene, name="ConsoleNode#1")
+    o.position = QVector3D(0, 5, -3)
+
+    o = CodeBumperNode(parent=window.scene, name="CodeBumper#1")
     o.position = QVector3D(0, 5, 0)
 
     g = Grid(parent=window.scene)

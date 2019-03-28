@@ -15,6 +15,7 @@ class SceneNode:
         self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
         self.collider = None
         self.prog_matrix = self.transform
+        self.visible = True
 
     def compute_transform(self):
         if self.parent:
@@ -40,7 +41,8 @@ class SceneNode:
 
     def paint_recurs(self, program):
         self.compute_transform()
-        self.paint(program)
+        if self.visible:
+            self.paint(program)
         for c in self.children:
             c.paint_recurs(program)
 
