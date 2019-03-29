@@ -10,3 +10,4 @@ class Context:
         self.current_camera = None
         self.hover_target = None
         self.focused = None
+        self.scene = None

@@ -22,8 +22,7 @@ class View3D(QOpenGLWidget):
         self.clearColor = QColor(Qt.black)
         self.program = None
         self.context = Context()
-        self.scene = RootNode(self.context)
-        self.scene.context.current_camera = CameraNode(self.scene)
+        self.context.scene = RootNode(self.context)
 
         self.updateTimer = QTimer(self)
         self.updateTimer.setInterval(20)
@@ -46,7 +45,7 @@ class View3D(QOpenGLWidget):
         self.program = ShadersLibrary.create_program('simple_texture')
         self.program.bind()
         self.program.setUniformValue('texture', 0)
-        self.scene.initialize_gl_recurs()
+        self.context.scene.initialize_gl_recurs()
 
     def paintGL(self):
         GL.glClearColor(self.clearColor.redF(),
@@ -54,7 +53,7 @@ class View3D(QOpenGLWidget):
                         self.clearColor.blueF(),
                         self.clearColor.alphaF())
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
-        self.scene.paint_recurs(self.program)
+        self.context.scene.paint_recurs(self.program)
 
     def resizeGL(self, width, height):
         side = min(width, height)
@@ -65,7 +64,7 @@ class View3D(QOpenGLWidget):
         # Put the collision detection in a more appropriate place (RootNode? Context?)
         ray = Collisions.Ray(self.context.current_camera.position,
                              self.context.current_camera.look_at)
-        colliders = self.scene.collide_recurs(ray)
+        colliders = self.context.scene.collide_recurs(ray)
         colliders_sort = list()
         for obj, point in colliders:
             colliders_sort.append((point,
@@ -78,7 +77,7 @@ class View3D(QOpenGLWidget):
         else:
             self.context.debug_point = QVector3D(0, 0, -10)
             self.context.hover_target = None
-        self.scene.update_recurs(0.01)
+        self.context.scene.update_recurs(0.01)
         self.repaint()
 
     def keyPressEvent(self, evt):

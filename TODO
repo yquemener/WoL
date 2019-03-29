@@ -1,6 +1,7 @@
 - Put the collision logic in a saner place
 - Clean up the order of the updates
-- Remove the monkey patching
+- context.scene.sphere -> c'est pas propre
+- Nettoyer Context d'ailleurs
 
 - Skybox
 - Find a better code highliter
