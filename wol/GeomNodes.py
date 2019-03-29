@@ -67,7 +67,9 @@ class CardNode(SceneNode):
         self.texCoords.append([0.0,  0.0])
         self.vertices.append([0.0, +1.0, -1.0])
         self.texCoords.append([1.0,  0.0])
+        self.refresh_vertices()
 
+    def refresh_vertices(self):
         self.collider = Collisions.Outline3D()
         for v in self.vertices:
             self.collider.add_3d_point(QVector3D(*v))

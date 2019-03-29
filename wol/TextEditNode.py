@@ -34,6 +34,12 @@ class TextEditNode(CardNode):
 
     def keyPressEvent(self, evt):
         self.widget.keyPressEvent(evt)
+        self.save_text()
+
+    def save_text(self):
+        f = open(self.filename, "w")
+        f.write(self.widget.toPlainText())
+        f.close()
 
     def inputMethodEvent(self, evt):
         return self.widget.inputMethodEvent(evt)

@@ -33,12 +33,12 @@ class View3D(QOpenGLWidget):
             'w': 'forward',
             's': 'back',
             'a': 'left',
-            'd': 'right',
-            'e': 'active_action'}
+            'd': 'right'}
         self.setMouseTracking(True)
         self.skipNextMouseMove = True
         self.keepMouseCentered = True
         self.setAttribute(Qt.WA_InputMethodEnabled, True)
+        self.setGeometry(10, 10, 1200, 800)
 
     def initializeGL(self):
         GL.glEnable(GL.GL_DEPTH_TEST)
@@ -93,6 +93,10 @@ class View3D(QOpenGLWidget):
         if self.context.focused is not None:
             self.context.focused.keyPressEvent(evt)
             return
+        if evt.key() == Qt.Key_E:
+            if hasattr(self.context.hover_target, "on_edit"):
+                self.context.hover_target.on_edit(self.context.debug_point)
+
         if evt.isAutoRepeat():
             return
         action = self.key_map.get(evt.text(), None)

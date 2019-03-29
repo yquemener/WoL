@@ -43,10 +43,6 @@ class MyCamera(CameraNode):
                 ('right',   right)):
             if self.context.abstract_input.get(action, False):
                 self.context.current_camera.position += delta
-
-        if self.context.abstract_input.get('active_action', False):
-            print("action")
-
         self.context.scene.sphere.position = self.context.debug_point
 
 

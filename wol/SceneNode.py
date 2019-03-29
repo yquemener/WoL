@@ -1,4 +1,4 @@
-from PyQt5.QtGui import QMatrix4x4, QQuaternion, QVector3D
+dwwwwwwfrom PyQt5.QtGui import QMatrix4x4, QQuaternion, QVector3D
 
 
 class SceneNode:
