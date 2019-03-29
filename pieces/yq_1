@@ -1,1 +1,1 @@
-self.position.setX(self.position.x() + 0.1)
+self.position.setY(self.position.y() + 0.2)

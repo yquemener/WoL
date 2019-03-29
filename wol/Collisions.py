@@ -32,7 +32,8 @@ class Plane:
         self.v = QVector3D.crossProduct(ref_u, self.normale).normalized()
         self.u = QVector3D.crossProduct(self.normale, self.v).normalized()
 
-    def project_2d(self, point):
+    def project_2d(self, point_):
+        point = self.transform.inverted()[0].map(point_)
         return QVector2D(
             QVector3D.dotProduct((point - self.orig), self.u),
             QVector3D.dotProduct((point - self.orig), self.v))
@@ -54,6 +55,11 @@ class Plane:
         if abs(factor) < epsilon:
             return False, None
         proj = ray.pos + dist * ray.dir / factor
+
+        # Check it is in the direction of the ray
+        if QVector3D.dotProduct(proj-ray.pos, ray.dir)<0:
+            return False, None
+
         return True, self.transform.map(proj)
 
 
@@ -69,35 +75,12 @@ class Outline3D(Plane):     # Flat polygon
     def add_3d_point(self, point):
         self.points.append(self.project_2d(point))
 
-    def collide_with_ray(self, ray_, double_sided=True):
-        ray = Ray(self.transform.inverted()[0].map(ray_.pos),
-                  self.transform.inverted()[0].mapVector(ray_.dir))
-        v, inters = collision_ray_plane(ray, self, double_sided=double_sided)
+    def collide_with_ray(self, ray, double_sided=True):
+        v, inters = Plane.collide_with_ray(self, ray, double_sided=double_sided)
         if not v:
             return False, None
         inters2d = self.project_2d(inters)
-        return is_inside_outline_2d(self.points, inters2d), self.transform.map(inters)
-
-
-def collision_ray_plane(ray, plane_, transform=QMatrix4x4(), double_sided=False):
-    plane = Plane()
-    plane.orig = transform.map(plane_.orig)
-    plane.normale = transform.mapVector(plane_.normale)
-
-    # Looking toward each other?
-    if QVector3D.dotProduct(plane.normale, ray.dir) > 0 and not double_sided:
-        return False, None
-
-    # Distance from ray.pos to the plane
-    dist = QVector3D.dotProduct(plane.normale, (plane.orig-ray.pos))
-    if dist > 0 and not double_sided:
-        return False, None
-
-    factor = QVector3D.dotProduct(ray.dir, plane.normale)
-    if abs(factor) < epsilon:
-        return False, None
-    proj = ray.pos + dist*ray.dir/factor
-    return True, proj
+        return is_inside_outline_2d(self.points, inters2d), inters
 
 
 def collision_line_line_2d(line1, line2):

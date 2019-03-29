@@ -58,7 +58,7 @@ class SceneNode:
 
     def collide_recurs(self, ray):
         collisions = list()
-        if self.collider is not None:
+        if self.collider is not None and self.visible:
             r, cc = self.collider.collide_with_ray(ray)
             if r:
                 collisions.append((self, cc))
