@@ -65,20 +65,16 @@ class View3D(QOpenGLWidget):
         # Put the collision detection in a more appropriate place (RootNode? Context?)
         ray = Collisions.Ray(self.context.current_camera.position,
                              self.context.current_camera.look_at)
-        colliders = list()
-        for child in self.scene.children:
-            if child.collider is None:
-                continue
-            transform = QMatrix4x4()
-            transform.rotate(child.orientation)
-            transform.translate(child.position)
-            v, inters = Collisions.collision_ray(ray, child.collider, transform)
-            if v:
-                colliders.append((inters, child, (inters-self.context.current_camera.position).length()))
-        colliders.sort(key=lambda s: s[2])
-        if len(colliders) > 0:
-            self.context.debug_point = colliders[0][0]
-            self.context.hover_target = colliders[0][1]
+        colliders = self.scene.collide_recurs(ray)
+        colliders_sort = list()
+        for obj, point in colliders:
+            colliders_sort.append((point,
+                                   obj,
+                                   (point-self.context.current_camera.position).length()))
+        colliders_sort.sort(key=lambda s: s[2])
+        if len(colliders_sort) > 0:
+            self.context.debug_point = colliders_sort[0][0]
+            self.context.hover_target = colliders_sort[0][1]
         else:
             self.context.debug_point = QVector3D(0, 0, -10)
             self.context.hover_target = None

@@ -21,6 +21,7 @@ class Plane:
         self.normale = normale.normalized()
         self.u = QVector3D(0, 0, 1)
         self.v = QVector3D(0, 1, 0)
+        self.transform = QMatrix4x4()
 
     def update_coord_system(self):
         x = QVector3D(1, 0, 0)
@@ -36,6 +37,25 @@ class Plane:
             QVector3D.dotProduct((point - self.orig), self.u),
             QVector3D.dotProduct((point - self.orig), self.v))
 
+    def collide_with_ray(self, ray_, double_sided=True):
+        ray = Ray(self.transform.inverted()[0].map(ray_.pos),
+                  self.transform.inverted()[0].mapVector(ray_.dir))
+
+        # Looking toward each other?
+        if QVector3D.dotProduct(self.normale, ray.dir) > 0 and not double_sided:
+            return False, None
+
+        # Distance from ray.pos to the plane
+        dist = QVector3D.dotProduct(self.normale, (self.orig - ray.pos))
+        if dist > 0 and not double_sided:
+            return False, None
+
+        factor = QVector3D.dotProduct(ray.dir, self.normale)
+        if abs(factor) < epsilon:
+            return False, None
+        proj = ray.pos + dist * ray.dir / factor
+        return True, self.transform.map(proj)
+
 
 class Outline3D(Plane):     # Flat polygon
     def __init__(self, point=QVector3D(), normale=QVector3D(1,0,0)):
@@ -48,6 +68,15 @@ class Outline3D(Plane):     # Flat polygon
 
     def add_3d_point(self, point):
         self.points.append(self.project_2d(point))
+
+    def collide_with_ray(self, ray_, double_sided=True):
+        ray = Ray(self.transform.inverted()[0].map(ray_.pos),
+                  self.transform.inverted()[0].mapVector(ray_.dir))
+        v, inters = collision_ray_plane(ray, self, double_sided=double_sided)
+        if not v:
+            return False, None
+        inters2d = self.project_2d(inters)
+        return is_inside_outline_2d(self.points, inters2d), self.transform.map(inters)
 
 
 def collision_ray_plane(ray, plane_, transform=QMatrix4x4(), double_sided=False):
@@ -140,16 +169,7 @@ def is_inside_outline_2d(outline, point):
         return False
 
 
-def collision_ray_outline_3d(ray, outline_, transform=QMatrix4x4(), double_sided=False):
-    outline = Outline3D()
-    outline.orig = transform.map(outline_.orig)
-    outline.normale = transform.mapVector(outline_.normale)
-    outline.points = outline_.points
-    v, inters = collision_ray_plane(ray, outline, double_sided=double_sided)
-    if not v:
-        return False, None
-    inters2d = outline.project_2d(inters)
-    return is_inside_outline_2d(outline.points, inters2d), inters
+
 
 
 def collision_ray(ray, obj, transform):

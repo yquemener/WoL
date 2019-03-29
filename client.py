@@ -50,10 +50,8 @@ if __name__ == '__main__':
     window = View3D()
 
     x = 0
-    for fn in os.listdir("."):
-        if not fn.endswith(".py"):
-            continue
-        o = TextEditNode(parent=window.scene, name="GuiNode:" + str(fn), filename=fn)
+    for fn in os.listdir("pieces"):
+        o = TextEditNode(parent=window.scene, name="GuiNode:" + str(fn), filename="pieces/"+fn)
         o.position = QVector3D(x, 2, x)
         x += 1
     x = 0
@@ -72,7 +70,7 @@ if __name__ == '__main__':
 
     g = Grid(parent=window.scene)
     g.orientation = QQuaternion.fromEulerAngles(0.0, 0.0, 90.0)
-    sph = Sphere(parent=window.scene)
+    sph = Sphere(name="SpherePointer", parent=window.scene)
     window.scene.sphere = sph
     sph.size = 0.03
     # Monkey patching!

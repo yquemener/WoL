@@ -27,6 +27,8 @@ class SceneNode:
         self.transform = m
         self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
         self.prog_matrix = self.context.current_camera.projection_matrix * self.transform
+        if self.collider is not None:
+            self.collider.transform = self.transform
 
     def update(self, dt):
         return
@@ -53,6 +55,16 @@ class SceneNode:
         self.initialize_gl()
         for c in self.children:
             c.initialize_gl_recurs()
+
+    def collide_recurs(self, ray):
+        collisions = list()
+        if self.collider is not None:
+            r, cc = self.collider.collide_with_ray(ray)
+            if r:
+                collisions.append((self, cc))
+        for c in self.children:
+            collisions += c.collide_recurs(ray)
+        return collisions
 
     def add_child(self, child):
         self.children.append(child)
