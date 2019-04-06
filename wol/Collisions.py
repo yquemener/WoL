@@ -4,15 +4,15 @@ epsilon = 1e-6
 
 
 class Line2D:
-    def __init__(self, pos=QVector2D(0, 0), dir=QVector2D(1, 0)):
+    def __init__(self, pos=QVector2D(0, 0), direction=QVector2D(1, 0)):
         self.pos = pos
-        self.dir = dir.normalized()
+        self.dir = direction.normalized()
 
 
 class Ray:
-    def __init__(self, pos=QVector3D(0, 0, 0), dir=QVector3D(1, 0, 0)):
+    def __init__(self, pos=QVector3D(0, 0, 0), direction=QVector3D(1, 0, 0)):
         self.pos = pos
-        self.dir = dir.normalized()
+        self.dir = direction.normalized()
 
 
 class Plane:
@@ -22,15 +22,16 @@ class Plane:
         self.u = QVector3D(0, 0, 1)
         self.v = QVector3D(0, 1, 0)
         self.transform = QMatrix4x4()
+        self.update_coord_system()
 
     def update_coord_system(self):
         x = QVector3D(1, 0, 0)
-        if abs(QVector3D.dotProduct(x, self.normale))<0.01:
+        if abs(QVector3D.dotProduct(x, self.normale)) > 0.99:
             ref_u = QVector3D(0, 0, 1)
         else:
             ref_u = QVector3D(1, 0, 0)
-        self.v = QVector3D.crossProduct(ref_u, self.normale).normalized()
-        self.u = QVector3D.crossProduct(self.normale, self.v).normalized()
+        self.v = QVector3D.crossProduct(self.normale, ref_u).normalized()
+        self.u = QVector3D.crossProduct(self.v, self.normale).normalized()
 
     def project_2d(self, point_):
         point = self.transform.inverted()[0].map(point_)

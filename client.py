@@ -9,6 +9,8 @@ from PyQt5.QtWidgets import QApplication
 from wol.GeomNodes import Grid, Sphere
 from wol.CodeBumperNode import CodeBumperNode
 from wol.ConsoleNode import ConsoleNode
+from wol.GuiElements import TextLabelNode
+from wol.ObjectEditorNode import ObjectEditorNode
 from wol.SceneNode import CameraNode
 from wol.TextEditNode import TextEditNode
 from wol.View3D import View3D
@@ -65,21 +67,22 @@ if __name__ == '__main__':
         x += 1
 
     o = ConsoleNode(parent=context.scene, name="ConsoleNode#1")
-    o.position = QVector3D(0, 5, -3)
+    o.position = QVector3D(0, 5, -5)
 
-    o = CodeBumperNode(parent=context.scene, name="CodeBumper#1")
-    o.position = QVector3D(0, 5, 0)
+    #o = CodeBumperNode(parent=context.scene, name="CodeBumper#1")
+    #o.position = QVector3D(0, 5, 0)
+
+    o2 = ObjectEditorNode(parent=context.scene, target_object=o)
+    o2.position = QVector3D(0, 5, 0)
 
     g = Grid(parent=context.scene)
     g.orientation = QQuaternion.fromEulerAngles(0.0, 0.0, 90.0)
     sph = Sphere(name="SpherePointer", parent=context.scene)
     context.scene.sphere = sph
     sph.size = 0.03
-    # Monkey patching!
     my_cam = MyCamera(context.scene)
     context.scene.context.current_camera = my_cam
-    #context.scene.update = camera_update.__get__(context.scene)
-    context.scene.context.current_camera.position = QVector3D(0, 5, -5)
+    context.scene.context.current_camera.position = QVector3D(5, 5, 0)
     window.show()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     sys.exit(app.exec_())

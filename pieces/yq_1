@@ -1,1 +1,11 @@
-self.position.setY(self.position.y() + 0.2)
+import inspect
+from wol.GuiElements import TextLabelNode
+from PyQt5.QtGui import QVector3D
+
+y=0
+for m in inspect.getmembers(self):
+	if inspect.ismethod(m[1]):
+		o=TextLabelNode(self, text=m[0])
+		o.position=QVector3D(0.0,y,0.0)
+		y+=0.2
+	 

@@ -3,20 +3,20 @@ editor with the code when e-clicked. Hopefully also saves the code from one sess
 """
 from PyQt5.QtGui import QVector3D
 
-from wol.GeomNodes import CardNode
+from wol.GuiElements import TextLabelNode
 from wol.TextEditNode import TextEditNode
 
 
-class CodeBumperNode(CardNode):
-    def __init__(self, parent=None, name="CodeBumber"):
-        CardNode.__init__(self, filename="resources/sample.jpg", name=name, parent=parent)
-        self.edit_node = TextEditNode(parent=self, name=self.name+"#edit", filename="pieces/yq_1")
+class CodeBumperNode(TextLabelNode):
+    def __init__(self, parent=None, name="CodeBumber", text="BUMP", filename="pieces/yq_1"):
+        TextLabelNode.__init__(self, text=text, name=name, parent=parent)
+        self.edit_node = TextEditNode(parent=self, name=self.name+"#edit", filename=filename)
         self.edit_node.visible = False
-        self.edit_node.position = QVector3D(0, 0, -1.2)
-        for v in self.vertices:
+        self.edit_node.position = QVector3D(1.2, 0, 0)
+        """for v in self.vertices:
             v[0] *= 0.2
             v[1] *= 0.2
-            v[2] *= 0.2
+            v[2] *= 0.2"""
         self.refresh_vertices()
         self.locals = dict(locals())
 

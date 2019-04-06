@@ -97,6 +97,10 @@ class View3D(QOpenGLWidget):
             if hasattr(self.context.hover_target, "on_edit"):
                 self.context.hover_target.on_edit(self.context.debug_point)
 
+        if evt.key() == Qt.Key_S:
+            if hasattr(self.context.hover_target, "on_save"):
+                self.context.hover_target.on_save(self.context.debug_point)
+
         if evt.isAutoRepeat():
             return
         action = self.key_map.get(evt.text(), None)
