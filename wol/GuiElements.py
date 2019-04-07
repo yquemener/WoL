@@ -1,5 +1,6 @@
-from PyQt5.QtGui import QColor, QOpenGLTexture, QImage
-from PyQt5.QtWidgets import QLabel
+from PyQt5.QtGui import QColor, QOpenGLTexture, QImage, QWindow
+from PyQt5.QtWidgets import QLabel, QFrame, QMainWindow
+from PyQt5.QtCore import Qt
 
 from wol.GeomNodes import CardNode
 
@@ -22,7 +23,9 @@ class TextLabelNode(CardNode):
         self.refresh_vertices()
         self.needs_refresh = True
         self.text = text
-        self.widget.setStyleSheet("QWidget{color: white; background-color: gray;}");
+        self.widget.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.widget.setStyleSheet("color: rgba(255,255,255,255); background-color: rgba(128,0,0,255);");
+        self.layer = 2
 
     def update(self, dt):
         if self.needs_refresh:

@@ -110,7 +110,7 @@ class CameraNode(SceneNode):
 
     def compute_transform(self):
         m = QMatrix4x4()
-        m.perspective(self.angle, self.ratio, 1.0, 100.0)
+        m.perspective(self.angle, self.ratio, 1.0, 1000.0)
         m.lookAt(self.position, self.position + self.look_at, QVector3D(0, 1, 0))
         self.projection_matrix = m
 
@@ -173,7 +173,6 @@ class SkyBox(SceneNode):
         self.prog_matrix = self.context.current_camera.projection_matrix * self.transform
         if self.collider is not None:
             self.collider.transform = self.transform
-
 
     def paint(self, program):
         program.bind()

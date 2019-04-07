@@ -6,7 +6,7 @@ import os
 from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4
 from PyQt5.QtWidgets import QApplication
 
-from wol.GeomNodes import Grid, Sphere
+from wol.GeomNodes import Grid, Sphere, CardNode
 from wol.CodeBumperNode import CodeBumperNode
 from wol.ConsoleNode import ConsoleNode
 from wol.GuiElements import TextLabelNode
@@ -75,6 +75,9 @@ if __name__ == '__main__':
 
     o2 = ObjectEditorNode(parent=context.scene, target_object=o)
     o2.position = QVector3D(0, 5, 0)
+
+    o3 = CardNode(parent=context.scene, filename="resources/alphatest.png")
+    o3.position = QVector3D(0, 10, 0)
 
     g = Grid(parent=context.scene)
     g.orientation = QQuaternion.fromEulerAngles(0.0, 0.0, 90.0)

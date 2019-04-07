@@ -13,5 +13,6 @@
 - Debug console scrolling (allow clicks and check why the scrollbar renders weirdly)
 - Add smart indentation to the code view
 - More visible pointer
+- Grab/Release logic for CardNodes
 
 - Add rlcompleter to TextEdit
