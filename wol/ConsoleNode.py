@@ -6,6 +6,7 @@ from wol.GeomNodes import CardNode
 
 import sys
 
+
 class ConsoleNode(CardNode):
     def __init__(self, parent, name="GuiNode"):
         CardNode.__init__(self, name=name, parent=parent)
@@ -39,13 +40,12 @@ class ConsoleNode(CardNode):
             self.widget.setPlainText(s)
             self.widget.moveCursor(QTextCursor.End)
         elif evt.key() == Qt.Key_Down:
-            if self.history_cursor == 0:
-                return
-            self.history_cursor = self.history_cursor + 1
-            s = self.widget.toPlainText()
-            s = "\n".join(s.split("\n")[:-1]) + "\n" + self.history[self.history_cursor]
-            self.widget.setPlainText(s)
-            self.widget.moveCursor(QTextCursor.End)
+            if self.history_cursor != 0:
+                self.history_cursor = self.history_cursor + 1
+                s = self.widget.toPlainText()
+                s = "\n".join(s.split("\n")[:-1]) + "\n" + self.history[self.history_cursor]
+                self.widget.setPlainText(s)
+                self.widget.moveCursor(QTextCursor.End)
         elif evt.key() == Qt.Key_Return:
             cmd = self.widget.toPlainText().split("\n")[-1]
             self.history.append(cmd)
@@ -62,9 +62,9 @@ class ConsoleNode(CardNode):
             self.widget.moveCursor(QTextCursor.End)
             self.widget.insertPlainText("\n"+str(result))
             self.history_cursor = 0
-
         else:
             self.widget.keyPressEvent(evt)
+        self.widget.ensureCursorVisible()
 
     def inputMethodEvent(self, evt):
         return self.widget.inputMethodEvent(evt)

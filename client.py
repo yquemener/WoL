@@ -11,7 +11,7 @@ from wol.CodeBumperNode import CodeBumperNode
 from wol.ConsoleNode import ConsoleNode
 from wol.GuiElements import TextLabelNode
 from wol.ObjectEditorNode import ObjectEditorNode
-from wol.SceneNode import CameraNode
+from wol.SceneNode import CameraNode, SkyBox
 from wol.TextEditNode import TextEditNode
 from wol.View3D import View3D
 
@@ -24,6 +24,7 @@ class MyCamera(CameraNode):
     def update(self, dt):
         yaw = self.context.mouse_position.x() * 180.0
         pitch = -self.context.mouse_position.y() * 90.0
+        self.orientation = QQuaternion.fromEulerAngles(pitch, yaw, 0)
 
         x = QVector3D(1, 0, 0)
         yaw_rotation = QQuaternion.fromAxisAndAngle(0, 1, 0, yaw)
@@ -83,6 +84,9 @@ if __name__ == '__main__':
     my_cam = MyCamera(context.scene)
     context.scene.context.current_camera = my_cam
     context.scene.context.current_camera.position = QVector3D(5, 5, 0)
+
+    sb = SkyBox(parent=my_cam)
+
     window.show()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     sys.exit(app.exec_())

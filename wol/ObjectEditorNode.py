@@ -9,6 +9,9 @@ class ObjectEditorNode(TextLabelNode):
         TextLabelNode.__init__(self, text=str(type(target_object)), name=name, parent=parent)
         self.children_visible = False
         self.target_object = target_object
+        code = inspect.getsource(target_object.__class__)
+        self.class_header_source = code.split("def __init__(self")[0].split('\n')[0]
+
         try:
             y = -0.15
             for member in inspect.getmembers(target_object):
@@ -34,7 +37,9 @@ class ObjectEditorNode(TextLabelNode):
         self.refresh_children()
 
     def on_save(self, pos):
-        return
+        print(self.class_header_source)
+        for c in self.children:
+            print(c.edit_node.widget.toPlainText())
 
     def refresh_children(self):
         for c in self.children:

@@ -53,7 +53,8 @@ class View3D(QOpenGLWidget):
                         self.clearColor.blueF(),
                         self.clearColor.alphaF())
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
-        self.context.scene.paint_recurs(self.program)
+        for layer in (0, 1, 2, 3):
+            self.context.scene.paint_recurs(self.program, layer)
 
     def resizeGL(self, width, height):
         side = min(width, height)

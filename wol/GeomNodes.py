@@ -1,7 +1,7 @@
 from OpenGL import GL, GLU
 from PyQt5.QtGui import QVector3D, QOpenGLTexture, QImage
 
-from wol import Collisions
+from wol import Collisions, utils
 from wol.ShadersLibrary import ShadersLibrary
 from wol.SceneNode import SceneNode
 
@@ -57,16 +57,8 @@ class CardNode(SceneNode):
             self.texture_image = None
         self.texture = None
 
-        self.vertices = list()
-        self.texCoords = list()
-        self.vertices.append([-1.0, -1.0, 0.0])
-        self.texCoords.append([1.0,  1.0])
-        self.vertices.append([+1.0, -1.0, 0.0])
-        self.texCoords.append([0.0,  1.0])
-        self.vertices.append([+1.0, +1.0, 0.0])
-        self.texCoords.append([0.0,  0.0])
-        self.vertices.append([-1.0, +1.0, 0.0])
-        self.texCoords.append([1.0,  0.0])
+        self.vertices = utils.generate_square_vertices_fan()
+        self.texCoords = utils.generate_square_texcoords_fan()
         self.refresh_vertices()
 
     def refresh_vertices(self):
@@ -74,7 +66,6 @@ class CardNode(SceneNode):
         p1 = QVector3D(self.vertices[1][0], self.vertices[1][1], self.vertices[1][2])
         p2 = QVector3D(self.vertices[2][0], self.vertices[2][1], self.vertices[2][2])
         self.collider = Collisions.Outline3D(normale=QVector3D.crossProduct(p2-p0, p1-p0).normalized())
-        #self.collider = Collisions.Outline3D(normale=QVector3D(0, 0, 1))
         for v in self.vertices:
             self.collider.add_3d_point(QVector3D(*v))
 

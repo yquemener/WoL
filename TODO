@@ -4,10 +4,14 @@
 - Nettoyer Context d'ailleurs
 
 - Skybox
+- Transparent UI
 - Find a better code highliter
 - Widget borders
 - Text file names
 - UI logic
 - Think about key-click actions
+- Debug console scrolling (allow clicks and check why the scrollbar renders weirdly)
+- Add smart indentation to the code view
+- More visible pointer
 
 - Add rlcompleter to TextEdit
