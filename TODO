@@ -2,9 +2,8 @@
 - Clean up the order of the updates
 - context.scene.sphere -> c'est pas propre
 - Nettoyer Context d'ailleurs
+- Make position/orientation properties and swtich to new values after the scene update
 
-- Skybox
-- Transparent UI
 - Find a better code highliter
 - Widget borders
 - Text file names

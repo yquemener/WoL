@@ -27,6 +27,16 @@ class SceneNode:
             """
         self.layer = 1
 
+    def reparent(self, new_parent):
+        new_transform = new_parent.transform.inverted()[0] * self.transform
+        self.position = new_transform.map(QVector3D())
+        self.orientation = QQuaternion.fromDirection(new_transform.mapVector(QVector3D(0, 0, 1)),
+                                                     new_transform.mapVector(QVector3D(0, 1, 0)))
+        if self.parent:
+            self.parent.children.remove(self)
+            self.parent = new_parent
+            self.parent.children.append(self)
+
     def compute_transform(self):
         if self.parent:
             m = QMatrix4x4(self.parent.transform)
@@ -40,11 +50,18 @@ class SceneNode:
         if self.collider is not None:
             self.collider.transform = self.transform
 
+    def world_position(self):
+        if self.parent:
+            return self.parent.transform.map(self.position)
+        else:
+            return self.position
+
     def update(self, dt):
         return
 
     def update_recurs(self, dt=0.0):
         self.update(dt)
+        self.compute_transform()
         for c in self.children:
             c.update_recurs(dt)
 
@@ -110,8 +127,12 @@ class CameraNode(SceneNode):
 
     def compute_transform(self):
         m = QMatrix4x4()
+        m.rotate(self.orientation)
+        la = self.position + m.mapVector(QVector3D(0, 0, 1))
+
+        m = QMatrix4x4()
         m.perspective(self.angle, self.ratio, 1.0, 1000.0)
-        m.lookAt(self.position, self.position + self.look_at, QVector3D(0, 1, 0))
+        m.lookAt(self.position, la, QVector3D(0, 1, 0))
         self.projection_matrix = m
 
         if self.parent:

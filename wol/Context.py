@@ -1,4 +1,4 @@
-from PyQt5.QtGui import QVector2D, QVector3D
+from PyQt5.QtGui import QVector2D, QVector3D, QMatrix4x4
 
 
 class Context:
@@ -11,3 +11,5 @@ class Context:
         self.hover_target = None
         self.focused = None
         self.scene = None
+        self.grabbed = None
+        self.grabbed_transform = QMatrix4x4()

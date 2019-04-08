@@ -1,4 +1,4 @@
-from PyQt5.QtGui import QOpenGLTexture, QImage, QTextCursor
+from PyQt5.QtGui import QOpenGLTexture, QImage, QTextCursor, QQuaternion, QVector3D
 from PyQt5.QtWidgets import QPlainTextEdit
 from PyQt5.QtCore import Qt
 from io import StringIO

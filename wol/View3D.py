@@ -62,9 +62,10 @@ class View3D(QOpenGLWidget):
         self.context.current_camera.ratio = width / height
 
     def scene_update(self):
+        self.context.scene.update_recurs(0.01)
         # Put the collision detection in a more appropriate place (RootNode? Context?)
         ray = Collisions.Ray(self.context.current_camera.position,
-                             self.context.current_camera.look_at)
+                             self.context.current_camera.look_at-self.context.current_camera.position)
         colliders = self.context.scene.collide_recurs(ray)
         colliders_sort = list()
         for obj, point in colliders:
@@ -78,7 +79,8 @@ class View3D(QOpenGLWidget):
         else:
             self.context.debug_point = QVector3D(0, 0, -10)
             self.context.hover_target = None
-        self.context.scene.update_recurs(0.01)
+        # Ugly
+        self.context.scene.sphere.position = self.context.debug_point
         self.repaint()
 
     def keyPressEvent(self, evt):
@@ -98,9 +100,20 @@ class View3D(QOpenGLWidget):
             if hasattr(self.context.hover_target, "on_edit"):
                 self.context.hover_target.on_edit(self.context.debug_point)
 
-        if evt.key() == Qt.Key_S:
+        if evt.key() == Qt.Key_R:
             if hasattr(self.context.hover_target, "on_save"):
                 self.context.hover_target.on_save(self.context.debug_point)
+
+        if evt.key() == Qt.Key_Q:
+            if self.context.hover_target:
+                gr = self.context.grabbed
+                if gr is None:
+                    self.context.grabbed = self.context.hover_target
+                    self.context.grabbed_former_parent = self.context.grabbed.parent
+                    self.context.grabbed.reparent(self.context.current_camera)
+                else:
+                    self.context.grabbed.reparent(self.context.grabbed_former_parent)
+                    self.context.grabbed = None
 
         if evt.isAutoRepeat():
             return
