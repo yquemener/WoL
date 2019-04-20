@@ -11,14 +11,14 @@ from wol.CodeBumperNode import CodeBumperNode
 from wol.ConsoleNode import ConsoleNode
 from wol.GuiElements import TextLabelNode
 from wol.ObjectEditorNode import ObjectEditorNode
-from wol.SceneNode import CameraNode, SkyBox
+from wol.SceneNode import RootNode, CameraNode, SkyBox, SceneNode
 from wol.TextEditNode import TextEditNode
 from wol.View3D import View3D
 
 
 class MyCamera(CameraNode):
-    def __init__(self, parent):
-        CameraNode.__init__(self, parent=parent)
+    def __init__(self, parent, name="MyCam"):
+        CameraNode.__init__(self, parent=parent, name=name)
         self.speed = 0.2
 
     def update(self, dt):
@@ -69,42 +69,88 @@ if __name__ == '__main__':
     window = View3D()
     context = window.context
 
-    x = 0
-    for fn in os.listdir("pieces"):
-        o = TextEditNode(parent=context.scene, name="GuiNode:" + str(fn), filename="pieces/"+fn)
-        o.position = QVector3D(x, 2, x)
-        x += 1
-    x = 0
-    for fn in os.listdir("wol/"):
-        if not fn.endswith(".py"):
-            continue
-        o = TextEditNode(parent=context.scene, name="GuiNode:" + str(fn), filename="wol/"+fn)
-        o.position = QVector3D(10 + x, 2, x)
-        x += 1
+    load = True
+    try:
+        lines = open("scene.ini").read().split("\n")
+    except FileNotFoundError:
+        lines = ()
+        load = False
+    attributes = dict()
+    objtype = None
+    currentobj = None
+    reparenting = list()
+    for line in lines:
+        line = line.lstrip()
+        if line.startswith("new "):
+            objtype = line.split(" ")[1]
+            attributes = dict()
+            attributes['parent'] = context.scene
+        if "=" in line:
+            name, value = line.split("=")
+            attributes[name] = value
+        if line.startswith("move "):
+            currentobj.position = QVector3D(*[float(x) for x in line.split(" ")[1:]])
+        if line.startswith("scale "):
+            currentobj.scale = QVector3D(*[float(x) for x in line.split(" ")[1:]])
+        if line.startswith("rotate "):
+            currentobj.orientation = QQuaternion(*[float(x) for x in line.split(" ")[1:]])
+        if line.startswith("setuid "):
+            currentobj.set_uid(int(line.split(" ")[1]))
+        if line.startswith("setparentuid "):
+            reparenting.append((currentobj, int(line.split(" ")[1])))
+        if line.rstrip().lstrip() == "" and objtype is not None:
+            currentobj = globals()[objtype](**attributes)
+            # TODO: Make these kludges disappear
+            if objtype == "Sphere":
+                context.scene.sphere = currentobj
+            if objtype == "MyCamera":
+                context.scene.current_camera = currentobj
+                my_cam = currentobj
+            objtype = None
 
-    o = ConsoleNode(parent=context.scene, name="ConsoleNode#1")
-    o.position = QVector3D(0, 5, -5)
+        for r in reparenting:
+            r[0].reparent(SceneNode.uid_map[r[1]], False)
 
-    #o = CodeBumperNode(parent=context.scene, name="CodeBumper#1")
-    #o.position = QVector3D(0, 5, 0)
+    if not load:
+        x = 0
+        for fn in os.listdir("pieces"):
+            o = TextEditNode(parent=context.scene, name="GuiNode:" + str(fn), filename="pieces/"+fn)
+            o.position = QVector3D(x, 2, x)
+            x += 1
+        x = 0
+        for fn in os.listdir("wol/"):
+            if not fn.endswith(".py"):
+                continue
+            o = TextEditNode(parent=context.scene, name="GuiNode:" + str(fn), filename="wol/"+fn)
+            o.position = QVector3D(10 + x, 2, x)
+            x += 1
 
-    o2 = ObjectEditorNode(parent=context.scene, target_object=o)
-    o2.position = QVector3D(0, 5, 0)
+        o = ConsoleNode(parent=context.scene, name="ConsoleNode#1")
+        o.position = QVector3D(0, 5, -5)
 
-    o3 = CardNode(parent=context.scene, filename="resources/alphatest.png")
-    o3.position = QVector3D(0, 10, 0)
+        #o2 = ObjectEditorNode(parent=context.scene, target_object=o)
+        #o2.position = QVector3D(0, 5, 0)
 
-    g = Grid(parent=context.scene)
-    g.orientation = QQuaternion.fromEulerAngles(0.0, 0.0, 90.0)
-    sph = Sphere(name="SpherePointer", parent=context.scene)
-    context.scene.sphere = sph
-    sph.size = 0.03
-    my_cam = MyCamera(context.scene)
+        o3 = CardNode(parent=context.scene, filename="resources/alphatest.png")
+        o3.position = QVector3D(0, 10, 0)
+
+        g = Grid(parent=context.scene)
+        g.orientation = QQuaternion.fromEulerAngles(0.0, 0.0, 90.0)
+        sph = Sphere(name="SpherePointer", parent=context.scene)
+        context.scene.sphere = sph
+        sph.scale = QVector3D(0.03, 0.03, 0.03)
+        my_cam = MyCamera(context.scene)
+        context.scene.context.current_camera = my_cam
+        context.scene.context.current_camera.position = QVector3D(5, 5, 0)
+
+        #o = TextEditNode(parent=context.scene, name="O_Node", filename="pieces/o_action.py")
+        o = CodeBumperNode(parent=context.scene, name="CodeBumper#1", filename="pieces/cb1")
+        o.position = QVector3D(0, 5, 8)
+
+        sb = SkyBox(parent=my_cam)
+
     context.scene.context.current_camera = my_cam
     context.scene.context.current_camera.position = QVector3D(5, 5, 0)
-
-
-    sb = SkyBox(parent=my_cam)
 
     window.show()
     signal.signal(signal.SIGINT, signal.SIG_DFL)

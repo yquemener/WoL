@@ -3,6 +3,8 @@
 - context.scene.sphere -> c'est pas propre
 - Nettoyer Context d'ailleurs
 - Make position/orientation properties and swtich to new values after the scene update
+- Make constructors paramter-less and have an init() call, to help serialization
+- Reorganize the module hierarchy into something cleaner
 
 - Find a better code highliter
 - Widget borders
@@ -12,6 +14,5 @@
 - Debug console scrolling (allow clicks and check why the scrollbar renders weirdly)
 - Add smart indentation to the code view
 - More visible pointer
-- Grab/Release logic for CardNodes
 
 - Add rlcompleter to TextEdit

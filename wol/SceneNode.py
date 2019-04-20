@@ -5,14 +5,24 @@ from wol import utils
 
 
 class SceneNode:
+    next_uid = 0
+    uid_map = dict()
+
+    @staticmethod
+    def new_uid():
+        SceneNode.next_uid += 1
+        return SceneNode.next_uid
+
     def __init__(self, name="Node", parent=None):
         self.parent = parent
         if parent:
             self.parent.children.append(self)
             self.context = self.parent.context
+        self.set_uid(SceneNode.new_uid())
         self.children = list()
         self.name = name
         self.position = QVector3D()
+        self.scale = QVector3D(1,1,1)
         self.orientation = QQuaternion()
         self.transform = QMatrix4x4()
         self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
@@ -27,11 +37,17 @@ class SceneNode:
             """
         self.layer = 1
 
-    def reparent(self, new_parent):
-        new_transform = new_parent.transform.inverted()[0] * self.transform
-        self.position = new_transform.map(QVector3D())
-        self.orientation = QQuaternion.fromDirection(new_transform.mapVector(QVector3D(0, 0, 1)),
-                                                     new_transform.mapVector(QVector3D(0, 1, 0)))
+    def set_uid(self, uid):
+        self.uid = uid
+        SceneNode.next_uid = max(SceneNode.next_uid, uid+1)
+        SceneNode.uid_map[uid] = self
+
+    def reparent(self, new_parent, transform=True):
+        if transform:
+            new_transform = new_parent.transform.inverted()[0] * self.transform
+            self.position = new_transform.map(QVector3D())
+            self.orientation = QQuaternion.fromDirection(new_transform.mapVector(QVector3D(0, 0, 1)),
+                                                         new_transform.mapVector(QVector3D(0, 1, 0)))
         if self.parent:
             self.parent.children.remove(self)
             self.parent = new_parent
@@ -44,6 +60,7 @@ class SceneNode:
             m = QMatrix4x4()
         m.translate(self.position)
         m.rotate(self.orientation)
+        m.scale(self.scale)
         self.transform = m
         self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
         self.prog_matrix = self.context.current_camera.projection_matrix * self.transform
@@ -77,6 +94,37 @@ class SceneNode:
         for c in self.children:
             c.paint_recurs(program, layer)
 
+    def serialize_recurs(self):
+        s = self.serialize()
+        for c in self.children:
+            s += c.serialize_recurs()
+        return s
+
+    def serialize(self):
+        s = "new " + str(self.__class__.__name__) + "\n"
+        if hasattr(self, "filename") and self.filename is not None:
+            s += "filename=" + str(self.filename) + "\n"
+        if hasattr(self, "name"):
+            s += "name=" + str(self.name) + "\n\n"
+
+        if hasattr(self, "position"):
+            s += "move " + str(self.position.x()) + " " \
+                 + str(self.position.y()) + " " \
+                 + str(self.position.z()) + "\n"
+        if hasattr(self, "scale"):
+            s += "scale " + str(self.scale.x()) + " " \
+                 + str(self.scale.y()) + " " \
+                 + str(self.scale.z()) + "\n"
+        if hasattr(self, "orientation"):
+            s += "rotate " + str(self.orientation.scalar()) + " " \
+                 + str(self.orientation.x()) + " " \
+                 + str(self.orientation.y()) + " " \
+                 + str(self.orientation.z()) + "\n"""
+        s += "setuid " + str(self.uid) + "\n"
+        s += "setparentuid " + str(self.parent.uid) + "\n"
+        s += "\n"
+        return s
+
     def initialize_gl(self):
         return
 
@@ -102,8 +150,8 @@ class SceneNode:
 
 
 class RootNode(SceneNode):
-    def __init__(self, context):
-        super(RootNode, self).__init__(name="root")
+    def __init__(self, context, name="root"):
+        super(RootNode, self).__init__(name=name)
         self.context = context
         # Put that in a separate camera object
         self.position = QVector3D(0.0, 0.0, 0.0)
@@ -119,7 +167,7 @@ class RootNode(SceneNode):
 
 
 class CameraNode(SceneNode):
-    def __init__(self, parent):
+    def __init__(self, parent, name):
         super(CameraNode, self).__init__(name="Camera", parent=parent)
         self.angle = 30.0
         self.ratio = 4.0/3.0

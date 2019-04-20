@@ -51,6 +51,7 @@ class Sphere(SceneNode):
 class CardNode(SceneNode):
     def __init__(self, filename=None, name="Card", parent=None):
         SceneNode.__init__(self, name, parent)
+        self.filename = filename
         if filename:
             self.texture_image = QImage(filename)
         else:

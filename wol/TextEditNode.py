@@ -10,7 +10,10 @@ class TextEditNode(CardNode):
         CardNode.__init__(self, name=name, parent=parent)
         self.widget = QTextEdit()
         self.widget.setGeometry(0, 0, 512, 512)
-        self.widget.setText(open(filename).read())
+        try:
+            self.widget.setText(open(filename).read())
+        except:
+            pass
         self.filename = filename
         self.needs_refresh = True
         self.highlight = PythonHighlighter(self.widget.document())

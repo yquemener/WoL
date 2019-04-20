@@ -104,6 +104,9 @@ class View3D(QOpenGLWidget):
             if hasattr(self.context.hover_target, "on_save"):
                 self.context.hover_target.on_save(self.context.debug_point)
 
+        if evt.key() == Qt.Key_O:
+            self.saveScene()
+
         if evt.key() == Qt.Key_Q:
             if self.context.hover_target:
                 gr = self.context.grabbed
@@ -120,6 +123,14 @@ class View3D(QOpenGLWidget):
         action = self.key_map.get(evt.text(), None)
         if action:
             self.context.abstract_input[action] = True
+
+    def saveScene(self):
+        # TODO: make recursive
+        scenefile = open("scene.ini", "w")
+        s = ""
+        for c in self.context.scene.children:
+            s += c.serialize_recurs()
+        scenefile.write(s)
 
     def inputMethodEvent(self, evt):
         if self.context.focused is not None:
