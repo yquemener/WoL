@@ -125,7 +125,6 @@ class View3D(QOpenGLWidget):
             self.context.abstract_input[action] = True
 
     def saveScene(self):
-        # TODO: make recursive
         scenefile = open("scene.ini", "w")
         s = ""
         for c in self.context.scene.children:

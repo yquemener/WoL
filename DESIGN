@@ -1,7 +1,9 @@
 This is a Work of Love
+======================
 
 Making things I enjoy, curled into my little universe of code.
-Starting processes, sharing code with friends, fine-tuning my machines and the little universe we design together.
+Starting processes, sharing code with friends, fine-tuning my machines and the little universe
+we design together.
 
 To run:
 
@@ -41,7 +43,7 @@ On a bien avancé! :
 - Un clic sur les éléments 3D qui fonctionne avec une lib de collision de rayons
 - Une console simple qui exec() des commandes
 
-Je ne suis pas tout à fait satisfait de ma façon de gérer les clips. Je trouve qu'un picker
+Je ne suis pas tout à fait satisfait de ma façon de gérer les clics. Je trouve qu'un picker
 classique openGL (on fait un rendu de 1x1 et on voit les objets concernés) est plus versatile.
 Mais bon, une lib de collisions c'est toujours utile pour quand je voudrai de la physique.
 Ah tiens? Et si je trouvais une lib de physique d'aillqurs pour gérer ça? À voir.
@@ -53,3 +55,62 @@ Mon focus à présent: parvenir à écrire du code depuis le projet. Pour ça:
 
 Dependencies
 - PyQt5
+
+2019-05-08
+----------
+Les fichiers se sauvegardent, les nodes serialisent leur état, qui est chargé au démarrage.
+Une skybox également et de la transparence sur les widgets. Y a pas à dire, ça vaut le cop de
+passer un peu de temps de temps en temps sur le cosmétique. Ça change vraiment l'expérience.
+
+John a mentionné de la curiosité pour ce projet. J'aimerais lui permettre de se logger dans une
+scene. Je dois faire marcher le code serveur et donc mettre au point un petit protocole.
+
+Knockknock: "Hi! I would like to see your scene" (placeholder for auth)
+list: "Show me the objects I can subscribe to"
+subscribe [list]: "Send me initial states and update on all of these please"
+sendstate [list]: "Send me initial states (again) on all of these per favor"
+state <id> <state>: "Here is the state of obj <id>"
+pose <id> <pos/orient/scale>: "Here is the pose of obj <id>"
+
+- Je dois faire un server, qui maintient la liste des connection et l'état des subscriptions.
+- Je dois faire un logger, qui fait le knock, list, subscribe
+- Je dois faire un sender, qui fait les state et pose messages
+
+- Le logger est en fait un client, qui a la responsabilité de recevoir les updates et de redemander
+les états pas reçus.
+- Le server doit répondre avec un knock/list et subscribe de la camera principale du demandeur
+(relative to the remote view displayed on the client)
+- Le server est du coup un logger aussi?
+
+RemoteNexus
+|
++-Logger
+|   +--RemoteUser1_Root
+|        +--- RemoteCamera1
+|   +--RemoteUser2_Root
+|        +--- RemoteCamera2
+|        +--- InterestingSceneFromUser2
+|                +--- ... many objects
++-Sharer
+   +--LocalSharedRoot
+        +-- Camera
+
+* Est ce que dans ce scénario, User1, qui regarde ce que je fais, vois que je regarde la scene
+de User2?
+> Oui, c'est même à la base du concept. Hmmm, ça veut dire partager du contenu par rebond.
+Attention aux cycles!
+
+Proposition:
+Make initial states git repos, clone and serve them. Save objects pose in a commit on
+close/save events.
+
+* Comment ça se passe alors? Est-ce moi qui sert le contenu de User2 à User1 ou je lui donne juste
+les infos pour qu'il se connecte à User2?
+> On aimerait pouvoir faire les deux: User1 peut vouloir collaborer à la scene chez User2 ou
+seulement m'aider à modifier un fork.1
+
+2019-12-06
+----------
+Après un détour par le modding minetest, qui sera trop limité pour mes besoins au final, je retouche
+ à WoL un peu au lieu de faire du starcraft. J'ai passé le serveur en UDP. Pas encore répondu
+à ces questions d'archis. Peit etre que je vais shooter la TODO list avant?

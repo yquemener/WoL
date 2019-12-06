@@ -1,5 +1,6 @@
 from OpenGL import GL
 from PyQt5.QtGui import QMatrix4x4, QQuaternion, QVector3D, QImage, QOpenGLTexture
+import struct
 
 from wol import utils
 
@@ -99,6 +100,25 @@ class SceneNode:
         for c in self.children:
             s += c.serialize_recurs()
         return s
+
+    def make_pose_packet(self):
+        return struct.pack("!10d",
+                           self.position.x(),
+                           self.position.y(),
+                           self.position.z(),
+                           self.orientation.scalar(),
+                           self.orientation.x(),
+                           self.orientation.y(),
+                           self.orientation.z(),
+                           self.scale.x(),
+                           self.scale.y(),
+                           self.scale.z())
+
+    def update_from_pose_packet(self, packet):
+        p = struct.unpack("!10d")
+        self.position = QVector3D(p[0], p[1], p[2])
+        self.orientation = QQuaternion(p[3], p[4], p[5], p[6])
+        self.scale = QVector3D(p[7], p[8], p[9])
 
     def serialize(self):
         s = "new " + str(self.__class__.__name__) + "\n"

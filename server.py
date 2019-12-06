@@ -1,22 +1,52 @@
-import os
+import socketserver
+import threading
+from time import sleep
 
-class Server:
-    def __init__(self):
-        self.world=list()
-        self.programs=list()
-        for m in os.listdir("pieces/"):
-            print(m)
-            code_str = "def func(ctxt):\n\t"
-            for line in open("pieces/"+m).read().split("\n"):
-                code_str += "\t"+line
-            exec(code_str)
-            self.programs.append(eval("func"))
+from wol.SceneNode import SceneNode
+
+users = dict()
+connections = dict()
+connections_reverse = dict()
 
 
-    def list(self):
-        print("Programs:")
-        for p in self.programs:
-            print(p)
-        print("Objects:")
-        for o in self.world:
-            print(o)
+class ThreadedUDPRequestHandler(socketserver.DatagramRequestHandler):
+    def handle(self):
+        global users, connections, connections_reverse
+        #print("Recieved one request from {}".format(self.client_address))
+        data = str(self.rfile.readline().strip(), 'ascii')
+        if not data:
+            print("Killed")
+        #print("_"+data+"_", len(data))
+        args = data.rstrip().split(" ")
+        if args[0] == "Hi!":
+            name = args[1]
+            connections[self.client_address] = name
+            connections_reverse[name] = self.client_address
+            users[name] = (0, 0, 0)
+        elif args[0] == "pos":
+            if self.client_address in connections:
+                users[connections[self.client_address]] = [float(x) for x in args[1:]]
+
+
+class ThreadedUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
+    pass
+
+
+def display_positions():
+    global users
+    while True:
+        for k, v in users.items():
+            print(f"{k}:{v}")
+        sleep(1)
+
+
+t = threading.Thread(target=display_positions)
+t.start()
+
+port = 8971
+host = 'localhost'
+socketserver.UDPServer.allow_reuse_address = True
+server = ThreadedUDPServer((host, port), ThreadedUDPRequestHandler)
+server.serve_forever()
+
+

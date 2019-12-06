@@ -14,12 +14,21 @@ from wol.ObjectEditorNode import ObjectEditorNode
 from wol.SceneNode import RootNode, CameraNode, SkyBox, SceneNode
 from wol.TextEditNode import TextEditNode
 from wol.View3D import View3D
+import socket
 
 
 class MyCamera(CameraNode):
     def __init__(self, parent, name="MyCam"):
         CameraNode.__init__(self, parent=parent, name=name)
         self.speed = 0.2
+
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        #self.socket.connect(('localhost', 8971))
+        try:
+            #self.socket.sendall(bytes("Hi! Yves", 'ascii'))
+            self.socket.sendto(bytes("Hi! Yves", 'ascii'), ('localhost',8971))
+        finally:
+            pass
 
     def update(self, dt):
         yaw = self.context.mouse_position.x() * 180.0
@@ -48,6 +57,9 @@ class MyCamera(CameraNode):
             if self.context.abstract_input.get(action, False):
                 self.context.current_camera.position += delta
                 self.context.current_camera.look_at += delta
+
+        #self.socket.sendall(bytes(f"pos {self.position[0]} {self.position[1]} {self.position[2]}", "ascii"))
+        self.socket.sendto(bytes(f"pos {self.position[0]} {self.position[1]} {self.position[2]}", "ascii"), ('localhost', 8971))
 
         """if self.context.grabbed is not None:
             cam = self.context.current_camera

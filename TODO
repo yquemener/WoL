@@ -5,6 +5,7 @@
 - Make position/orientation properties and swtich to new values after the scene update
 - Make constructors paramter-less and have an init() call, to help serialization
 - Reorganize the module hierarchy into something cleaner
+- Put the loading code somewhere else than in the main
 
 - Find a better code highliter
 - Widget borders
