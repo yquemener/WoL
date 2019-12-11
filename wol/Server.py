@@ -1,50 +1,44 @@
 import socketserver
-from time import sleep
 
-from wol.SceneNode import SceneNode
+from wol.GuiElements import TextLabelNode
 
-users = dict()
 
-class ThreadedTCPRequestHandler(socketserver. BaseRequestHandler):
+class ThreadedUDPRequestHandler(socketserver.DatagramRequestHandler):
     def handle(self):
-        global users
-        killed = False
-        while not killed:
-            data = str(self.request.recv(1024), 'ascii')
-            args = data.rstrip().split(" ")
-            name = None
-            if args[0] == "Hi!":
-                name = args[1]
-                users[name] = (0, 0, 0)
-            elif args[0] == "pos":
-                if name:
-                    users[name] = [float(x for x in args[1:])]
-            elif args[0] == "quit":
-                kill = True
+        #print("Recieved one request from {}".format(self.client_address))
+        data = str(self.rfile.readline().strip(), 'ascii')
+        if data:
+            #print("_"+data+"_", len(data))
+            pass
+        args = data.rstrip().split(" ")
+        if args[0] == "Hi!":
+            name = args[1]
+            self.server.connections[self.client_address] = name
+            self.server.connections_reverse[name] = self.client_address
+            self.server.users[name] = (0, 0, 0)
+        elif args[0] == "pos":
+            if self.client_address in self.server.connections:
+                self.server.users[self.server.connections[self.client_address]] = [float(x) for x in args[1:]]
 
 
-class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+class ThreadedUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
     pass
 
 
-def display_positions():
-    global users
-    while True:
-        for k, v in users:
-            print(f"{k}:{v}")
-        sleep(1)
-
-
-class ServerNode(SceneNode):
-    def __init__(self):
-        SceneNode.__init__(self, name="ServerNode")
-
-        t = threading.Thread(target=display_positions)
-        t.start()
+class ServerNode(TextLabelNode):
+    def __init__(self, name="ServerNode", parent=None):
+        TextLabelNode.__init__(self, name=name, parent=parent)
 
         self.port = 8971
         self.host = 'localhost'
-        self.server = ThreadedTCPServer((self.host, self.port), ThreadedTCPRequestHandler)
+        self.server = ThreadedUDPServer((self.host, self.port), ThreadedUDPRequestHandler)
         self.server.node = self
         self.server.context = self.context
+        self.server.users = dict()
+        self.server.connections = dict()
+        self.server.connections_reverse = dict()
 
+    def update(self, dt):
+        self.set_text(str(self.server.users))
+        super(ServerNode, self).update(dt)
+        self.server.handle_request()

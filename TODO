@@ -15,5 +15,7 @@
 - Debug console scrolling (allow clicks and check why the scrollbar renders weirdly)
 - Add smart indentation to the code view
 - More visible pointer
+- Shift+SPACE = down/up
+- Handle the case where a TextLabel is empty
 
 - Add rlcompleter to TextEdit

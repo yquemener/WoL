@@ -12,6 +12,7 @@ from wol.ConsoleNode import ConsoleNode
 from wol.GuiElements import TextLabelNode
 from wol.ObjectEditorNode import ObjectEditorNode
 from wol.SceneNode import RootNode, CameraNode, SkyBox, SceneNode
+from wol.Server import ServerNode
 from wol.TextEditNode import TextEditNode
 from wol.View3D import View3D
 import socket
@@ -23,12 +24,7 @@ class MyCamera(CameraNode):
         self.speed = 0.2
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        #self.socket.connect(('localhost', 8971))
-        try:
-            #self.socket.sendall(bytes("Hi! Yves", 'ascii'))
-            self.socket.sendto(bytes("Hi! Yves", 'ascii'), ('localhost',8971))
-        finally:
-            pass
+        self.logged_in = False
 
     def update(self, dt):
         yaw = self.context.mouse_position.x() * 180.0
@@ -58,7 +54,6 @@ class MyCamera(CameraNode):
                 self.context.current_camera.position += delta
                 self.context.current_camera.look_at += delta
 
-        #self.socket.sendall(bytes(f"pos {self.position[0]} {self.position[1]} {self.position[2]}", "ascii"))
         self.socket.sendto(bytes(f"pos {self.position[0]} {self.position[1]} {self.position[2]}", "ascii"), ('localhost', 8971))
 
         """if self.context.grabbed is not None:
@@ -74,6 +69,14 @@ class MyCamera(CameraNode):
             #print(self.context.grabbed.parent.transform.inverted()[0].map(wpos))
             #self.context.grabbed.position = self.context.grabbed.parent.transform.inverted()[0].map(wpos)
         """
+        if not self.logged_in:
+            try:
+                self.socket.sendto(bytes("Hi! Yves", 'ascii'), ('localhost', 8971))
+                self.logged_in = True
+                print("Logged in")
+            finally:
+                pass
+
 
 
 if __name__ == '__main__':
@@ -81,47 +84,48 @@ if __name__ == '__main__':
     window = View3D()
     context = window.context
 
-    load = True
-    try:
-        lines = open("scene.ini").read().split("\n")
-    except FileNotFoundError:
-        lines = ()
-        load = False
-    attributes = dict()
-    objtype = None
-    currentobj = None
-    reparenting = list()
-    for line in lines:
-        line = line.lstrip()
-        if line.startswith("new "):
-            objtype = line.split(" ")[1]
-            attributes = dict()
-            attributes['parent'] = context.scene
-        if "=" in line:
-            name, value = line.split("=")
-            attributes[name] = value
-        if line.startswith("move "):
-            currentobj.position = QVector3D(*[float(x) for x in line.split(" ")[1:]])
-        if line.startswith("scale "):
-            currentobj.scale = QVector3D(*[float(x) for x in line.split(" ")[1:]])
-        if line.startswith("rotate "):
-            currentobj.orientation = QQuaternion(*[float(x) for x in line.split(" ")[1:]])
-        if line.startswith("setuid "):
-            currentobj.set_uid(int(line.split(" ")[1]))
-        if line.startswith("setparentuid "):
-            reparenting.append((currentobj, int(line.split(" ")[1])))
-        if line.rstrip().lstrip() == "" and objtype is not None:
-            currentobj = globals()[objtype](**attributes)
-            # TODO: Make these kludges disappear
-            if objtype == "Sphere":
-                context.scene.sphere = currentobj
-            if objtype == "MyCamera":
-                context.scene.current_camera = currentobj
-                my_cam = currentobj
-            objtype = None
+    load = False
+    if load:
+        try:
+            lines = open("scene.ini").read().split("\n")
+        except FileNotFoundError:
+            lines = ()
+            load = False
+        attributes = dict()
+        objtype = None
+        currentobj = None
+        reparenting = list()
+        for line in lines:
+            line = line.lstrip()
+            if line.startswith("new "):
+                objtype = line.split(" ")[1]
+                attributes = dict()
+                attributes['parent'] = context.scene
+            if "=" in line:
+                name, value = line.split("=")
+                attributes[name] = value
+            if line.startswith("move "):
+                currentobj.position = QVector3D(*[float(x) for x in line.split(" ")[1:]])
+            if line.startswith("scale "):
+                currentobj.scale = QVector3D(*[float(x) for x in line.split(" ")[1:]])
+            if line.startswith("rotate "):
+                currentobj.orientation = QQuaternion(*[float(x) for x in line.split(" ")[1:]])
+            if line.startswith("setuid "):
+                currentobj.set_uid(int(line.split(" ")[1]))
+            if line.startswith("setparentuid "):
+                reparenting.append((currentobj, int(line.split(" ")[1])))
+            if line.rstrip().lstrip() == "" and objtype is not None:
+                currentobj = globals()[objtype](**attributes)
+                # TODO: Make these kludges disappear
+                if objtype == "Sphere":
+                    context.scene.sphere = currentobj
+                if objtype == "MyCamera":
+                    context.scene.current_camera = currentobj
+                    my_cam = currentobj
+                objtype = None
 
-        for r in reparenting:
-            r[0].reparent(SceneNode.uid_map[r[1]], False)
+            for r in reparenting:
+                r[0].reparent(SceneNode.uid_map[r[1]], False)
 
     if not load:
         x = 0
@@ -160,6 +164,9 @@ if __name__ == '__main__':
         o.position = QVector3D(0, 5, 8)
 
         sb = SkyBox(parent=my_cam)
+
+        ser = ServerNode(parent=context.scene)
+        ser.position = QVector3D(0, 5, -1)
 
     context.scene.context.current_camera = my_cam
     context.scene.context.current_camera.position = QVector3D(5, 5, 0)
