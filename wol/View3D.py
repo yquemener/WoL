@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from PyQt5.QtCore import Qt, QTimer, QPoint
-from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QMatrix4x4, QCursor, QMouseEvent
+from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QMatrix4x4, QCursor, QMouseEvent, QKeyEvent
 from PyQt5.QtWidgets import QOpenGLWidget, QApplication
 from OpenGL import GL
 
@@ -30,10 +30,12 @@ class View3D(QOpenGLWidget):
         self.updateTimer.start()
 
         self.key_map = {
-            'w': 'forward',
-            's': 'back',
-            'a': 'left',
-            'd': 'right'}
+            Qt.Key_W: 'forward',
+            Qt.Key_S: 'back',
+            Qt.Key_A: 'left',
+            Qt.Key_D: 'right',
+            Qt.Key_Space: 'up',
+            Qt.Key_Shift: "down"}
         self.setMouseTracking(True)
         self.skipNextMouseMove = True
         self.keepMouseCentered = True
@@ -83,6 +85,13 @@ class View3D(QOpenGLWidget):
         self.context.scene.sphere.position = self.context.debug_point
         self.repaint()
 
+    def keyReleaseEvent(self, evt):
+        if evt.isAutoRepeat():
+            return
+        action = self.key_map.get(evt.key(), None)
+        if action:
+            self.context.abstract_input[action] = False
+
     def keyPressEvent(self, evt):
         if evt.key() == Qt.Key_Escape:
             self.close()
@@ -120,7 +129,7 @@ class View3D(QOpenGLWidget):
 
         if evt.isAutoRepeat():
             return
-        action = self.key_map.get(evt.text(), None)
+        action = self.key_map.get(evt.key(), None)
         if action:
             self.context.abstract_input[action] = True
 
@@ -134,13 +143,6 @@ class View3D(QOpenGLWidget):
     def inputMethodEvent(self, evt):
         if self.context.focused is not None:
             return self.context.focused.inputMethodEvent(evt)
-
-    def keyReleaseEvent(self, evt):
-        if evt.isAutoRepeat():
-            return
-        action = self.key_map.get(evt.text(), None)
-        if action:
-            self.context.abstract_input[action] = False
 
     def mouseMoveEvent(self, evt):
         if self.skipNextMouseMove or not self.keepMouseCentered:

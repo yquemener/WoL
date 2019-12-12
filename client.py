@@ -49,7 +49,9 @@ class MyCamera(CameraNode):
                 ('forward', direction*self.speed),
                 ('back',    -direction*self.speed),
                 ('left',    -right),
-                ('right',   right)):
+                ('right',   right),
+                ('up', self.context.current_camera.up * self.speed),
+                ('down', -self.context.current_camera.up * self.speed)):
             if self.context.abstract_input.get(action, False):
                 self.context.current_camera.position += delta
                 self.context.current_camera.look_at += delta
@@ -166,7 +168,7 @@ if __name__ == '__main__':
         sb = SkyBox(parent=my_cam)
 
         ser = ServerNode(parent=context.scene)
-        ser.position = QVector3D(0, 5, -1)
+        ser.position = QVector3D(0, -1, 0)
 
     context.scene.context.current_camera = my_cam
     context.scene.context.current_camera.position = QVector3D(5, 5, 0)
