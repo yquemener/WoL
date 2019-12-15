@@ -23,7 +23,7 @@ class SceneNode:
         self.children = list()
         self.name = name
         self.position = QVector3D()
-        self.scale = QVector3D(1,1,1)
+        self.scale = QVector3D(1, 1, 1)
         self.orientation = QQuaternion()
         self.transform = QMatrix4x4()
         self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
@@ -116,7 +116,7 @@ class SceneNode:
                            self.scale.z())
 
     def update_from_pose_packet(self, packet):
-        p = struct.unpack("!10d")
+        p = struct.unpack("!10d", packet)
         self.position = QVector3D(p[0], p[1], p[2])
         self.orientation = QQuaternion(p[3], p[4], p[5], p[6])
         self.scale = QVector3D(p[7], p[8], p[9])

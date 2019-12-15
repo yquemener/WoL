@@ -2,8 +2,6 @@ import socketserver
 import threading
 from time import sleep
 
-from wol.SceneNode import SceneNode
-
 users = dict()
 connections = dict()
 connections_reverse = dict()
@@ -12,11 +10,11 @@ connections_reverse = dict()
 class ThreadedUDPRequestHandler(socketserver.DatagramRequestHandler):
     def handle(self):
         global users, connections, connections_reverse
-        #print("Recieved one request from {}".format(self.client_address))
+        # print("Recieved one request from {}".format(self.client_address))
         data = str(self.rfile.readline().strip(), 'ascii')
         if not data:
             print("Killed")
-        #print("_"+data+"_", len(data))
+        # print("_"+data+"_", len(data))
         args = data.rstrip().split(" ")
         if args[0] == "Hi!":
             name = args[1]
@@ -48,5 +46,3 @@ host = 'localhost'
 socketserver.UDPServer.allow_reuse_address = True
 server = ThreadedUDPServer((host, port), ThreadedUDPRequestHandler)
 server.serve_forever()
-
-

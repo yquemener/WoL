@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 from PyQt5.QtCore import Qt, QTimer, QPoint
-from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QMatrix4x4, QCursor, QMouseEvent, QKeyEvent
-from PyQt5.QtWidgets import QOpenGLWidget, QApplication
+from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor
+from PyQt5.QtWidgets import QOpenGLWidget
 from OpenGL import GL
 
 from wol.Context import Context
 from wol.ShadersLibrary import ShadersLibrary
-from wol.SceneNode import RootNode, CameraNode
+from wol.SceneNode import RootNode
 import wol.Collisions as Collisions
 
 

@@ -3,15 +3,13 @@ import sys
 import signal
 import os
 
-from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4, QMatrix3x3
+from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4
 from PyQt5.QtWidgets import QApplication
 
 from wol.GeomNodes import Grid, Sphere, CardNode
 from wol.CodeBumperNode import CodeBumperNode
 from wol.ConsoleNode import ConsoleNode
-from wol.GuiElements import TextLabelNode
-from wol.ObjectEditorNode import ObjectEditorNode
-from wol.SceneNode import RootNode, CameraNode, SkyBox, SceneNode
+from wol.SceneNode import CameraNode, SkyBox, SceneNode
 from wol.Server import ServerNode, ClientNode
 from wol.TextEditNode import TextEditNode
 from wol.View3D import View3D
@@ -56,9 +54,11 @@ class MyCamera(CameraNode):
                 self.context.current_camera.position += delta
                 self.context.current_camera.look_at += delta
 
-        #self.socket.sendto(bytes(f"pos {self.position[0]} {self.position[1]} {self.position[2]}", "ascii"), ('localhost', 8971))
+        """self.socket.sendto(
+            bytes(f"pos {self.position[0]} {self.position[1]} {self.position[2]}", "ascii"), 
+            ('localhost', 8971))
 
-        """if not self.logged_in:
+        if not self.logged_in:
             try:
                 self.socket.sendto(bytes("Hi! Yves", 'ascii'), ('localhost', 8971))
                 self.logged_in = True
@@ -132,9 +132,6 @@ if __name__ == '__main__':
         o = ConsoleNode(parent=context.scene, name="ConsoleNode#1")
         o.position = QVector3D(0, 5, -5)
 
-        #o2 = ObjectEditorNode(parent=context.scene, target_object=o)
-        #o2.position = QVector3D(0, 5, 0)
-
         o3 = CardNode(parent=context.scene, filename="resources/alphatest.png")
         o3.position = QVector3D(0, 10, 0)
 
@@ -147,7 +144,6 @@ if __name__ == '__main__':
         context.scene.context.current_camera = my_cam
         context.scene.context.current_camera.position = QVector3D(5, 5, 0)
 
-        #o = TextEditNode(parent=context.scene, name="O_Node", filename="pieces/o_action.py")
         o = CodeBumperNode(parent=context.scene, name="CodeBumper#1", filename="pieces/cb1")
         o.position = QVector3D(0, 5, 8)
 

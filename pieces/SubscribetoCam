@@ -1,0 +1,2 @@
+p=self.parent
+p.socket.sendto(bytes(f"subscribe Camera", "ascii"), (p.host, p.port))
