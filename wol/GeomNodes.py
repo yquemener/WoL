@@ -36,6 +36,7 @@ class Sphere(SceneNode):
         SceneNode.__init__(self, name, parent)
         self.quadric = None
         self.size = 1.0
+        self.collider = Collisions.Sphere()
 
     def initialize_gl(self):
         self.quadric = GLU.gluNewQuadric()

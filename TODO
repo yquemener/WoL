@@ -6,6 +6,8 @@
 - Make constructors paramter-less and have an init() call, to help serialization
 - Reorganize the module hierarchy into something cleaner
 - Put the loading code somewhere else than in the main
+- Have a shader for colored object
+- Have a shader for basic lighting object
 
 - Find a better code highliter
 - Widget borders
@@ -15,7 +17,7 @@
 - Debug console scrolling (allow clicks and check why the scrollbar renders weirdly)
 - Add smart indentation to the code view
 - More visible pointer
-- Shift+SPACE = down/up
+- Debug transparency order
 - Handle the case where a TextLabel is empty
 
 - Add rlcompleter to TextEdit

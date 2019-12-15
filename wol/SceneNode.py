@@ -30,6 +30,7 @@ class SceneNode:
         self.collider = None
         self.prog_matrix = self.transform
         self.visible = True
+        self.properties = dict()
         """ Layers:
             0: skybox
             1: regular objects

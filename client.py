@@ -12,7 +12,7 @@ from wol.ConsoleNode import ConsoleNode
 from wol.GuiElements import TextLabelNode
 from wol.ObjectEditorNode import ObjectEditorNode
 from wol.SceneNode import RootNode, CameraNode, SkyBox, SceneNode
-from wol.Server import ServerNode
+from wol.Server import ServerNode, ClientNode
 from wol.TextEditNode import TextEditNode
 from wol.View3D import View3D
 import socket
@@ -56,29 +56,15 @@ class MyCamera(CameraNode):
                 self.context.current_camera.position += delta
                 self.context.current_camera.look_at += delta
 
-        self.socket.sendto(bytes(f"pos {self.position[0]} {self.position[1]} {self.position[2]}", "ascii"), ('localhost', 8971))
+        #self.socket.sendto(bytes(f"pos {self.position[0]} {self.position[1]} {self.position[2]}", "ascii"), ('localhost', 8971))
 
-        """if self.context.grabbed is not None:
-            cam = self.context.current_camera
-            grab = self.context.grabbed
-            m = self.context.grabbed_transform
-            m = m * cam.transform
-            m = m * grab.parent.transform.inverted()[0]
-            wpos = m.map(QVector3D())
-            dv = wpos - grab.world_position()
-            grab.position += dv
-
-            #print(self.context.grabbed.parent.transform.inverted()[0].map(wpos))
-            #self.context.grabbed.position = self.context.grabbed.parent.transform.inverted()[0].map(wpos)
-        """
-        if not self.logged_in:
+        """if not self.logged_in:
             try:
                 self.socket.sendto(bytes("Hi! Yves", 'ascii'), ('localhost', 8971))
                 self.logged_in = True
                 print("Logged in")
             finally:
-                pass
-
+                pass"""
 
 
 if __name__ == '__main__':
@@ -167,8 +153,20 @@ if __name__ == '__main__':
 
         sb = SkyBox(parent=my_cam)
 
+        """serPar = SceneNode(name="ServerParent", parent=context.scene)
+        serPar.position = QVector3D(0, 4, 0)
+
+        serSph = Sphere(name="SpherePointer", parent=serPar)
+        serSph.scale = QVector3D(0.2, 0.2, 0.2)
+        serSph.position = QVector3D(0, 0.4, 0)
+        serSph.properties["delegateGrabToParent"] = True"""
+
         ser = ServerNode(parent=context.scene)
-        ser.position = QVector3D(0, -1, 0)
+        ser.position = QVector3D(0, 4, 0)
+        context.server = ser
+
+        cli = ClientNode(parent=context.scene)
+        cli.position = QVector3D(3, 4, 0)
 
     context.scene.context.current_camera = my_cam
     context.scene.context.current_camera.position = QVector3D(5, 5, 0)

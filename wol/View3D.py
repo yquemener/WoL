@@ -120,7 +120,12 @@ class View3D(QOpenGLWidget):
             if self.context.hover_target:
                 gr = self.context.grabbed
                 if gr is None:
-                    self.context.grabbed = self.context.hover_target
+                    anchor = self.context.hover_target
+                    while anchor.properties.get("delegateGrabToParent", False) \
+                            and anchor.parent is not None \
+                            and anchor.parent is not self.context.scene:
+                        anchor = anchor.parent
+                    self.context.grabbed = anchor
                     self.context.grabbed_former_parent = self.context.grabbed.parent
                     self.context.grabbed.reparent(self.context.current_camera)
                 else:

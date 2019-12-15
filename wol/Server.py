@@ -1,6 +1,13 @@
+import socket
 import socketserver
+from threading import Thread
 
+from PyQt5.QtGui import QVector3D
+
+from wol.CodeBumperNode import CodeBumperNode
+from wol.GeomNodes import Sphere
 from wol.GuiElements import TextLabelNode
+from wol.SceneNode import SceneNode
 
 
 class ThreadedUDPRequestHandler(socketserver.DatagramRequestHandler):
@@ -25,12 +32,12 @@ class ThreadedUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
     pass
 
 
-class ServerNode(TextLabelNode):
-    def __init__(self, name="ServerNode", parent=None):
-        TextLabelNode.__init__(self, name=name, parent=parent)
+class ServerNode(SceneNode):
+    def __init__(self, name="ServerNode", parent=None, host='localhost', port=8971):
+        SceneNode.__init__(self, name=name, parent=parent)
 
-        self.port = 8971
-        self.host = 'localhost'
+        self.port = port
+        self.host = host
         self.server = ThreadedUDPServer((self.host, self.port), ThreadedUDPRequestHandler)
         self.server.node = self
         self.server.context = self.context
@@ -38,7 +45,56 @@ class ServerNode(TextLabelNode):
         self.server.connections = dict()
         self.server.connections_reverse = dict()
 
+        self.handle = Sphere(name=self.name+"_SphereHandle", parent=self)
+        self.handle.scale = QVector3D(0.2, 0.2, 0.2)
+        self.handle.position = QVector3D(0, 0.4, 0)
+        self.handle.properties["delegateGrabToParent"] = True
+
+        self.display_data = TextLabelNode(name=self.name+"_DataDisplayer", parent=self)
+        self.display_data.properties["delegateGrabToParent"] = True
+
+        self.server_running = True
+        self.server_thread = Thread(target=self.run_server)
+        self.server_thread.start()
+
+    def __del__(self):
+        self.server_running=False
+
+    def run_server(self):
+        self.server_running = True
+        while self.server_running:
+            self.server.handle_request()
+
     def update(self, dt):
-        self.set_text(str(self.server.users))
-        super(ServerNode, self).update(dt)
-        self.server.handle_request()
+        s = "SERVER\n"
+        s += f"Listening on {self.host}:{self.port}\n"
+        s += str(self.server.users)
+        self.display_data.set_text(s)
+
+
+class ClientNode(SceneNode):
+    def __init__(self, name="clientNode", parent=None, host='localhost', port=8971):
+        SceneNode.__init__(self, name=name, parent=parent)
+
+        self.port = port
+        self.host = host
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+        self.handle = Sphere(name=self.name+"_SphereHandle", parent=self)
+        self.handle.scale = QVector3D(0.2, 0.2, 0.2)
+        self.handle.position = QVector3D(0, 0.4, 0)
+        self.handle.properties["delegateGrabToParent"] = True
+
+        self.display_data = TextLabelNode(name=self.name+"_DataDisplayer", parent=self)
+        self.display_data.properties["delegateGrabToParent"] = True
+
+        self.sayHiBumper = CodeBumperNode(text="Hi", filename="pieces/SayHi", parent=self)
+        self.sayHiBumper.position = QVector3D(1.0, 0, 0)
+
+        self.sendPosBumper = CodeBumperNode(text="SendPos", filename="pieces/SendPos", parent=self)
+        self.sendPosBumper.position = QVector3D(1.0, -0.2, 0)
+
+    def update(self, dt):
+        s = f"CLIENT\n"
+        s += f"Sending data to {self.host}:{self.port}"
+        self.display_data.set_text(s)

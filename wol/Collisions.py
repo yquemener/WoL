@@ -15,6 +15,23 @@ class Ray:
         self.dir = direction.normalized()
 
 
+class Sphere:
+    def __init__(self, point=QVector3D(), radius=1.0):
+        self.center = point
+        self.radius = radius
+        self.transform = QMatrix4x4()
+
+    def collide_with_ray(self, ray_):
+        ray = Ray(self.transform.inverted()[0].map(ray_.pos),
+                  self.transform.inverted()[0].mapVector(ray_.dir))
+        d = self.center.distanceToLine(ray.pos, ray.dir)
+        ## TODO: compute the actual intersection point
+        if d<self.radius and QVector3D.dotProduct(ray.dir, self.center-ray.pos)>0:
+            return True, self.center
+        else:
+            return False, None
+
+
 class Plane:
     def __init__(self, point=QVector3D(), normale=QVector3D(1, 0, 0)):
         self.orig = point
