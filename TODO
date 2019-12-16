@@ -1,23 +1,37 @@
+Architecture
+============
 - Put the collision logic in a saner place
 - Clean up the order of the updates
+- Debug transparency order
 - context.scene.sphere -> c'est pas propre
 - Nettoyer Context d'ailleurs
-- Make position/orientation properties and swtich to new values after the scene update
+- Make position/orientation properties and swtich to new values after the scene update (why, again?)
 - Make constructors paramter-less and have an init() call, to help serialization
 - Reorganize the module hierarchy into something cleaner
 - Put the loading code somewhere else than in the main
+- Think about key-click actions
+
+Graphics Enhancements
+=====================
 - Have a shader for colored object
 - Have a shader for basic lighting object
-
-- Find a better code highliter
+- Add cubes!
+- Add meshes
 - Widget borders
-- Text file names
+
+UI
+==
+- Find a better code highliter
+- Show text file names
 - UI logic
-- Think about key-click actions
 - Debug console scrolling (allow clicks and check why the scrollbar renders weirdly)
 - Add smart indentation to the code view
 - More visible pointer
-- Debug transparency order
-- Handle the case where a TextLabel is empty
-
 - Add rlcompleter to TextEdit
+- Improve the switch between navigation and interaction
+
+Debug
+=====
+- Handle the case where a TextLabel is empty
+- Compute the correct collision point in Sphere-Ray collisions
+
