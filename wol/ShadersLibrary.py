@@ -12,7 +12,10 @@ class ShadersLibrary:
                          open("shaders/color_frag.shader").read()],
 
         'simple_lighting': [open("shaders/color_light_vert.shader").read(),
-                            open("shaders/color_light_frag.shader").read()]
+                            open("shaders/color_light_frag.shader").read()],
+
+        'hud_2d': [open("shaders/UI2D_vert.shader").read(),
+                   open("shaders/color_frag.shader").read()]
     }
 
     cached_shaders = {}
@@ -37,7 +40,6 @@ class ShadersLibrary:
         program.bindAttributeLocation('vertex', 0)
         if name == 'simple_texture':
             program.bindAttributeLocation('texCoord', 1)
-
 
         if not program.link():
             raise RuntimeError("Could not compile shader:" + str(name) + "\n" + program.log())

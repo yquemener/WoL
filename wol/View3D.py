@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from PyQt5.QtCore import Qt, QTimer, QPoint
-from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor, QVector4D
+from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor, QVector4D, QMatrix3x3
 from PyQt5.QtWidgets import QOpenGLWidget
 from OpenGL import GL
 
@@ -56,8 +56,41 @@ class View3D(QOpenGLWidget):
                         self.clearColor.blueF(),
                         self.clearColor.alphaF())
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
+
         for layer in (0, 1, 2, 3):
             self.context.scene.paint_recurs(self.program, layer)
+
+        # Add HUD/GUI layer here
+        GL.glDisable(GL.GL_DEPTH_TEST)
+        w = self.geometry().width()
+        h = self.geometry().height()
+        mat = QMatrix3x3([2. / w,    0.0,      -1,
+                          0.0,       -2. / h,  1,
+                          0.0,       0.0,      0.0])
+        # Draw crosshair
+        crosshair = [QVector2D(w / 2, h / 2 - 20),
+                     QVector2D(w / 2, h / 2 - 5),
+                     QVector2D(w / 2, h / 2 + 20),
+                     QVector2D(w / 2, h / 2 + 5),
+
+                     QVector2D(w / 2 - 20, h / 2),
+                     QVector2D(w / 2 - 5, h / 2),
+                     QVector2D(w / 2 + 20, h / 2),
+                     QVector2D(w / 2 + 5, h / 2)]
+        crosshair_color = QVector4D(1.0, 1.0, 1.0, 0.5)
+        program = ShadersLibrary.create_program('hud_2d')
+        program.bind()
+        program.setAttributeArray(0, crosshair)
+        transmat = QMatrix3x3()
+        transmat.setToIdentity()
+        program.setUniformValue('z_order', 1.)
+        program.setUniformValue('transform_matrix', transmat)
+        program.setUniformValue('proj_matrix', mat)
+        program.setUniformValue('material_color', crosshair_color)
+        GL.glDrawArrays(GL.GL_LINES, 0, 8)
+        GL.glEnable(GL.GL_DEPTH_TEST)
+
+
 
     def resizeGL(self, width, height):
         side = min(width, height)
