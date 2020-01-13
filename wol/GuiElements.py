@@ -26,7 +26,7 @@ class TextLabelNode(CardNode):
         self.refresh_vertices()
         self.needs_refresh = True
         self.text = text
-        #self.widget.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.widget.setAttribute(Qt.WA_TranslucentBackground, True)
         self.widget.setStyleSheet("color: rgba(255,255,255,255); background-color: rgba(128,0,0,255);");
         self.layer = 2
 

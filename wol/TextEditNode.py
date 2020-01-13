@@ -1,19 +1,28 @@
-from PyQt5.QtCore import QRegExp
+from PyQt5.QtCore import QRegExp, Qt, QRect
 from PyQt5.QtGui import QOpenGLTexture, QImage, QSyntaxHighlighter, QColor, QTextCharFormat, QFont
-from PyQt5.QtWidgets import QTextEdit
+from PyQt5.QtWidgets import QTextEdit, QApplication
 
+from wol import utils
 from wol.GeomNodes import CardNode
 
 
 class TextEditNode(CardNode):
-    def __init__(self, parent, name="GuiNode", filename="client.py"):
+    def __init__(self, parent, name="GuiNode", filename="client.py", autosize=False):
         CardNode.__init__(self, name=name, parent=parent)
         self.widget = QTextEdit()
-        self.widget.setGeometry(0, 0, 512, 512)
+        self.max_geometry = QRect(0, 0, 512, 512)
+        self.widget.setGeometry(self.max_geometry)
+
         try:
-            self.widget.setText(open(filename).read())
+            text = open(filename).read()
+            self.widget.setText(text)
         except:
-            pass
+            text=" "
+            self.widget.setText(text)
+        self.text = text
+        self.autosize = autosize
+        if self.autosize:
+            self.do_autosize()
         self.filename = filename
         self.needs_refresh = True
         self.highlight = PythonHighlighter(self.widget.document())
@@ -21,10 +30,26 @@ class TextEditNode(CardNode):
         self.widget.setStyleSheet("QWidget{color: white; background-color: black;}");
         self.focused = False
 
+    def do_autosize(self):
+        qfm = self.widget.fontMetrics()
+        rect = qfm.boundingRect(self.max_geometry, Qt.TextWordWrap, self.text, 4)
+        w = rect.width() + 30
+        h = rect.height() + 30
+        self.widget.setGeometry(0, 0, w, h)
+        wscale = w / 512.0
+        hscale = h / 512.0
+        self.vertices = utils.generate_square_vertices_fan()
+        for v in self.vertices:
+            v[1] *= hscale
+            v[0] *= wscale
+        self.refresh_vertices()
+
     def update(self, dt):
         if self.focused:
             self.needs_refresh = True
         if self.needs_refresh:
+            if self.autosize:
+                self.do_autosize()
             self.texture = QOpenGLTexture(QImage(self.widget.grab()))
             self.needs_refresh = False
 
@@ -37,6 +62,7 @@ class TextEditNode(CardNode):
 
     def keyPressEvent(self, evt):
         self.widget.keyPressEvent(evt)
+        self.text = self.widget.toPlainText()
         self.save_text()
 
     def save_text(self):

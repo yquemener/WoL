@@ -3,47 +3,16 @@ from PyQt5.QtGui import QOpenGLShader, QOpenGLShaderProgram
 
 class ShadersLibrary:
     codes = {
-        'simple_texture': [
-            """
-attribute highp vec4 vertex;
-attribute mediump vec4 texCoord;
-varying mediump vec4 texc;
-uniform mediump mat4 matrix;
-void main(void)
-{
-    gl_Position = matrix * vertex;
-    texc = texCoord;
-}
-                """,
-            """
-uniform sampler2D texture;
-varying mediump vec4 texc;
-void main(void)
-{
-     vec4 texColor = texture2D(texture, texc.st);
-     gl_FragColor=texColor;
-}
-                """
-        ],
+        'simple_texture': [open("shaders/texture_vert.shader").read(),
+                           open("shaders/texture_frag.shader").read()],
 
-        'simple_color_white': [
-            """
-attribute highp vec4 vertex;
-uniform mediump mat4 matrix;
-void main(void)
-{
-    gl_Position = matrix * vertex;
-}
-                """,
-            """
-#version 330            
-out vec4 color;
-void main(void)
-{
-    color = vec4(0.99, 0.99, 0.99, 1.0);
-}
-                """
-        ]
+        'simple_color_white': [open("shaders/simple_vert.shader").read(),
+                               open("shaders/white_frag.shader").read()],
+        'simple_color': [open("shaders/simple_vert.shader").read(),
+                         open("shaders/color_frag.shader").read()],
+
+        'simple_lighting': [open("shaders/color_light_vert.shader").read(),
+                            open("shaders/color_light_frag.shader").read()]
     }
 
     cached_shaders = {}
@@ -51,7 +20,7 @@ void main(void)
     @staticmethod
     def create_program(name):
         if name not in ShadersLibrary.codes.keys():
-            raise KeyError("GL program named "+str(name)+" not found in ShadersLibrary")
+            raise KeyError("GL program named " + str(name) + " not found in ShadersLibrary")
         program = ShadersLibrary.cached_shaders.get(name, None)
         if program:
             return program
@@ -66,14 +35,15 @@ void main(void)
         program.addShader(vshader)
         program.addShader(fshader)
         program.bindAttributeLocation('vertex', 0)
-        if(name != 'simple_color_white'):
+        if name == 'simple_texture':
             program.bindAttributeLocation('texCoord', 1)
+
+
         if not program.link():
-            raise RuntimeError("Could not compile shader:"+str(name)+"\n"+program.log())
+            raise RuntimeError("Could not compile shader:" + str(name) + "\n" + program.log())
 
         program.setUniformValue('texture', 0)
         program.enableAttributeArray(0)
         program.enableAttributeArray(1)
         ShadersLibrary.cached_shaders[name] = program
         return program
-

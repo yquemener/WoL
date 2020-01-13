@@ -3,6 +3,9 @@ import sys
 import signal
 import os
 
+import time
+
+import math
 from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4
 from PyQt5.QtWidgets import QApplication
 
@@ -67,6 +70,10 @@ class MyCamera(CameraNode):
                 pass"""
 
 
+def b1(obj, dt):
+    obj.position.setX(math.cos(time.time()))
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = View3D()
@@ -116,18 +123,6 @@ if __name__ == '__main__':
                 r[0].reparent(SceneNode.uid_map[r[1]], False)
 
     if not load:
-        x = 0
-        for fn in os.listdir("pieces"):
-            o = TextEditNode(parent=context.scene, name="GuiNode:" + str(fn), filename="pieces/"+fn)
-            o.position = QVector3D(x, 2, x)
-            x += 1
-        x = 0
-        for fn in os.listdir("wol/"):
-            if not fn.endswith(".py"):
-                continue
-            o = TextEditNode(parent=context.scene, name="GuiNode:" + str(fn), filename="wol/"+fn)
-            o.position = QVector3D(10 + x, 2, x)
-            x += 1
 
         o = ConsoleNode(parent=context.scene, name="ConsoleNode#1")
         o.position = QVector3D(0, 5, -5)
@@ -146,6 +141,9 @@ if __name__ == '__main__':
 
         o = CodeBumperNode(parent=context.scene, name="CodeBumper#1", filename="pieces/cb1")
         o.position = QVector3D(0, 5, 8)
+
+        o1 = Sphere(parent=context.scene)
+        o1.behaviors.append(b1)
 
         sb = SkyBox(parent=my_cam)
 
@@ -170,4 +168,5 @@ if __name__ == '__main__':
     window.show()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     sys.exit(app.exec_())
+
 

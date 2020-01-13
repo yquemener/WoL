@@ -31,6 +31,7 @@ class SceneNode:
         self.prog_matrix = self.transform
         self.visible = True
         self.properties = dict()
+        self.behaviors = list()
         """ Layers:
             0: skybox
             1: regular objects
@@ -79,6 +80,8 @@ class SceneNode:
         return
 
     def update_recurs(self, dt=0.0):
+        for b in self.behaviors:
+            b(self, dt)
         self.update(dt)
         self.compute_transform()
         for c in self.children:

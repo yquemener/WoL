@@ -1,5 +1,5 @@
 from OpenGL import GL, GLU
-from PyQt5.QtGui import QVector3D, QOpenGLTexture, QImage
+from PyQt5.QtGui import QVector3D, QOpenGLTexture, QImage, QVector4D
 
 from wol import Collisions, utils
 from wol.ShadersLibrary import ShadersLibrary
@@ -19,14 +19,17 @@ class Grid(SceneNode):
 
         self.collider = Collisions.Plane()
         self.program = None
+        self.color = QVector4D(0.2, 0.2, 0.6, 1.0)
 
     def initialize_gl(self):
-        self.program = ShadersLibrary.create_program('simple_color_white')
+        #self.program = ShadersLibrary.create_program('simple_color_white')
+        self.program = ShadersLibrary.create_program('simple_color')
 
     def paint(self, program):
         self.program.bind()
         self.program.setAttributeArray(0, self.vertices)
         self.program.setUniformValue('matrix', self.prog_matrix)
+        self.program.setUniformValue('material_color', self.color)
         GL.glDrawArrays(GL.GL_LINES, 0, 65*4)
         program.bind()
 
@@ -37,14 +40,20 @@ class Sphere(SceneNode):
         self.quadric = None
         self.size = 1.0
         self.collider = Collisions.Sphere()
+        self.program = None
+        self.color = QVector4D(1.0, 0.5, 0.5, 1.0)
 
     def initialize_gl(self):
         self.quadric = GLU.gluNewQuadric()
-        self.program = ShadersLibrary.create_program('simple_color_white')
+        #self.program = ShadersLibrary.create_program('simple_color_white')
+        self.program = ShadersLibrary.create_program('simple_lighting')
 
     def paint(self, program):
         self.program.bind()
-        self.program.setUniformValue('matrix', self.prog_matrix)
+        self.program.setUniformValue('light_position', QVector3D(1.0, 10.0, -10.0))
+        self.program.setUniformValue('matmodel', self.transform)
+        self.program.setUniformValue('objcolor', self.color)
+        self.program.setUniformValue('mvp', self.prog_matrix)
         GLU.gluSphere(self.quadric, self.size, 20, 20)
         program.bind()
 

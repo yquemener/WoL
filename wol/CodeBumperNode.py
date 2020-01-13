@@ -10,7 +10,7 @@ from wol.TextEditNode import TextEditNode
 class CodeBumperNode(TextLabelNode):
     def __init__(self, parent=None, name="CodeBumber", text="BUMP", filename="pieces/yq_1"):
         TextLabelNode.__init__(self, text=text, name=name, parent=parent)
-        self.edit_node = TextEditNode(parent=self, name=self.name+"#edit", filename=filename)
+        self.edit_node = TextEditNode(parent=self, name=self.name+"#edit", filename=filename, autosize=True)
         self.edit_node.visible = False
         self.edit_node.position = QVector3D(1.2, 0, 0)
         """for v in self.vertices:

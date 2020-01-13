@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from PyQt5.QtCore import Qt, QTimer, QPoint
-from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor
+from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor, QVector4D
 from PyQt5.QtWidgets import QOpenGLWidget
 from OpenGL import GL
 
@@ -44,6 +44,7 @@ class View3D(QOpenGLWidget):
 
     def initializeGL(self):
         GL.glEnable(GL.GL_DEPTH_TEST)
+
         self.program = ShadersLibrary.create_program('simple_texture')
         self.program.bind()
         self.program.setUniformValue('texture', 0)
@@ -93,8 +94,13 @@ class View3D(QOpenGLWidget):
             self.context.abstract_input[action] = False
 
     def keyPressEvent(self, evt):
+        #if evt.key() == Qt.Key_Escape:
+        #    self.close()
         if evt.key() == Qt.Key_Escape:
-            self.close()
+            if self.context.focused is not None:
+                self.context.focused.on_unfocus()
+                self.context.focused = None
+
         if evt.key() == Qt.Key_Tab:
             self.releaseMouse()
             self.keepMouseCentered = not self.keepMouseCentered

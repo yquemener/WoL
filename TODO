@@ -5,19 +5,23 @@ Architecture
 - Debug transparency order
 - context.scene.sphere -> c'est pas propre
 - Nettoyer Context d'ailleurs
-- Make position/orientation properties and swtich to new values after the scene update (why, again?)
-- Make constructors paramter-less and have an init() call, to help serialization
+- Make position/orientation properties to help serialization
+- Switch to new pos/orient values after the scene update (why, again?)
+- Make constructors parameter-less and have an init() call, to help serialization
 - Reorganize the module hierarchy into something cleaner
 - Put the loading code somewhere else than in the main
 - Think about key-click actions
+- Put shaders in separate file that can be sanely highlighted
 
 Graphics Enhancements
 =====================
-- Have a shader for colored object
-- Have a shader for basic lighting object
 - Add cubes!
 - Add meshes
 - Widget borders
+- Slerp interpolation
+- Fullscreen mode
+- shader for directional light
+- shader with ambient
 
 UI
 ==
@@ -29,9 +33,19 @@ UI
 - More visible pointer
 - Add rlcompleter to TextEdit
 - Improve the switch between navigation and interaction
+- Ability do de-tilt objects by 90° increments
+- Transmit clicks and drag to Qt
 
 Debug
 =====
 - Handle the case where a TextLabel is empty
 - Compute the correct collision point in Sphere-Ray collisions
+- Don't have the cursor intersect with itself, that's stupids
 
+
+
+Done
+====
+- Have a shader for basic lighting object
+- Have a shader for colored object
+- Make code widgets adapt to the file size
