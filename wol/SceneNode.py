@@ -1,5 +1,5 @@
 from OpenGL import GL
-from PyQt5.QtGui import QMatrix4x4, QQuaternion, QVector3D, QImage, QOpenGLTexture
+from PyQt5.QtGui import QMatrix4x4, QQuaternion, QVector3D, QImage, QOpenGLTexture, QTransform, QMatrix3x3, QVector4D
 import struct
 
 from wol import utils
@@ -72,9 +72,19 @@ class SceneNode:
 
     def world_position(self):
         if self.parent:
-            return self.parent.transform.map(self.position)
+            return QVector3D(self.transform.map(QVector4D(0, 0, 0, 1)))
         else:
             return self.position
+
+    def world_orientation(self):
+        if self.parent:
+            melements = self.transform.data()
+            m3 = QMatrix3x3((melements[0], melements[1], melements[2],
+                             melements[4], melements[5], melements[6],
+                             melements[8], melements[9], melements[10])).transposed()
+            return QQuaternion.fromRotationMatrix(m3)
+        else:
+            return self.orientation
 
     def update(self, dt):
         return

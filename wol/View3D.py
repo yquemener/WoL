@@ -1,14 +1,33 @@
 #!/usr/bin/env python
 
 from PyQt5.QtCore import Qt, QTimer, QPoint
-from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor, QVector4D, QMatrix3x3
+from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor, QVector4D, QMatrix3x3, QQuaternion
 from PyQt5.QtWidgets import QOpenGLWidget
 from OpenGL import GL
 
 from wol.Context import Context
 from wol.ShadersLibrary import ShadersLibrary
-from wol.SceneNode import RootNode
+from wol.SceneNode import RootNode, SceneNode
 import wol.Collisions as Collisions
+
+def make_slerp_anim(delay = 1.0):
+    def slerp_anim(obj, dt):
+        obj.anim_timer += dt
+        o1 = obj.step1.world_orientation()
+        o2 = obj.step2.world_orientation()
+        p1 = obj.step1.world_position()
+        p2 = obj.step2.world_position()
+
+        alpha = abs(obj.anim_timer / delay)
+        alpha = abs(1.0 - obj.anim_timer % 2.0)
+        if alpha > 1.0:
+            alpha = 1.0
+        obj.position = p2*alpha + p1*(1.0-alpha)
+        obj.orientation = QQuaternion.slerp(o1, o2, alpha)
+        print(obj.position)
+        # obj.position = p1
+        # obj.orientation = obj.step1.world_orientation()
+    return slerp_anim
 
 
 class View3D(QOpenGLWidget):
@@ -147,6 +166,17 @@ class View3D(QOpenGLWidget):
         if evt.key() == Qt.Key_E:
             if hasattr(self.context.hover_target, "on_edit"):
                 self.context.hover_target.on_edit(self.context.debug_point)
+
+        if evt.key() == Qt.Key_T:
+            #if hasattr(self.context.hover_target, "on_edit"):
+            self.context.hover_target.anim_timer=0.0
+            self.context.hover_target.step1 = SceneNode(parent=self.context.scene)
+            self.context.hover_target.step1.position = self.context.hover_target.world_position()
+            self.context.hover_target.step2 = SceneNode(parent=self.context.current_camera)
+            self.context.hover_target.step2.position = QVector3D(0, 0, 10)
+            self.context.hover_target.reparent(self.context.scene)
+            self.context.hover_target.behaviors.append(make_slerp_anim(0.2))
+            print("Done")
 
         if evt.key() == Qt.Key_R:
             if hasattr(self.context.hover_target, "on_save"):

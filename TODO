@@ -17,7 +17,6 @@ Graphics Enhancements
 - Add cubes!
 - Add meshes
 - Widget borders
-- Slerp interpolation
 - Fullscreen mode
 - shader for directional light
 - shader with ambient
@@ -49,3 +48,4 @@ Done
 - Have a shader for colored object
 - Make code widgets adapt to the file size
 - Put shaders in separate file that can be sanely highlighted
+- Slerp interpolation
