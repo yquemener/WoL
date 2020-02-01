@@ -42,7 +42,7 @@ class SceneNode:
 
     def set_uid(self, uid):
         self.uid = uid
-        SceneNode.next_uid = max(SceneNode.next_uid, uid+1)
+        SceneNode.next_uid = max(SceneNode.next_uid, uid + 1)
         SceneNode.uid_map[uid] = self
 
     def reparent(self, new_parent, transform=True):
@@ -85,6 +85,28 @@ class SceneNode:
             return QQuaternion.fromRotationMatrix(m3)
         else:
             return self.orientation
+
+    def set_world_orientation(self, new_orient):
+        if self.parent:
+            m = self.parent.transform.inverted()[0]
+            me = new_orient.toRotationMatrix().data()
+            m *= QMatrix4x4(me[0], me[1], me[2], 0.,
+                            me[3], me[4], me[5], 0.,
+                            me[6], me[7], me[8], 0.,
+                            0., 0., 0., 1.)
+            md = m.data()
+            m3 = QMatrix3x3((md[0], md[1], md[2],
+                             md[4], md[5], md[6],
+                             md[8], md[9], md[10]))
+            self.orientation = QQuaternion.fromRotationMatrix(m3)
+        else:
+            self.orientation = new_orient
+
+    def set_world_position(self, new_pos):
+        if self.parent:
+            self.position = QVector3D(self.parent.transform.inverted()[0].map(QVector4D(new_pos, 1)))
+        else:
+            self.position = new_pos
 
     def update(self, dt):
         return
@@ -204,7 +226,7 @@ class CameraNode(SceneNode):
     def __init__(self, parent, name):
         super(CameraNode, self).__init__(name="Camera", parent=parent)
         self.angle = 30.0
-        self.ratio = 4.0/3.0
+        self.ratio = 4.0 / 3.0
         self.projection_matrix = QMatrix4x4()
 
     def compute_transform(self):
@@ -245,11 +267,11 @@ class SkyBox(SceneNode):
         self.face_uvs = utils.generate_square_texcoords_fan()
         self.face_transforms = list()
         for euler in ((+ 0, 180, 0),
-                      (+ 0,   0, 0),
-                      (+ 0,  90, 0),
+                      (+ 0, 0, 0),
+                      (+ 0, 90, 0),
                       (+ 0, -90, 0),
-                      (-90,   0, 0),
-                      (+90,   0, 0)):
+                      (-90, 0, 0),
+                      (+90, 0, 0)):
             m = QMatrix4x4()
             m.rotate(QQuaternion.fromEulerAngles(*euler))
             m.translate(0, 0, 10)

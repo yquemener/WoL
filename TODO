@@ -11,6 +11,7 @@ Architecture
 - Reorganize the module hierarchy into something cleaner
 - Put the loading code somewhere else than in the main
 - Think about key-click actions
+- Behaviors with local scope
 
 Graphics Enhancements
 =====================
