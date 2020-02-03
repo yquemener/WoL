@@ -17,6 +17,7 @@ class ConsoleNode(CardNode):
         self.history = list()
         self.history_cursor = 0
         self.locals = locals()
+        self.focusable = True
 
     def update(self, dt):
         if self.focused:
@@ -26,11 +27,7 @@ class ConsoleNode(CardNode):
             self.needs_refresh = False
 
     def on_click(self, pos, evt):
-        self.focused = True
-        self.context.focused = self
-
-    def on_unfocus(self):
-        self.focused = False
+        return
 
     def keyPressEvent(self, evt):
         if evt.key() == Qt.Key_Up:

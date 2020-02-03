@@ -129,8 +129,11 @@ class View3D(QOpenGLWidget):
         #    self.close()
         if evt.key() == Qt.Key_Escape:
             if self.context.focused is not None:
-                self.context.focused.on_unfocus()
+                self.context.focused.focused = False
                 self.context.focused = None
+                stc = self.context.current_camera.get_behavior("SnapToCamera")
+                if stc.grabbed_something:
+                    stc.restore()
 
         if evt.key() == Qt.Key_Tab:
             self.releaseMouse()
@@ -209,12 +212,18 @@ class View3D(QOpenGLWidget):
 
     def mousePressEvent(self, evt):
         if evt.button() == Qt.LeftButton:
-            if self.context.hover_target is not None:
-                self.context.hover_target.on_click(self.context.debug_point, evt)
-        if evt.button() == Qt.RightButton:
-            if self.context.focused is not None:
-                self.context.focused.on_unfocus()
-                self.context.focused = None
+            target = self.context.hover_target
+            if target is not None:
+                target.on_click(self.context.debug_point, evt)
+                if hasattr(target, 'focusable') and target.focusable:
+                    if self.context.focused:
+                        self.context.focused.focused = False
+                    self.context.focused = target
+                    target.focused = True
+                    stc = self.context.current_camera.get_behavior("SnapToCamera")
+                    if stc.grabbed_something:
+                        stc.restore()
+                    stc.grab(target)
 
     def closeEvent(self, evt):
         self.updateTimer.stop()

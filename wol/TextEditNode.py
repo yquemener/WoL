@@ -12,6 +12,7 @@ class TextEditNode(CardNode):
         self.widget = QTextEdit()
         self.max_geometry = QRect(0, 0, 512, 512)
         self.widget.setGeometry(self.max_geometry)
+        self.focusable = True
 
         try:
             text = open(filename).read()

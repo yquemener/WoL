@@ -52,7 +52,7 @@ class SnapToCamera(Behavior):
         self.target_original_orientation = None
         self.anim = None
         self.grabbed_something = False
-        self.grab_animation_length = 1.0
+        self.grab_animation_length = 0.15
 
     def grab(self, target):
         self.target = target
