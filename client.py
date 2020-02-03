@@ -9,6 +9,7 @@ import math
 from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4
 from PyQt5.QtWidgets import QApplication
 
+from wol import Behavior
 from wol.GeomNodes import Grid, Sphere, CardNode
 from wol.CodeBumperNode import CodeBumperNode
 from wol.ConsoleNode import ConsoleNode
@@ -70,26 +71,66 @@ class MyCamera(CameraNode):
                 pass"""
 
 
-def b1(obj, dt):
-    obj.position.setX(math.cos(time.time()))
+class B1(Behavior.Behavior):
+    def on_update(self, dt):
+        self.obj.position.setX(math.cos(time.time()))
 
 
-def make_slerp_anim(delay = 1.0):
-    def slerp_anim(obj, dt):
-        obj.anim_timer += dt
-        o1 = obj.step1.world_orientation()
-        o2 = obj.step2.world_orientation()
-        p1 = obj.step1.world_position()
-        p2 = obj.step2.world_position()
+# def make_slerp_anim(delay = 1.0):
+#     def slerp_anim(obj, dt):
+#         obj.anim_timer += dt
+#         o1 = obj.step1.world_orientation()
+#         o2 = obj.step2.world_orientation()
+#         p1 = obj.step1.world_position()
+#         p2 = obj.step2.world_position()
+#
+#         alpha = abs(obj.anim_timer / delay)
+#         if alpha > 1.0:
+#             alpha = 1.0
+#         obj.position = p2*alpha + p1*(1.0-alpha)
+#         obj.orientation = QQuaternion.slerp(o1, o2, alpha)
+#         # obj.position = p1
+#         # obj.orientation = obj.step1.world_orientation()
+#     return slerp_anim
 
-        alpha = abs(obj.anim_timer / delay)
-        if alpha > 1.0:
-            alpha = 1.0
-        obj.position = p2*alpha + p1*(1.0-alpha)
-        obj.orientation = QQuaternion.slerp(o1, o2, alpha)
-        # obj.position = p1
-        # obj.orientation = obj.step1.world_orientation()
-    return slerp_anim
+
+def load_scene_ini():
+    lines = open("scene.ini").read().split("\n")
+    attributes = dict()
+    objtype = None
+    currentobj = None
+    reparenting = list()
+    for line in lines:
+        line = line.lstrip()
+        if line.startswith("new "):
+            objtype = line.split(" ")[1]
+            attributes = dict()
+            attributes['parent'] = context.scene
+        if "=" in line:
+            name, value = line.split("=")
+            attributes[name] = value
+        if line.startswith("move "):
+            currentobj.position = QVector3D(*[float(x) for x in line.split(" ")[1:]])
+        if line.startswith("scale "):
+            currentobj.scale = QVector3D(*[float(x) for x in line.split(" ")[1:]])
+        if line.startswith("rotate "):
+            currentobj.orientation = QQuaternion(*[float(x) for x in line.split(" ")[1:]])
+        if line.startswith("setuid "):
+            currentobj.set_uid(int(line.split(" ")[1]))
+        if line.startswith("setparentuid "):
+            reparenting.append((currentobj, int(line.split(" ")[1])))
+        if line.rstrip().lstrip() == "" and objtype is not None:
+            currentobj = globals()[objtype](**attributes)
+            # TODO: Make these kludges disappear
+            if objtype == "Sphere":
+                context.scene.sphere = currentobj
+            if objtype == "MyCamera":
+                context.scene.current_camera = currentobj
+                my_cam = currentobj
+            objtype = None
+
+        for r in reparenting:
+            r[0].reparent(SceneNode.uid_map[r[1]], False)
 
 
 if __name__ == '__main__':
@@ -100,46 +141,9 @@ if __name__ == '__main__':
     load = False
     if load:
         try:
-            lines = open("scene.ini").read().split("\n")
+            load_scene_ini()
         except FileNotFoundError:
-            lines = ()
             load = False
-        attributes = dict()
-        objtype = None
-        currentobj = None
-        reparenting = list()
-        for line in lines:
-            line = line.lstrip()
-            if line.startswith("new "):
-                objtype = line.split(" ")[1]
-                attributes = dict()
-                attributes['parent'] = context.scene
-            if "=" in line:
-                name, value = line.split("=")
-                attributes[name] = value
-            if line.startswith("move "):
-                currentobj.position = QVector3D(*[float(x) for x in line.split(" ")[1:]])
-            if line.startswith("scale "):
-                currentobj.scale = QVector3D(*[float(x) for x in line.split(" ")[1:]])
-            if line.startswith("rotate "):
-                currentobj.orientation = QQuaternion(*[float(x) for x in line.split(" ")[1:]])
-            if line.startswith("setuid "):
-                currentobj.set_uid(int(line.split(" ")[1]))
-            if line.startswith("setparentuid "):
-                reparenting.append((currentobj, int(line.split(" ")[1])))
-            if line.rstrip().lstrip() == "" and objtype is not None:
-                currentobj = globals()[objtype](**attributes)
-                # TODO: Make these kludges disappear
-                if objtype == "Sphere":
-                    context.scene.sphere = currentobj
-                if objtype == "MyCamera":
-                    context.scene.current_camera = currentobj
-                    my_cam = currentobj
-                objtype = None
-
-            for r in reparenting:
-                r[0].reparent(SceneNode.uid_map[r[1]], False)
-
     if not load:
 
         o = ConsoleNode(parent=context.scene, name="ConsoleNode#1")
@@ -172,7 +176,7 @@ if __name__ == '__main__':
         o.position = QVector3D(0, 5, 8)
 
         o1 = Sphere(parent=context.scene)
-        o1.behaviors.append(b1)
+        o1.add_behavior(B1())
 
         sb = SkyBox(parent=my_cam)
 
@@ -191,6 +195,7 @@ if __name__ == '__main__':
         cli = ClientNode(parent=context.scene)
         cli.position = QVector3D(3, 4, 0)
 
+    my_cam.add_behavior(Behavior.SnapToCamera())
     context.scene.context.current_camera = my_cam
     context.scene.context.current_camera.position = QVector3D(5, 5, 0)
 

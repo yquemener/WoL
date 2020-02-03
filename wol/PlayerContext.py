@@ -1,7 +1,8 @@
 from PyQt5.QtGui import QVector2D, QVector3D, QMatrix4x4
 
 
-class Context:
+# Huge potential for becoming a registry anti-pattern. Make sure things added here make sense.
+class PlayerContext:
     def __init__(self):
         self.abstract_input = dict()
         self.mouse_position = QVector2D(0, 0)

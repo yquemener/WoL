@@ -112,10 +112,15 @@ class SceneNode:
         return
 
     def update_recurs(self, dt=0.0):
-        for b in self.behaviors:
-            b(self, dt)
         self.update(dt)
         self.compute_transform()
+        behaviors_to_remove = list()
+        for b in self.behaviors:
+            b.on_update(dt)
+            if b.kill_me:
+                behaviors_to_remove.append(b)
+        for b in behaviors_to_remove:
+            self.behaviors.remove(b)
         for c in self.children:
             c.update_recurs(dt)
 
@@ -203,6 +208,23 @@ class SceneNode:
         self.children.append(child)
         child.parent = self
         child.context = self.context
+
+    def add_behavior(self, behavior):
+        behavior.obj = self
+        self.behaviors.append(behavior)
+
+    def get_behavior(self, class_name):
+        for b in self.behaviors:
+            if b.__class__.__name__ == class_name:
+                return b
+        return None
+
+    def get_behaviors(self, class_name):
+        ret_list = list()
+        for b in self.behaviors:
+            if b.__class__.__name__ == class_name:
+                ret_list.append(b)
+        return ret_list
 
 
 class RootNode(SceneNode):

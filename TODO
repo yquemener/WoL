@@ -4,7 +4,6 @@ Architecture
 - Clean up the order of the updates
 - Debug transparency order
 - context.scene.sphere -> c'est pas propre
-- Nettoyer Context d'ailleurs
 - Make position/orientation properties to help serialization
 - Switch to new pos/orient values after the scene update (why, again?)
 - Make constructors parameter-less and have an init() call, to help serialization
@@ -50,3 +49,4 @@ Done
 - Make code widgets adapt to the file size
 - Put shaders in separate file that can be sanely highlighted
 - Slerp interpolation
+X Nettoyer Context d'ailleurs (Why? C'est pas trop mal...)

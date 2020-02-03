@@ -5,28 +5,10 @@ from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor, Q
 from PyQt5.QtWidgets import QOpenGLWidget
 from OpenGL import GL
 
-from wol.Context import Context
+from wol.PlayerContext import PlayerContext
 from wol.ShadersLibrary import ShadersLibrary
 from wol.SceneNode import RootNode, SceneNode
 import wol.Collisions as Collisions
-
-def make_slerp_anim(delay = 1.0):
-    def slerp_anim(obj, dt):
-        obj.anim_timer += dt
-        o1 = obj.step1.world_orientation()
-        o2 = obj.step2.world_orientation()
-        p1 = obj.step1.world_position()
-        p2 = obj.step2.world_position()
-
-        alpha = abs(obj.anim_timer / delay)
-        # alpha = abs(1.0 - obj.anim_timer % 2.0)
-        if alpha > 1.0:
-            alpha = 1.0
-        obj.set_world_position(p2*alpha + p1*(1.0-alpha))
-        obj.set_world_orientation(QQuaternion.slerp(o1, o2, alpha))
-        # obj.position = p2*alpha + p1*(1.0-alpha)
-        # obj.orientation = QQuaternion.slerp(o1, o2, alpha)
-    return slerp_anim
 
 
 class View3D(QOpenGLWidget):
@@ -39,7 +21,7 @@ class View3D(QOpenGLWidget):
 
         self.clearColor = QColor(Qt.black)
         self.program = None
-        self.context = Context()
+        self.context = PlayerContext()
         self.context.scene = RootNode(self.context)
 
         self.updateTimer = QTimer(self)
@@ -108,7 +90,6 @@ class View3D(QOpenGLWidget):
         GL.glDrawArrays(GL.GL_LINES, 0, 8)
         GL.glEnable(GL.GL_DEPTH_TEST)
 
-
     def resizeGL(self, width, height):
         side = min(width, height)
         GL.glViewport((width - side) // 2, (height - side) // 2, side, side)
@@ -166,21 +147,12 @@ class View3D(QOpenGLWidget):
                 self.context.hover_target.on_edit(self.context.debug_point)
 
         if evt.key() == Qt.Key_T:
-            if hasattr(self.context.hover_target, "snapped_to_camera") and \
-                    self.context.hover_target.snapped_to_camera:
-                self.context.hover_target.snapped_to_camera = False
-                s = self.context.hover_target.step2
-                self.context.hover_target.step2 = self.context.hover_target.step1
-                self.context.hover_target.step1 = s
-                self.context.hover_target.anim_timer = 0.0
+            stc = self.context.current_camera.get_behavior("SnapToCamera")
+            if not stc.grabbed_something:
+                if self.context.hover_target is not None:
+                    stc.grab(self.context.hover_target)
             else:
-                self.context.hover_target.anim_timer = 0.0
-                self.context.hover_target.step1 = SceneNode(parent=self.context.scene)
-                self.context.hover_target.step1.position = self.context.hover_target.world_position()
-                self.context.hover_target.step2 = SceneNode(parent=self.context.current_camera)
-                self.context.hover_target.step2.position = QVector3D(0, 0, 5)
-                self.context.hover_target.behaviors.append(make_slerp_anim(0.2))
-                self.context.hover_target.snapped_to_camera = True
+                stc.restore()
 
         if evt.key() == Qt.Key_R:
             if hasattr(self.context.hover_target, "on_save"):

@@ -114,3 +114,22 @@ seulement m'aider à modifier un fork.1
 Après un détour par le modding minetest, qui sera trop limité pour mes besoins au final, je retouche
  à WoL un peu au lieu de faire du starcraft. J'ai passé le serveur en UDP. Pas encore répondu
 à ces questions d'archis. Peut etre que je vais shooter la TODO list avant?
+
+2019-02-03
+----------
+En fait les notebook jupyter m'énervent. C'est vraiment un pari sur la comète (on fait des paris ou
+juste des plans?) mais j'aimerais bien que WoL me permette de facilement faire un environnement pour
+manipuler des expériences de DL et des réseaux de neurone. Je pense que j'ai pas mal d'éléments en
+place pour ça déjà.
+
+Franchement l'architecture est pas si moche que ça. Je referai surement la logique de collisions plus
+tard mais je préfère avoir une meilleure idée des besoin avant.
+
+Context est renommé PlayerContext, et ça suffit en fait.
+
+Il faudra faire une meilleure serialization, mais c'est un petit chantier ça.
+
+Le client initialise ma scène de debug. À terme on va virer ça mais mais tant qu'on fait comme ça c'est à
+la bonne place.
+
+Une fois les behaviors mieux foutus, on ira bien mieux je pense.
