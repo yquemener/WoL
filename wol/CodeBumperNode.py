@@ -8,9 +8,20 @@ from wol.TextEditNode import TextEditNode
 
 
 class CodeBumperNode(TextLabelNode):
-    def __init__(self, parent=None, name="CodeBumber", text="BUMP", filename="pieces/yq_1"):
-        TextLabelNode.__init__(self, text=text, name=name, parent=parent)
-        self.edit_node = TextEditNode(parent=self, name=self.name+"#edit", filename=filename, autosize=True)
+    def __init__(self, parent=None, name="CodeBumber", label="BUMP", filename=None, code=" "):
+        TextLabelNode.__init__(self, text=label, name=name, parent=parent)
+        if filename is not None:
+            try:
+                text = open(filename).read()
+            except FileNotFoundError:
+                text = " "
+        else:
+            text = code
+
+        self.edit_node = TextEditNode(parent=self,
+                                      name=self.name+"#edit",
+                                      text=text,
+                                      autosize=True)
         self.edit_node.visible = False
         self.edit_node.position = QVector3D(1.2, 0, 0)
         """for v in self.vertices:

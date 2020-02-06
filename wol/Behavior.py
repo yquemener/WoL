@@ -11,6 +11,9 @@ class Behavior:
     def on_update(self, dt):
         return
 
+    def on_click(self):
+        return
+
     def kill(self):
         self.kill_me = True
 

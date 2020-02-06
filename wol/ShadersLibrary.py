@@ -15,7 +15,10 @@ class ShadersLibrary:
                             open("shaders/color_light_frag.shader").read()],
 
         'hud_2d': [open("shaders/UI2D_vert.shader").read(),
-                   open("shaders/color_frag.shader").read()]
+                   open("shaders/color_frag.shader").read()],
+
+        'wireframe': [open("shaders/simple_vert.shader").read(),
+                      open("shaders/color_frag.shader").read()]
     }
 
     cached_shaders = {}

@@ -87,7 +87,15 @@ class View3D(QOpenGLWidget):
         program.setUniformValue('transform_matrix', transmat)
         program.setUniformValue('proj_matrix', mat)
         program.setUniformValue('material_color', crosshair_color)
+
         GL.glDrawArrays(GL.GL_LINES, 0, 8)
+        program.setUniformValue('material_color', QVector4D(0.0, 0.0, 0.0, 0.5))
+        transmat = QMatrix3x3([1.0,    0.0,      1,
+                               0.0,    1.0,      1,
+                               0.0,    0.0,      1.0])
+        program.setUniformValue('transform_matrix', transmat)
+        GL.glDrawArrays(GL.GL_LINES, 0, 8)
+
         GL.glEnable(GL.GL_DEPTH_TEST)
 
     def resizeGL(self, width, height):
@@ -113,8 +121,6 @@ class View3D(QOpenGLWidget):
         else:
             self.context.debug_point = QVector3D(0, 0, -10)
             self.context.hover_target = None
-        # Ugly
-        self.context.scene.sphere.position = self.context.debug_point
         self.repaint()
 
     def keyReleaseEvent(self, evt):
@@ -215,6 +221,8 @@ class View3D(QOpenGLWidget):
             target = self.context.hover_target
             if target is not None:
                 target.on_click(self.context.debug_point, evt)
+                for b in target.behaviors:
+                    b.on_click()
                 if hasattr(target, 'focusable') and target.focusable:
                     if self.context.focused:
                         self.context.focused.focused = False

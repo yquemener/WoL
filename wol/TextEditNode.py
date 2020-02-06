@@ -7,24 +7,17 @@ from wol.GeomNodes import CardNode
 
 
 class TextEditNode(CardNode):
-    def __init__(self, parent, name="GuiNode", filename="client.py", autosize=False):
+    def __init__(self, parent, name="GuiNode", text=" ", autosize=False):
         CardNode.__init__(self, name=name, parent=parent)
         self.widget = QTextEdit()
         self.max_geometry = QRect(0, 0, 512, 512)
         self.widget.setGeometry(self.max_geometry)
         self.focusable = True
-
-        try:
-            text = open(filename).read()
-            self.widget.setText(text)
-        except:
-            text=" "
-            self.widget.setText(text)
+        self.widget.setText(text)
         self.text = text
         self.autosize = autosize
         if self.autosize:
             self.do_autosize()
-        self.filename = filename
         self.needs_refresh = True
         self.highlight = PythonHighlighter(self.widget.document())
         self.widget.setTextColor(QColor(255, 255, 255))
@@ -64,12 +57,6 @@ class TextEditNode(CardNode):
     def keyPressEvent(self, evt):
         self.widget.keyPressEvent(evt)
         self.text = self.widget.toPlainText()
-        self.save_text()
-
-    def save_text(self):
-        f = open(self.filename, "w")
-        f.write(self.widget.toPlainText())
-        f.close()
 
     def inputMethodEvent(self, evt):
         return self.widget.inputMethodEvent(evt)

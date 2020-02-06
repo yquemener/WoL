@@ -115,16 +115,16 @@ class ClientNode(SceneNode):
         self.display_data = TextLabelNode(name=self.name + "_DataDisplayer", parent=self)
         self.display_data.properties["delegateGrabToParent"] = True
 
-        self.sayHiBumper = CodeBumperNode(text="Hi", filename="pieces/SayHi", parent=self)
+        self.sayHiBumper = CodeBumperNode(label="Hi", filename="pieces/SayHi", parent=self)
         self.sayHiBumper.position = QVector3D(1.0, 0, 0)
 
-        self.sendPosBumper = CodeBumperNode(text="SendPos", filename="pieces/SendPos", parent=self)
+        self.sendPosBumper = CodeBumperNode(label="SendPos", filename="pieces/SendPos", parent=self)
         self.sendPosBumper.position = QVector3D(1.0, -0.1, 0)
 
-        self.askList = CodeBumperNode(text="AskList", filename="pieces/AskList", parent=self)
+        self.askList = CodeBumperNode(label="AskList", filename="pieces/AskList", parent=self)
         self.askList.position = QVector3D(1.0, -0.2, 0)
 
-        self.subscribetoCam = CodeBumperNode(text="SubscribetoCam", filename="pieces/SubscribetoCam", parent=self)
+        self.subscribetoCam = CodeBumperNode(label="SubscribetoCam", filename="pieces/SubscribetoCam", parent=self)
         self.subscribetoCam.position = QVector3D(1.0, -0.3, 0)
 
         self.debugNodeParent = SceneNode(parent=self)

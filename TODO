@@ -3,14 +3,14 @@ Architecture
 - Put the collision logic in a saner place
 - Clean up the order of the updates
 - Debug transparency order
-- context.scene.sphere -> c'est pas propre
 - Make position/orientation properties to help serialization
-- Switch to new pos/orient values after the scene update (why, again?)
+- Switch to new pos/orient values after the scene update (why, again? (because I think there is a
+    sone frame delay in some updates))
 - Make constructors parameter-less and have an init() call, to help serialization
 - Reorganize the module hierarchy into something cleaner
 - Put the loading code somewhere else than in the main
 - Think about key-click actions
-- Behaviors with local scope
+- Normaliser les noms d'attributs dans les shaders!
 
 Graphics Enhancements
 =====================
@@ -20,6 +20,7 @@ Graphics Enhancements
 - Fullscreen mode
 - shader for directional light
 - shader with ambient
+- better mesh structure with faces, normals, option for doing wireframe, etc...
 
 UI
 ==
@@ -30,7 +31,6 @@ UI
 - Add smart indentation to the code view
 - More visible pointer
 - Add rlcompleter to TextEdit
-- Improve the switch between navigation and interaction
 - Ability do de-tilt objects by 90° increments
 - Transmit clicks and drag to Qt
 
@@ -38,8 +38,7 @@ Debug
 =====
 - Handle the case where a TextLabel is empty
 - Compute the correct collision point in Sphere-Ray collisions
-- Don't have the cursor intersect with itself, that's stupids
-
+- Add collisions to cubes
 
 
 Done
@@ -50,3 +49,7 @@ Done
 - Put shaders in separate file that can be sanely highlighted
 - Slerp interpolation
 X Nettoyer Context d'ailleurs (Why? C'est pas trop mal...)
+- Improve the switch between navigation and interaction
+- context.scene.sphere -> c'est pas propre
+- Don't have the cursor intersect with itself, that's stupids
+- Behaviors with local scope
