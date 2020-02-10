@@ -11,16 +11,20 @@ Architecture
 - Put the loading code somewhere else than in the main
 - Think about key-click actions
 - Normaliser les noms d'attributs dans les shaders!
+- Does it make sense to create a collider hierarchy?
+- Should paint really use the self.program argument?
+
 
 Graphics Enhancements
 =====================
-- Add cubes!
 - Add meshes
 - Widget borders
 - Fullscreen mode
 - shader for directional light
 - shader with ambient
 - better mesh structure with faces, normals, option for doing wireframe, etc...
+- Anti-aliasing?
+- slightly different Z for planes that can z-fight
 
 UI
 ==
@@ -31,14 +35,16 @@ UI
 - Add smart indentation to the code view
 - More visible pointer
 - Add rlcompleter to TextEdit
-- Ability do de-tilt objects by 90° increments
 - Transmit clicks and drag to Qt
+- Put cursor on the location we clicked
+- Find a good scrolling implementation for too long pages when snapped in view
 
 Debug
 =====
 - Handle the case where a TextLabel is empty
 - Compute the correct collision point in Sphere-Ray collisions
 - Add collisions to cubes
+- Can't move again after `ESC` on text
 
 
 Done
@@ -53,3 +59,5 @@ X Nettoyer Context d'ailleurs (Why? C'est pas trop mal...)
 - context.scene.sphere -> c'est pas propre
 - Don't have the cursor intersect with itself, that's stupids
 - Behaviors with local scope
+- Add cubes!
+- Ability do de-tilt objects by 90° increments (kinda: snaps to closest 90° On Key_1)

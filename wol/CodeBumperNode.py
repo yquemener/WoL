@@ -6,6 +6,8 @@ from PyQt5.QtGui import QVector3D
 from wol.GuiElements import TextLabelNode
 from wol.TextEditNode import TextEditNode
 
+from random import random
+
 
 class CodeBumperNode(TextLabelNode):
     def __init__(self, parent=None, name="CodeBumber", label="BUMP", filename=None, code=" "):
@@ -23,7 +25,7 @@ class CodeBumperNode(TextLabelNode):
                                       text=text,
                                       autosize=True)
         self.edit_node.visible = False
-        self.edit_node.position = QVector3D(1.2, 0, 0)
+        self.edit_node.position = QVector3D(1.2, 0, random()*0.1-0.05)
         """for v in self.vertices:
             v[0] *= 0.2
             v[1] *= 0.2

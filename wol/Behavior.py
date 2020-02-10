@@ -1,6 +1,6 @@
 # Behaviors are things that are attached to objects and are called on each update. They can hold
 # states and describe pieces of behaviors, hence their name
-from PyQt5.QtGui import QVector3D, QQuaternion
+from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4, QMatrix3x3
 
 
 class Behavior:
@@ -11,7 +11,7 @@ class Behavior:
     def on_update(self, dt):
         return
 
-    def on_click(self):
+    def on_click(self, evt, post):
         return
 
     def kill(self):
@@ -24,7 +24,7 @@ class Behavior:
 class SlerpAnim(Behavior):
     def __init__(self, delay=1.0,
                  pos1=QVector3D(0, 0, 0), orient1=QQuaternion.fromAxisAndAngle(0, 1, 0, 0),
-                 pos2=QVector3D(0, 0, 0), orient2=QQuaternion.fromAxisAndAngle(0, 1, 0, 0)):
+                 pos2=QVector3D(0, 1, 0), orient2=QQuaternion.fromAxisAndAngle(0, 1, 0, 0)):
         super().__init__()
         self.delay = delay
         self.pos1 = pos1
@@ -91,3 +91,12 @@ class SnapToCamera(Behavior):
                               self.target_original_position, self.target_original_orientation)
         self.target.add_behavior(self.anim)
         self.grabbed_something = False
+
+
+class RotateConstantSpeed(Behavior):
+    def __init__(self, speed=10.):
+        super().__init__()
+        self.speed = speed
+
+    def on_update(self, dt):
+        self.obj.orientation *= QQuaternion.fromAxisAndAngle(0, 1, 0, dt*self.speed)

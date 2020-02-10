@@ -15,6 +15,36 @@ class Ray:
         self.dir = direction.normalized()
 
 
+class Cube:
+    def __init__(self):
+        self.transform = QMatrix4x4()
+        self.faces = list()
+
+        self.directions = (
+            QVector3D(-1, 0, 0), QVector3D(1, 0, 0),
+            QVector3D(0, -1, 0), QVector3D(0, 1, 0),
+            QVector3D(0, 0, -1), QVector3D(0, 0, 1))
+        for d in self.directions:
+            self.faces.append(Plane(d, d))
+
+    def collide_with_ray(self, ray_):
+        ray = Ray(self.transform.inverted()[0].map(ray_.pos),
+                  self.transform.inverted()[0].mapVector(ray_.dir))
+
+        for i, f in enumerate(self.faces):
+            if QVector3D.dotProduct(ray.dir, f.normale)>0:
+                continue
+            truth, point = f.collide_with_ray(ray)
+            if truth:
+                colp = f.project_2d(point)
+                diru = f.project_2d(self.directions[i - 2])
+                dirv = f.project_2d(self.directions[i - 4])
+                if -1 < QVector2D.dotProduct(colp, diru) < 1 and \
+                   -1 < QVector2D.dotProduct(colp, dirv) < 1:
+                    return True, self.transform.map(point)
+        return False, None
+
+
 class Sphere:
     def __init__(self, point=QVector3D(), radius=1.0):
         self.center = point

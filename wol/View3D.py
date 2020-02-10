@@ -13,11 +13,12 @@ import wol.Collisions as Collisions
 
 class View3D(QOpenGLWidget):
     def __init__(self, parent=None):
-        super(View3D, self).__init__(parent)
-
         fmt = QSurfaceFormat()
         fmt.setDepthBufferSize(24)
+        fmt.setSamples(8)
         QSurfaceFormat.setDefaultFormat(fmt)
+        super(View3D, self).__init__(parent)
+
 
         self.clearColor = QColor(Qt.black)
         self.program = None
@@ -117,6 +118,7 @@ class View3D(QOpenGLWidget):
         colliders_sort.sort(key=lambda s: s[2])
         if len(colliders_sort) > 0:
             self.context.debug_point = colliders_sort[0][0]
+            # self.context.debug_sphere.position = self.context.debug_point
             self.context.hover_target = colliders_sort[0][1]
         else:
             self.context.debug_point = QVector3D(0, 0, -10)
@@ -170,6 +172,9 @@ class View3D(QOpenGLWidget):
         if evt.key() == Qt.Key_O:
             self.saveScene()
 
+        if evt.key() == Qt.Key_1:
+            self.snap_to_90()
+
         if evt.key() == Qt.Key_Q:
             if self.context.hover_target:
                 gr = self.context.grabbed
@@ -191,6 +196,17 @@ class View3D(QOpenGLWidget):
         action = self.key_map.get(evt.key(), None)
         if action:
             self.context.abstract_input[action] = True
+
+    def snap_to_90(self):
+        if self.context.grabbed is None:
+            return
+        g = self.context.grabbed
+        euler = g.world_orientation().toEulerAngles()
+        euler.setX(round(euler.x() / 90) * 90)
+        euler.setY(round(euler.y() / 90) * 90)
+        euler.setZ(round(euler.z() / 90) * 90)
+        g.set_world_orientation(QQuaternion.fromEulerAngles(euler))
+        # g.set_world_orientation(g.world_orientation())
 
     def saveScene(self):
         scenefile = open("scene.ini", "w")
@@ -222,7 +238,7 @@ class View3D(QOpenGLWidget):
             if target is not None:
                 target.on_click(self.context.debug_point, evt)
                 for b in target.behaviors:
-                    b.on_click()
+                    b.on_click(self.context.debug_point, evt)
                 if hasattr(target, 'focusable') and target.focusable:
                     if self.context.focused:
                         self.context.focused.focused = False

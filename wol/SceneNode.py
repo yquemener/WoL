@@ -39,6 +39,7 @@ class SceneNode:
             3: HUD UI
             """
         self.layer = 1
+        self.gl_initialized = False
 
     def set_uid(self, uid):
         self.uid = uid
@@ -88,17 +89,24 @@ class SceneNode:
 
     def set_world_orientation(self, new_orient):
         if self.parent:
-            m = self.parent.transform.inverted()[0]
-            me = new_orient.toRotationMatrix().data()
-            m *= QMatrix4x4(me[0], me[1], me[2], 0.,
-                            me[3], me[4], me[5], 0.,
-                            me[6], me[7], me[8], 0.,
-                            0., 0., 0., 1.)
-            md = m.data()
-            m3 = QMatrix3x3((md[0], md[1], md[2],
-                             md[4], md[5], md[6],
-                             md[8], md[9], md[10]))
-            self.orientation = QQuaternion.fromRotationMatrix(m3)
+            t = self.parent.transform.inverted()[0]
+
+            new_front = new_orient.rotatedVector(QVector3D(0, 0, 1))
+            new_up = new_orient.rotatedVector(QVector3D(0, 1, 0))
+            self.orientation = QQuaternion.fromDirection(t.mapVector(new_front),
+                                                         t.mapVector(new_up))
+
+            # m = self.parent.transform.inverted()[0]
+            # me = new_orient.toRotationMatrix().data()
+            # m *= QMatrix4x4(me[0], me[1], me[2], 0.,
+            #                 me[3], me[4], me[5], 0.,
+            #                 me[6], me[7], me[8], 0.,
+            #                 0., 0., 0., 1.)
+            # md = m.data()
+            # m3 = QMatrix3x3((md[0], md[1], md[2],
+            #                  md[4], md[5], md[6],
+            #                  md[8], md[9], md[10]))
+            # self.orientation = QQuaternion.fromRotationMatrix(m3)
         else:
             self.orientation = new_orient
 
@@ -131,6 +139,8 @@ class SceneNode:
         self.compute_transform()
         if self.visible:
             if self.layer == layer:
+                if not self.gl_initialized:
+                    self.initialize_gl()
                 self.paint(program)
 
         for c in self.children:
@@ -191,6 +201,7 @@ class SceneNode:
 
     def initialize_gl_recurs(self):
         self.initialize_gl()
+        self.gl_initialized = True
         for c in self.children:
             c.initialize_gl_recurs()
 
@@ -225,6 +236,9 @@ class SceneNode:
             if b.__class__.__name__ == class_name:
                 ret_list.append(b)
         return ret_list
+
+    def on_click(self, pos, evt):
+        return
 
 
 class RootNode(SceneNode):

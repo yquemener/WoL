@@ -9,7 +9,7 @@ import math
 from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4, QVector4D
 from PyQt5.QtWidgets import QApplication
 
-from wol import Behavior
+from wol import Behavior, DevScenes
 from wol.GeomNodes import Grid, Sphere, CardNode, WireframeCubeNode, CubeNode
 from wol.CodeBumperNode import CodeBumperNode
 from wol.ConsoleNode import ConsoleNode
@@ -73,29 +73,6 @@ class MyCamera(CameraNode):
                 pass"""
 
 
-class B1(Behavior.Behavior):
-    def on_update(self, dt):
-        self.obj.position.setX(math.cos(time.time()))
-
-
-# def make_slerp_anim(delay = 1.0):
-#     def slerp_anim(obj, dt):
-#         obj.anim_timer += dt
-#         o1 = obj.step1.world_orientation()
-#         o2 = obj.step2.world_orientation()
-#         p1 = obj.step1.world_position()
-#         p2 = obj.step2.world_position()
-#
-#         alpha = abs(obj.anim_timer / delay)
-#         if alpha > 1.0:
-#             alpha = 1.0
-#         obj.position = p2*alpha + p1*(1.0-alpha)
-#         obj.orientation = QQuaternion.slerp(o1, o2, alpha)
-#         # obj.position = p1
-#         # obj.orientation = obj.step1.world_orientation()
-#     return slerp_anim
-
-
 def load_scene_ini():
     lines = open("scene.ini").read().split("\n")
     attributes = dict()
@@ -146,61 +123,12 @@ if __name__ == '__main__':
         except FileNotFoundError:
             load = False
     if not load:
-
-        o = ConsoleNode(parent=context.scene, name="ConsoleNode#1")
-        o.position = QVector3D(0, 5, -5)
-
-        g = Grid(parent=context.scene)
-        g.orientation = QQuaternion.fromEulerAngles(0.0, 0.0, 90.0)
-        sph = Sphere(name="SpherePointer", parent=context.scene)
-        sph.scale = QVector3D(0.03, 0.03, 0.03)
         my_cam = MyCamera(context.scene)
         context.scene.context.current_camera = my_cam
-        context.scene.context.current_camera.position = QVector3D(5, 5, 0)
 
-        # o3 = CardNode(parent=my_cam, filename="resources/alphatest.png")
-        # o3.position = QVector3D(0, 0, 10)
-
-        o4 = SceneNode(parent=context.scene)
-        o4.position = QVector3D(0, 0, -10)
-        o4.orientation = QQuaternion.fromAxisAndAngle(1, 0, 0, 90)
-
-        # o5 = CardNode(parent=context.scene, filename="resources/alphatest.png")
-        # o5.anim_timer = 0.0
-        # o5.step1 = o3
-        # o5.step2 = o4
-        # o5.behaviors.append(make_slerp_anim(10.0))
-
-        o = CodeBumperNode(parent=context.scene, name="CodeBumper#1", filename="pieces/cb1")
-        o.position = QVector3D(0, 5, 8)
-
-        sb = SkyBox(parent=my_cam)
-
-        """serPar = SceneNode(name="ServerParent", parent=context.scene)
-        serPar.position = QVector3D(0, 4, 0)
-
-        serSph = Sphere(name="SpherePointer", parent=serPar)
-        serSph.scale = QVector3D(0.2, 0.2, 0.2)
-        serSph.position = QVector3D(0, 0.4, 0)
-        serSph.properties["delegateGrabToParent"] = True"""
-
-        ser = ServerNode(parent=context.scene)
-        ser.position = QVector3D(0, 4, 0)
-        context.server = ser
-
-        cli = ClientNode(parent=context.scene)
-        cli.position = QVector3D(3, 4, 0)
-
-        objed = PythonFileEditorNode(parent=context.scene, target_file_name="wol/SceneNode.py")
-        objed.position = QVector3D(10, 2, 0)
-
-        wcube = WireframeCubeNode(parent=context.scene, color=QVector4D(255,255,255,255))
-        wcube.position = QVector3D(10, 3, 0)
-        wcube.scale = QVector3D(0.1, 0.1, 0.1)
-
-        cube = CubeNode(parent=context.scene, color=QVector4D(255,255,255,255))
-        cube.position = QVector3D(10, 4, 0)
-        cube.scale = QVector3D(0.1, 0.1, 0.1)
+        DevScenes.scene_base(context)
+        DevScenes.scene_ide(context)
+        # DevScenes.scene_tests(context)
 
     my_cam.add_behavior(Behavior.SnapToCamera())
     context.scene.context.current_camera = my_cam
@@ -209,5 +137,3 @@ if __name__ == '__main__':
     window.show()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     sys.exit(app.exec_())
-
-
