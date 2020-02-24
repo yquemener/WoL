@@ -17,7 +17,7 @@ class Grid(SceneNode):
             self.vertices.append(QVector3D(0.0, -32.0, i - 32))
             self.vertices.append(QVector3D(0.0, 32.0, i - 32))
 
-        self.collider = Collisions.Plane()
+        self.collider = None
         self.program = None
         self.color = QVector4D(0.2, 0.2, 0.6, 1.0)
 
@@ -171,10 +171,6 @@ class CubeNode(SceneNode):
         self.program.setUniformValue('mvp', self.prog_matrix)
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, 36)
         program.bind()
-
-    def on_click(self, pos, evt):
-        print("Cube!")
-
 
 class Sphere(SceneNode):
     def __init__(self, name=None, parent=None):

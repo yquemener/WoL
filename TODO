@@ -5,7 +5,7 @@ Architecture
 - Debug transparency order
 - Make position/orientation properties to help serialization
 - Switch to new pos/orient values after the scene update (why, again? (because I think there is a
-    sone frame delay in some updates))
+    sone frame delay in some updates in child-parents mess))
 - Make constructors parameter-less and have an init() call, to help serialization
 - Reorganize the module hierarchy into something cleaner
 - Put the loading code somewhere else than in the main
@@ -13,6 +13,7 @@ Architecture
 - Normaliser les noms d'attributs dans les shaders!
 - Does it make sense to create a collider hierarchy?
 - Should paint really use the self.program argument?
+- Choose if Behaviors or SceneNode should manage on_click and how to transmit to parent
 
 
 Graphics Enhancements
@@ -23,8 +24,6 @@ Graphics Enhancements
 - shader for directional light
 - shader with ambient
 - better mesh structure with faces, normals, option for doing wireframe, etc...
-- Anti-aliasing?
-- slightly different Z for planes that can z-fight
 
 UI
 ==
@@ -38,14 +37,18 @@ UI
 - Transmit clicks and drag to Qt
 - Put cursor on the location we clicked
 - Find a good scrolling implementation for too long pages when snapped in view
+- Altitude guides? (dashed line a la starcraft for flying units) or shadows
 
 Debug
 =====
 - Handle the case where a TextLabel is empty
 - Compute the correct collision point in Sphere-Ray collisions
-- Add collisions to cubes
 - Can't move again after `ESC` on text
 
+Features
+========
+- Object Explorer (to replace InstanciatedObject)? (wip)
+- Parameters editor, to call member functions in the Object Explorer
 
 Done
 ====
@@ -61,3 +64,7 @@ X Nettoyer Context d'ailleurs (Why? C'est pas trop mal...)
 - Behaviors with local scope
 - Add cubes!
 - Ability do de-tilt objects by 90° increments (kinda: snaps to closest 90° On Key_1)
+- Prevent the grid from being grabbed
+- slightly different Z for planes that can z-fight
+- Add collisions to cubes
+- Anti-aliasing?

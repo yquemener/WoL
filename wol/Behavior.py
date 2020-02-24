@@ -11,7 +11,7 @@ class Behavior:
     def on_update(self, dt):
         return
 
-    def on_click(self, evt, post):
+    def on_click(self, evt, pos):
         return
 
     def kill(self):
@@ -100,3 +100,11 @@ class RotateConstantSpeed(Behavior):
 
     def on_update(self, dt):
         self.obj.orientation *= QQuaternion.fromAxisAndAngle(0, 1, 0, dt*self.speed)
+
+
+class TransmitClickToParent(Behavior):
+    def on_click(self, evt, pos):
+        if self.obj.parent is not None:
+            self.obj.parent.on_click(evt, pos)
+            for b in self.obj.parent.behaviors:
+                b.on_click(evt,pos)
