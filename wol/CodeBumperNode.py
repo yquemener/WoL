@@ -13,12 +13,14 @@ class CodeBumperNode(TextLabelNode):
     def __init__(self, parent=None, name="CodeBumber", label="BUMP", filename=None, code=" "):
         TextLabelNode.__init__(self, text=label, name=name, parent=parent)
         if filename is not None:
+            self.filename = filename
             try:
                 text = open(filename).read()
             except FileNotFoundError:
                 text = " "
         else:
             text = code
+            self.filename = None
 
         self.edit_node = TextEditNode(parent=self,
                                       name=self.name+"#edit",
@@ -42,3 +44,7 @@ class CodeBumperNode(TextLabelNode):
 
     def on_edit(self, pos):
         self.edit_node.visible = not self.edit_node.visible
+        if self.filename is not None:
+            f = open(self.filename, "w")
+            f.write(self.edit_node.text)
+            f.close()

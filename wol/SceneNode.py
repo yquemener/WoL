@@ -1,8 +1,10 @@
 from OpenGL import GL
 from PyQt5.QtGui import QMatrix4x4, QQuaternion, QVector3D, QImage, QOpenGLTexture, QTransform, QMatrix3x3, QVector4D
 import struct
+import inspect
 
 from wol import utils
+
 
 
 class SceneNode:
@@ -146,12 +148,6 @@ class SceneNode:
         for c in self.children:
             c.paint_recurs(program, layer)
 
-    def serialize_recurs(self):
-        s = self.serialize()
-        for c in self.children:
-            s += c.serialize_recurs()
-        return s
-
     def make_pose_packet(self):
         return struct.pack("!10d",
                            self.position.x(),
@@ -171,30 +167,36 @@ class SceneNode:
         self.orientation = QQuaternion(p[3], p[4], p[5], p[6])
         self.scale = QVector3D(p[7], p[8], p[9])
 
-    def serialize(self):
-        s = "new " + str(self.__class__.__name__) + "\n"
-        if hasattr(self, "filename") and self.filename is not None:
-            s += "filename=" + str(self.filename) + "\n"
-        if hasattr(self, "name"):
-            s += "name=" + str(self.name) + "\n\n"
+    def serialize(self, current_obj_num):
+        attribs = ["position", "orientation", "scale", "properties", "color", "visible"]
+        s = """import wol
+import PyQt5
 
-        if hasattr(self, "position"):
-            s += "move " + str(self.position.x()) + " " \
-                 + str(self.position.y()) + " " \
-                 + str(self.position.z()) + "\n"
-        if hasattr(self, "scale"):
-            s += "scale " + str(self.scale.x()) + " " \
-                 + str(self.scale.y()) + " " \
-                 + str(self.scale.z()) + "\n"
-        if hasattr(self, "orientation"):
-            s += "rotate " + str(self.orientation.scalar()) + " " \
-                 + str(self.orientation.x()) + " " \
-                 + str(self.orientation.y()) + " " \
-                 + str(self.orientation.z()) + "\n"""
-        s += "setuid " + str(self.uid) + "\n"
-        s += "setparentuid " + str(self.parent.uid) + "\n"
-        s += "\n"
-        return s
+"""
+        if not self.properties.get("skip serialization", False):
+            if self.__class__.__module__=="__main__":
+                return "", current_obj_num
+            else:
+                s += f"obj_{current_obj_num} = {self.__class__.__module__}.{self.__class__.__name__}("
+            s += "parent=context.scene"
+            constructor_args = list(inspect.signature(self.__init__).parameters)
+            for arg in constructor_args:
+                if arg == "parent":
+                    continue
+                if hasattr(self, arg):
+                    val = getattr(self, arg)
+                    if val is not None:
+                        if type(val) is str:
+                            rendered = f'"{str(val)}"'
+                        else:
+                            rendered = str(val)
+                        s += f",{arg}={rendered}"
+            s += ")\n"
+
+            for att in attribs:
+                if hasattr(self, att):
+                    s += f"obj_{current_obj_num}.{att} = {str(getattr(self, att))}\n"
+        return s, current_obj_num+1
 
     def initialize_gl(self):
         return
@@ -300,7 +302,11 @@ class SkyBox(SceneNode):
         for fn in texture_filenames:
             self.texture_images.append(QImage(fn))
         self.face_verts = utils.generate_square_vertices_fan()
-        self.face_uvs = utils.generate_square_texcoords_fan()
+        self.face_uvs = [
+            [0.999, 0.999],
+            [0.001, 0.999],
+            [0.001, 0.001],
+            [0.999, 0.001]]
         self.face_transforms = list()
         for euler in ((+ 0, 180, 0),
                       (+ 0, 0, 0),
@@ -339,6 +345,8 @@ class SkyBox(SceneNode):
         program.bind()
         program.setAttributeArray(0, self.face_verts)
         program.setAttributeArray(1, self.face_uvs)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
         GL.glPushAttrib(GL.GL_DEPTH_WRITEMASK)
         GL.glDepthMask(False)
         for i in range(6):

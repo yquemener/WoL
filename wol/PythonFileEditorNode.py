@@ -1,4 +1,7 @@
+from random import random
+
 from wol import Behavior
+from wol.Behavior import TransmitClickTo
 from wol.CodeBumperNode import CodeBumperNode
 from wol.GeomNodes import CubeNode, WireframeCubeNode
 from wol.GuiElements import TextLabelNode
@@ -6,6 +9,7 @@ from PyQt5.QtGui import QVector3D, QVector4D
 import ast
 
 from wol.SceneNode import SceneNode
+from wol.TextEditNode import TextEditNode
 
 
 def recurs_find_end_line(element):
@@ -33,28 +37,38 @@ def add_line_end_no(ast_tree):
 
 
 class InstanciationBehavior(Behavior.Behavior):
-    def __init__(self, code_to_execute, obj_to_instantiate):
+    def __init__(self, filename_to_execute, obj_to_instantiate):
         super().__init__()
-        self.code_to_execute = code_to_execute
+        self.filename_to_execute = filename_to_execute
         self.obj_to_instantiate = obj_to_instantiate
 
     def on_click(self, evt, pos):
         # Execute the class statements (Insecure!)
-        exec(self.code_to_execute, globals())
+        code_to_execute = open(self.filename_to_execute).read()
+        exec(code_to_execute, globals())
         # Actual instantiation:
-        o = globals()[self.obj_to_instantiate](10,10)
-        obj = InstanciatedObject(obj=o, parent=self.obj.context.scene)
+        o = globals()[self.obj_to_instantiate](10, 10)
+        obj = InstanciatedObject(instanciated_object=o, parent=self.obj.context.scene)
         obj.position = self.obj.world_position() + QVector3D(1, 0, 0)
 
 
 class PythonFileEditorNode(TextLabelNode):
     def __init__(self, parent=None, name="PythonFileEditorNode", target_file_name=None):
         TextLabelNode.__init__(self, text=target_file_name, name=name, parent=parent)
-        self.children_visible = False
+        self.members_visible = False
+        self.members_list = list()
+        self.target_file_name = target_file_name
         self.full_code = open(target_file_name, "r").read()
         self.code_lines = self.full_code.split('\n')
         root = ast.parse(self.full_code)
         add_line_end_no(root)
+
+        self.edit_node = TextEditNode(parent=self,
+                                      name=self.name+"#edit",
+                                      text=self.full_code,
+                                      autosize=True)
+        self.edit_node.visible = False
+        self.edit_node.position = QVector3D(1.2, 0, random()*0.1-0.05)
 
         try:
             y = -0.15
@@ -71,32 +85,44 @@ class PythonFileEditorNode(TextLabelNode):
                         wc.add_behavior(Behavior.RotateConstantSpeed(80.0))
                         wc.scale = QVector3D(0.05, 0.05, 0.05)
                         wc.position = QVector3D(-0.3, y, 0.0)
-                        wc.add_behavior(InstanciationBehavior(snippet, member.name))
-                    o = CodeBumperNode(parent=self,
-                                       filename=None,
-                                       label=label,
-                                       code=snippet)
-                    o.position = QVector3D(0.3, y, 0.0)
-                    y -= 0.15
+                        wc.add_behavior(InstanciationBehavior(self.target_file_name, member.name))
+                        self.members_list.append(wc)
+                        l = TextLabelNode(parent=self, text=label)
+                        l.position = QVector3D(0.3, y, 0.0)
+                        self.members_list.append(l)
+
+                        # o = CodeBumperNode(parent=self,
+                        #                    filename=self.target_file_name,
+                        #                    label=label)
+                        # o.position = QVector3D(0.3, y, 0.0)
+                        y -= 0.15
             self.widget.setStyleSheet("QWidget{color: white; background-color: gray;}")
         except Exception as e:
             print(e)
             self.widget.setStyleSheet("QWidget{color: red; background-color: gray;}")
         finally:
-            self.refresh_children()
+            self.refresh_members()
 
     def on_click(self, pos, evt):
-        self.children_visible = not self.children_visible
-        self.refresh_children()
+        self.members_visible = not self.members_visible
+        self.refresh_members()
 
     def on_save(self, pos):
         print(self.class_header_source)
         for c in self.children:
             print(c.edit_node.widget.toPlainText())
 
-    def refresh_children(self):
-        for c in self.children:
-            c.visible = self.children_visible
+    def on_edit(self, pos):
+        print(self.target_file_name, self.edit_node.visible)
+        if self.target_file_name is not None and self.edit_node.visible:
+            f = open(self.target_file_name, "w")
+            f.write(self.edit_node.text)
+            f.close()
+        self.edit_node.visible = not self.edit_node.visible
+
+    def refresh_members(self):
+        for c in self.members_list:
+            c.visible = self.members_visible
 
 
 # What is the goal of that object?
@@ -106,12 +132,12 @@ class PythonFileEditorNode(TextLabelNode):
 #  -> parameter editor
 
 class InstanciatedObject(SceneNode):
-    def __init__(self, obj, name=None, parent=None):
+    def __init__(self, instanciated_object, name=None, parent=None):
         SceneNode.__init__(self, name=name, parent=parent)
         if name is None:
-            name = obj.__class__.__name__
+            name = instanciated_object.__class__.__name__
         self.name = name
-        self.instanciated_object = obj
+        self.instanciated_object = instanciated_object
         self.icon = CubeNode(parent=self)
         self.icon.properties["delegateGrabToParent"] = True
         self.icon.add_behavior(Behavior.RotateConstantSpeed())

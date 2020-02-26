@@ -4,16 +4,17 @@ Architecture
 - Clean up the order of the updates
 - Debug transparency order
 - Make position/orientation properties to help serialization
-- Switch to new pos/orient values after the scene update (why, again? (because I think there is a
-    sone frame delay in some updates in child-parents mess))
+- Switch to new pos/orient values after the scene update (why, again? (because I think there is
+    some frame delay in some updates in child-parents mess))
 - Make constructors parameter-less and have an init() call, to help serialization
 - Reorganize the module hierarchy into something cleaner
 - Put the loading code somewhere else than in the main
-- Think about key-click actions
 - Normaliser les noms d'attributs dans les shaders!
 - Does it make sense to create a collider hierarchy?
 - Should paint really use the self.program argument?
-- Choose if Behaviors or SceneNode should manage on_click and how to transmit to parent
+- keybindings-> nav/tab -> on_key handlers in behaviors
+- onclick becomes a behavior only thing?
+- manage focus a bit more automatically
 
 
 Graphics Enhancements
@@ -25,19 +26,20 @@ Graphics Enhancements
 - shader with ambient
 - better mesh structure with faces, normals, option for doing wireframe, etc...
 
+
 UI
 ==
 - Find a better code highliter
-- Show text file names
 - UI logic
 - Debug console scrolling (allow clicks and check why the scrollbar renders weirdly)
 - Add smart indentation to the code view
-- More visible pointer
 - Add rlcompleter to TextEdit
 - Transmit clicks and drag to Qt
 - Put cursor on the location we clicked
 - Find a good scrolling implementation for too long pages when snapped in view
 - Altitude guides? (dashed line a la starcraft for flying units) or shadows
+- Tab, leave window, come back on window -> pointer is gone
+- allow grab of elements in Tab mode
 
 Debug
 =====
@@ -68,3 +70,7 @@ X Nettoyer Context d'ailleurs (Why? C'est pas trop mal...)
 - slightly different Z for planes that can z-fight
 - Add collisions to cubes
 - Anti-aliasing?
+- Show text file names
+- Allow clicking even in TAB-mode, immobile with mouse cursor
+- More visible pointer
+- There is a seam on of the sides of the skybox

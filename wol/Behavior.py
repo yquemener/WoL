@@ -108,3 +108,14 @@ class TransmitClickToParent(Behavior):
             self.obj.parent.on_click(evt, pos)
             for b in self.obj.parent.behaviors:
                 b.on_click(evt,pos)
+
+
+class TransmitClickTo(Behavior):
+    def __init__(self, target):
+        super().__init__()
+        self.target = target
+
+    def on_click(self, evt, pos):
+        self.target.on_click(evt, pos)
+        for b in self.target.behaviors:
+            b.on_click(evt,pos)

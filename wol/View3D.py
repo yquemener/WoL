@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt, QTimer, QPoint
 from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor, QVector4D, QMatrix3x3, QQuaternion
 from PyQt5.QtWidgets import QOpenGLWidget
 from OpenGL import GL
+from math import sin
 
 from wol.PlayerContext import PlayerContext
 from wol.ShadersLibrary import ShadersLibrary
@@ -24,6 +25,7 @@ class View3D(QOpenGLWidget):
         self.program = None
         self.context = PlayerContext()
         self.context.scene = RootNode(self.context)
+        self.real_mouse_position = (0, 0)
 
         self.updateTimer = QTimer(self)
         self.updateTimer.setInterval(20)
@@ -106,9 +108,24 @@ class View3D(QOpenGLWidget):
 
     def scene_update(self):
         self.context.scene.update_recurs(0.01)
+
+
         # Put the collision detection in a more appropriate place (RootNode? Context?)
-        ray = Collisions.Ray(self.context.current_camera.position,
-                             self.context.current_camera.look_at-self.context.current_camera.position)
+        if self.keepMouseCentered:
+            ray = Collisions.Ray(self.context.current_camera.position,
+                                 self.context.current_camera.look_at-self.context.current_camera.position)
+        else:
+            #self.context.debug_sphere.parent = self.context.current_camera
+            fov = 45.0*3.14159/180.0
+            offx = sin(fov/2.)
+            offy = offx/self.context.current_camera.ratio
+            target = QVector3D(offx-self.real_mouse_position[0]/self.width()*2.*offx,
+                               offy-self.real_mouse_position[1]/self.height()*2.*offy,
+                               1.0)
+            target = self.context.current_camera.orientation.rotatedVector(target)
+            ray = Collisions.Ray(self.context.current_camera.position,
+                                 target)
+
         colliders = self.context.scene.collide_recurs(ray)
         colliders_sort = list()
         for obj, point in colliders:
@@ -135,6 +152,7 @@ class View3D(QOpenGLWidget):
     def keyPressEvent(self, evt):
         #if evt.key() == Qt.Key_Escape:
         #    self.close()
+
         if evt.key() == Qt.Key_Escape:
             if self.context.focused is not None:
                 self.context.focused.focused = False
@@ -143,6 +161,10 @@ class View3D(QOpenGLWidget):
                 if stc.grabbed_something:
                     stc.restore()
 
+        if self.context.focused is not None:
+            self.context.focused.keyPressEvent(evt)
+            return
+
         if evt.key() == Qt.Key_Tab:
             self.releaseMouse()
             self.keepMouseCentered = not self.keepMouseCentered
@@ -150,9 +172,23 @@ class View3D(QOpenGLWidget):
                 self.setCursor(Qt.BlankCursor)
             else:
                 self.setCursor(Qt.ArrowCursor)
-        if self.context.focused is not None:
-            self.context.focused.keyPressEvent(evt)
-            return
+
+        if evt.key() == Qt.Key_QuoteLeft:
+            stc = self.context.current_camera.get_behavior("SnapToCamera")
+            if stc.grabbed_something:
+                if stc.target is self.context.current_console:
+                    stc.restore()
+                    self.context.focused = None
+                    self.context.current_console.focused = False
+
+                    return
+                stc.restore()
+            stc.grab(self.context.current_console)
+            if self.context.focused:
+                self.context.focused.focused = False
+            self.context.focused = self.context.current_console
+            self.context.current_console.focused = True
+
         if evt.key() == Qt.Key_E:
             if hasattr(self.context.hover_target, "on_edit"):
                 self.context.hover_target.on_edit(self.context.debug_point)
@@ -166,8 +202,25 @@ class View3D(QOpenGLWidget):
                 stc.restore()
 
         if evt.key() == Qt.Key_R:
+            s = ""
+            num = 0
+            for o in self.context.scene.children:
+                ss, num = o.serialize(num)
+                s += ss
+            print(s)
+            fout = open("init_scene.py", "w")
+            fout.write(s)
+            fout.close()
             if hasattr(self.context.hover_target, "on_save"):
                 self.context.hover_target.on_save(self.context.debug_point)
+
+        if evt.key() == Qt.Key_L:
+            fout = open("init_scene.py", "r")
+            s = fout.read()
+            fout.close()
+            d = globals()
+            d["context"]=self.context
+            exec(s, d, d)
 
         if evt.key() == Qt.Key_O:
             self.saveScene()
@@ -220,6 +273,7 @@ class View3D(QOpenGLWidget):
             return self.context.focused.inputMethodEvent(evt)
 
     def mouseMoveEvent(self, evt):
+        self.real_mouse_position = (evt.x(), evt.y())
         if self.skipNextMouseMove or not self.keepMouseCentered:
             self.skipNextMouseMove = False
             return

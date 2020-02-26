@@ -34,19 +34,33 @@ def scene_tests(context):
 
 
 def scene_base(context):
+    SkyBox(parent=context.scene.context.current_camera)
+
+
+def scene_load(context):
+    fout = open("init_scene.py", "r")
+    s = fout.read()
+    fout.close()
+    d = globals()
+    d["context"] = context
+    exec(s, d, d)
+
+
+def scene_ide(context):
     g = Grid(parent=context.scene)
     g.orientation = QQuaternion.fromEulerAngles(0.0, 0.0, 90.0)
     context.scene.context.current_camera.position = QVector3D(5, 5, 0)
 
-    SkyBox(parent=context.scene.context.current_camera)
-
-
-def scene_ide(context):
     o = ConsoleNode(parent=context.scene, name="ConsoleNode#1")
     o.position = QVector3D(0, 5, -5)
+    context.current_console = o
 
     objed = PythonFileEditorNode(parent=context.scene, target_file_name="my_project/main.py")
     objed.position = QVector3D(0, 2, 5)
+
+    context.scene.context.debug_sphere = Sphere(name="SpherePointer", parent=context.scene)
+    context.scene.context.debug_sphere.scale = QVector3D(0.1, 0.1, 0.1)
+    context.scene.context.debug_sphere.collider = None
 
 
 def scene_network(context):
