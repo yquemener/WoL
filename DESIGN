@@ -59,7 +59,7 @@ Dependencies
 2019-05-08
 ----------
 Les fichiers se sauvegardent, les nodes serialisent leur état, qui est chargé au démarrage.
-Une skybox également et de la transparence sur les widgets. Y a pas à dire, ça vaut le cop de
+Une skybox également et de la transparence sur les widgets. Y a pas à dire, ça vaut le coup de
 passer un peu de temps de temps en temps sur le cosmétique. Ça change vraiment l'expérience.
 
 John a mentionné de la curiosité pour ce projet. J'aimerais lui permettre de se logger dans une
@@ -115,7 +115,7 @@ Après un détour par le modding minetest, qui sera trop limité pour mes besoin
  à WoL un peu au lieu de faire du starcraft. J'ai passé le serveur en UDP. Pas encore répondu
 à ces questions d'archis. Peut etre que je vais shooter la TODO list avant?
 
-2019-02-03
+2020-02-03
 ----------
 En fait les notebook jupyter m'énervent. C'est vraiment un pari sur la comète (on fait des paris ou
 juste des plans?) mais j'aimerais bien que WoL me permette de facilement faire un environnement pour
@@ -133,3 +133,13 @@ Le client initialise ma scène de debug. À terme on va virer ça mais mais tant
 la bonne place.
 
 Une fois les behaviors mieux foutus, on ira bien mieux je pense.
+
+2020-11-03
+----------
+Repartons là dessus avec un focus un peu différent: on fait un visualiseur de projet et un executeur
+d'état, un peu à la notebook mais en plus intéractif.
+
+On accueille quelqu'un "chez soi" simplement en hébergeant son contenu. On verra plus tard pour faire
+un merge d'une scene locale et remote.
+
+Ça simplifiera un peu les choses je pense.

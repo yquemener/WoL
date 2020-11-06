@@ -17,6 +17,9 @@ class ShadersLibrary:
         'hud_2d': [open("shaders/UI2D_vert.shader").read(),
                    open("shaders/color_frag.shader").read()],
 
+        'hud_2d_tex': [open("shaders/UI2D_vert.shader").read(),
+                       open("shaders/texture_frag.shader").read()],
+
         'wireframe': [open("shaders/simple_vert.shader").read(),
                       open("shaders/color_frag.shader").read()]
     }

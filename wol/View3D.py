@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
 from PyQt5.QtCore import Qt, QTimer, QPoint
-from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor, QVector4D, QMatrix3x3, QQuaternion
+from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor, QVector4D, QMatrix3x3, QQuaternion, \
+    QMatrix4x4
 from PyQt5.QtWidgets import QOpenGLWidget
 from OpenGL import GL
 from math import sin
 
+from wol.ConsoleNode import ConsoleNode
+from wol.GuiElements import TextLabelNode
 from wol.PlayerContext import PlayerContext
 from wol.ShadersLibrary import ShadersLibrary
 from wol.SceneNode import RootNode, SceneNode
@@ -25,6 +28,7 @@ class View3D(QOpenGLWidget):
         self.program = None
         self.context = PlayerContext()
         self.context.scene = RootNode(self.context)
+        self.context.hud = list()
         self.real_mouse_position = (0, 0)
 
         self.updateTimer = QTimer(self)
@@ -44,6 +48,18 @@ class View3D(QOpenGLWidget):
         self.keepMouseCentered = True
         self.setAttribute(Qt.WA_InputMethodEnabled, True)
         self.setGeometry(10, 10, 1200, 800)
+
+        # HUD definition
+        hud1 = TextLabelNode(parent=None, text="Salut!")
+        hud1.position.z = 0
+        for v in hud1.vertices:
+            v[1] *= -600
+            v[1] += 100
+            v[0] *= -400
+            v[0] += 100
+        hud1.refresh_vertices()
+        self.context.hud.append(hud1)
+
 
     def initializeGL(self):
         GL.glEnable(GL.GL_DEPTH_TEST)
@@ -67,37 +83,52 @@ class View3D(QOpenGLWidget):
         GL.glDisable(GL.GL_DEPTH_TEST)
         w = self.geometry().width()
         h = self.geometry().height()
-        mat = QMatrix3x3([2. / w,    0.0,      -1,
-                          0.0,       -2. / h,  1,
-                          0.0,       0.0,      0.0])
+        mat = QMatrix4x4([2. / w,    0.0,      -1,      0,
+                          0.0,       -2. / h,  1,       0,
+                          0.0,       0.0,      0.0,     0,
+                          0,         0,         0,      1])
         # Draw crosshair
-        crosshair = [QVector2D(w / 2, h / 2 - 20),
-                     QVector2D(w / 2, h / 2 - 5),
-                     QVector2D(w / 2, h / 2 + 20),
-                     QVector2D(w / 2, h / 2 + 5),
+        crosshair = [QVector3D(w / 2, h / 2 - 20,   0),
+                     QVector3D(w / 2, h / 2 - 5,    0),
+                     QVector3D(w / 2, h / 2 + 20,   0),
+                     QVector3D(w / 2, h / 2 + 5,    0),
 
-                     QVector2D(w / 2 - 20, h / 2),
-                     QVector2D(w / 2 - 5, h / 2),
-                     QVector2D(w / 2 + 20, h / 2),
-                     QVector2D(w / 2 + 5, h / 2)]
+                     QVector3D(w / 2 - 20, h / 2,   0),
+                     QVector3D(w / 2 - 5, h / 2,    0),
+                     QVector3D(w / 2 + 20, h / 2,   0),
+                     QVector3D(w / 2 + 5, h / 2,    0)]
         crosshair_color = QVector4D(1.0, 1.0, 1.0, 0.5)
         program = ShadersLibrary.create_program('hud_2d')
         program.bind()
         program.setAttributeArray(0, crosshair)
-        transmat = QMatrix3x3()
+        transmat = QMatrix4x4()
         transmat.setToIdentity()
         program.setUniformValue('z_order', 1.)
-        program.setUniformValue('transform_matrix', transmat)
-        program.setUniformValue('proj_matrix', mat)
+        # program.setUniformValue('transform_matrix', transmat)
+        program.setUniformValue('matrix', mat)
         program.setUniformValue('material_color', crosshair_color)
 
         GL.glDrawArrays(GL.GL_LINES, 0, 8)
         program.setUniformValue('material_color', QVector4D(0.0, 0.0, 0.0, 0.5))
-        transmat = QMatrix3x3([1.0,    0.0,      1,
-                               0.0,    1.0,      1,
-                               0.0,    0.0,      1.0])
-        program.setUniformValue('transform_matrix', transmat)
+        transmat = QMatrix4x4([1.0,    0.0,      1,     0.0,
+                               0.0,    1.0,      1,     0.0,
+                               0.0,    0.0,      1.0,   0.0,
+                               0.0,    0.0,      0.0,   1.0])
+        program.setUniformValue('matrix', mat * transmat)
         GL.glDrawArrays(GL.GL_LINES, 0, 8)
+
+        program = ShadersLibrary.create_program('hud_2d_tex')
+        program.bind()
+        program.setUniformValue('z_order', 1.)
+        program.setUniformValue('matrix', mat)
+        program.setUniformValue('material_color', QVector4D(0.0, 0.0, 0.0, 0.5))
+
+        for h in self.context.hud:
+            h.update(0)
+            h.prog_matrix = mat
+            h.initialize_gl()
+            h.paint(program)
+
 
         GL.glEnable(GL.GL_DEPTH_TEST)
 
@@ -175,6 +206,16 @@ class View3D(QOpenGLWidget):
 
         if evt.key() == Qt.Key_QuoteLeft:
             stc = self.context.current_camera.get_behavior("SnapToCamera")
+
+            if not hasattr(self.context, "current_console"):
+                console = None
+                for o in self.context.scene.children:
+                    if isinstance(o, ConsoleNode):
+                        console = o
+                if console is None:
+                    console = ConsoleNode(parent=self.context.scene)
+                self.context.current_console = console
+
             if stc.grabbed_something:
                 if stc.target is self.context.current_console:
                     stc.restore()
@@ -202,7 +243,8 @@ class View3D(QOpenGLWidget):
                 stc.restore()
 
         if evt.key() == Qt.Key_R:
-            s = ""
+            s = "import wol\nimport PyQt5\n\n"
+
             num = 0
             for o in self.context.scene.children:
                 ss, num = o.serialize(num)

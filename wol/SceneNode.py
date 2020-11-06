@@ -169,15 +169,16 @@ class SceneNode:
 
     def serialize(self, current_obj_num):
         attribs = ["position", "orientation", "scale", "properties", "color", "visible"]
-        s = """import wol
-import PyQt5
+        exclude_types = ["wol.PythonFileEditorNode.InstanciatedObject"]
 
-"""
+        s = "\n"
         if not self.properties.get("skip serialization", False):
             if self.__class__.__module__=="__main__":
                 return "", current_obj_num
-            else:
-                s += f"obj_{current_obj_num} = {self.__class__.__module__}.{self.__class__.__name__}("
+            if f"{self.__class__.__module__}.{self.__class__.__name__}" in exclude_types:
+                return "", current_obj_num
+
+            s += f"obj_{current_obj_num} = {self.__class__.__module__}.{self.__class__.__name__}("
             s += "parent=context.scene"
             constructor_args = list(inspect.signature(self.__init__).parameters)
             for arg in constructor_args:

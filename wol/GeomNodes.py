@@ -172,6 +172,7 @@ class CubeNode(SceneNode):
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, 36)
         program.bind()
 
+
 class Sphere(SceneNode):
     def __init__(self, name=None, parent=None):
         SceneNode.__init__(self, name, parent)

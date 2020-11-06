@@ -15,6 +15,8 @@ Architecture
 - keybindings-> nav/tab -> on_key handlers in behaviors
 - onclick becomes a behavior only thing?
 - manage focus a bit more automatically
+- Add crosshairs under self.context.hud in View3D
+- Think of a cleaner way to display a HUD sceneroot (shader with no proj matrix at all maybe?)
 
 
 Graphics Enhancements
@@ -29,6 +31,7 @@ Graphics Enhancements
 
 UI
 ==
+- Add HUD tooltips
 - Find a better code highliter
 - UI logic
 - Debug console scrolling (allow clicks and check why the scrollbar renders weirdly)
@@ -38,14 +41,15 @@ UI
 - Put cursor on the location we clicked
 - Find a good scrolling implementation for too long pages when snapped in view
 - Altitude guides? (dashed line a la starcraft for flying units) or shadows
-- Tab, leave window, come back on window -> pointer is gone
 - allow grab of elements in Tab mode
+- copy-paste from outside
 
 Debug
 =====
 - Handle the case where a TextLabel is empty
 - Compute the correct collision point in Sphere-Ray collisions
 - Can't move again after `ESC` on text
+- Tab, leave window, come back on window -> pointer is gone
 
 Features
 ========
