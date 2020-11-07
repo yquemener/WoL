@@ -13,6 +13,7 @@ from wol.PlayerContext import PlayerContext
 from wol.ShadersLibrary import ShadersLibrary
 from wol.SceneNode import RootNode, SceneNode
 import wol.Collisions as Collisions
+from wol.utils import DotDict
 
 
 class View3D(QOpenGLWidget):
@@ -28,8 +29,9 @@ class View3D(QOpenGLWidget):
         self.program = None
         self.context = PlayerContext()
         self.context.scene = RootNode(self.context)
-        self.context.hud = RootNode(self.context)
-        self.context.hud.orientation = QQuaternion.fromAxisAndAngle(0, 1, 0, 180)
+        self.hud = DotDict()
+        self.hud_root = RootNode(self.context)
+        # self.hud_root.orientation = QQuaternion.fromAxisAndAngle(0, 1, 0, 180)
         self.real_mouse_position = (0, 0)
 
         self.updateTimer = QTimer(self)
@@ -51,11 +53,11 @@ class View3D(QOpenGLWidget):
         self.setGeometry(10, 10, 1200, 800)
 
         # HUD definition
-        hud1 = TextLabelNode(parent=self.context.hud, text="Salut!")
-        hud1.layer = -1
-        hud1.position.setY(0.4)
-        hud1.refresh_vertices()
-        #self.context.hud.append(hud1)
+        self.hud.hud1 = TextLabelNode(parent=self.hud_root, text="Salut!")
+        self.hud.hud1.layer = -1
+        self.hud.hud1.position.setX(0.5)
+        self.hud.hud1.position.setY(0.5)
+
 
     def initializeGL(self):
         GL.glEnable(GL.GL_DEPTH_TEST)
@@ -103,7 +105,7 @@ class View3D(QOpenGLWidget):
         program = ShadersLibrary.create_program('hud_2d_tex')
         program.bind()
         program.setUniformValue('z_order', 1.)
-        program.setUniformValue('matrix', transmat)
+        # program.setUniformValue('matrix', transmat)
 
         w = self.geometry().width()
         h = self.geometry().height()
@@ -113,9 +115,19 @@ class View3D(QOpenGLWidget):
         else:
             h = w/h
             w = 1
-        self.context.hud.scale.setX(w)
-        self.context.hud.scale.setY(h)
-        self.context.hud.paint_recurs(program, -1)
+        self.hud_root.scale.setX(w)
+        self.hud_root.scale.setY(h)
+        pointed = str(type(self.context.hover_target))
+        if pointed != self.hud.hud1.text:
+            name = " "
+            if self.context.hover_target is None:
+                pointed = " "
+            else:
+                name = self.context.hover_target.name
+
+
+            self.hud.hud1.set_text(name+"\n"+pointed)
+        self.hud_root.paint_recurs(program, -1)
         GL.glEnable(GL.GL_DEPTH_TEST)
 
     def resizeGL(self, width, height):
@@ -125,7 +137,7 @@ class View3D(QOpenGLWidget):
 
     def scene_update(self):
         self.context.scene.update_recurs(0.01)
-        self.context.hud.update_recurs(0.01)
+        self.hud_root.update_recurs(0.01)
 
 
         # Put the collision detection in a more appropriate place (RootNode? Context?)
@@ -248,7 +260,7 @@ class View3D(QOpenGLWidget):
             s = fout.read()
             fout.close()
             d = globals()
-            d["context"]=self.context
+            d["context"] = self.context
             exec(s, d, d)
 
         if evt.key() == Qt.Key_O:

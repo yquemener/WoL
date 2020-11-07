@@ -74,7 +74,7 @@ class SnapToCamera(Behavior):
         self.target.reparent(self.obj)
         self.anim = SlerpAnim(self.grab_animation_length,
                               self.target.position, self.target.orientation,
-                              QVector3D(0, 0, 5), QQuaternion())
+                              QVector3D(0, 0, 5), QQuaternion.fromAxisAndAngle(0, 1, 0, 180))
 
         self.target.add_behavior(self.anim)
         self.grabbed_something = True

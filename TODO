@@ -16,6 +16,7 @@ Architecture
 - onclick becomes a behavior only thing?
 - manage focus a bit more automatically
 - Add crosshairs under self.context.hud in View3D
+- Should .scene be a member of .context?
 
 
 Graphics Enhancements
@@ -27,6 +28,7 @@ Graphics Enhancements
 - shader with ambient
 - better mesh structure with faces, normals, option for doing wireframe, etc...
 - Redo the shadow of the crosshair
+- Ability to "align-right-top"
 
 
 UI

@@ -1,6 +1,13 @@
 from PyQt5.QtGui import QVector3D, QMatrix4x4
 
 
+class DotDict(dict):
+    """dot.notation access to dictionary attributes"""
+    __getattr__ = dict.get
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
+
+
 def generate_square_vertices_fan():
     vertices = list()
     vertices.append([-1.0, -1.0, 0.0])
@@ -12,10 +19,10 @@ def generate_square_vertices_fan():
 
 def generate_square_texcoords_fan():
     tex_coords = list()
-    tex_coords.append([1.0, 1.0])
     tex_coords.append([0.0, 1.0])
-    tex_coords.append([0.0, 0.0])
+    tex_coords.append([1.0, 1.0])
     tex_coords.append([1.0, 0.0])
+    tex_coords.append([0.0, 0.0])
     return tex_coords
 
 
