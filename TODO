@@ -16,8 +16,6 @@ Architecture
 - onclick becomes a behavior only thing?
 - manage focus a bit more automatically
 - Add crosshairs under self.context.hud in View3D
-- Redo the shadow of the crosshair
-
 
 
 Graphics Enhancements
@@ -28,6 +26,7 @@ Graphics Enhancements
 - shader for directional light
 - shader with ambient
 - better mesh structure with faces, normals, option for doing wireframe, etc...
+- Redo the shadow of the crosshair
 
 
 UI
@@ -80,3 +79,4 @@ X Nettoyer Context d'ailleurs (Why? C'est pas trop mal...)
 - More visible pointer
 - There is a seam on of the sides of the skybox
 - Think of a cleaner way to display a HUD sceneroot (shader with no proj matrix at all maybe?)
+- HUD elements that bypass rescaling ratio?

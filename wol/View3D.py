@@ -53,11 +53,7 @@ class View3D(QOpenGLWidget):
         # HUD definition
         hud1 = TextLabelNode(parent=self.context.hud, text="Salut!")
         hud1.layer = -1
-        # for v in hud1.vertices:
-        #     v[1] *= -600
-        #     v[1] += 100
-        #     v[0] *= -400
-        #     v[0] += 100
+        hud1.position.setY(0.4)
         hud1.refresh_vertices()
         #self.context.hud.append(hud1)
 
@@ -109,6 +105,16 @@ class View3D(QOpenGLWidget):
         program.setUniformValue('z_order', 1.)
         program.setUniformValue('matrix', transmat)
 
+        w = self.geometry().width()
+        h = self.geometry().height()
+        if w>h:
+            w = h/w
+            h = 1
+        else:
+            h = w/h
+            w = 1
+        self.context.hud.scale.setX(w)
+        self.context.hud.scale.setY(h)
         self.context.hud.paint_recurs(program, -1)
         GL.glEnable(GL.GL_DEPTH_TEST)
 
