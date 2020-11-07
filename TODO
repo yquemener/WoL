@@ -16,7 +16,8 @@ Architecture
 - onclick becomes a behavior only thing?
 - manage focus a bit more automatically
 - Add crosshairs under self.context.hud in View3D
-- Think of a cleaner way to display a HUD sceneroot (shader with no proj matrix at all maybe?)
+- Redo the shadow of the crosshair
+
 
 
 Graphics Enhancements
@@ -78,3 +79,4 @@ X Nettoyer Context d'ailleurs (Why? C'est pas trop mal...)
 - Allow clicking even in TAB-mode, immobile with mouse cursor
 - More visible pointer
 - There is a seam on of the sides of the skybox
+- Think of a cleaner way to display a HUD sceneroot (shader with no proj matrix at all maybe?)

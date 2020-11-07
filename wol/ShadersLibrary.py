@@ -1,3 +1,4 @@
+from OpenGL import GL
 from PyQt5.QtGui import QOpenGLShader, QOpenGLShaderProgram
 
 
@@ -50,7 +51,6 @@ class ShadersLibrary:
         if not program.link():
             raise RuntimeError("Could not compile shader:" + str(name) + "\n" + program.log())
 
-        program.setUniformValue('texture', 0)
         program.enableAttributeArray(0)
         program.enableAttributeArray(1)
         ShadersLibrary.cached_shaders[name] = program

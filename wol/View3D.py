@@ -28,7 +28,8 @@ class View3D(QOpenGLWidget):
         self.program = None
         self.context = PlayerContext()
         self.context.scene = RootNode(self.context)
-        self.context.hud = list()
+        self.context.hud = RootNode(self.context)
+        self.context.hud.orientation = QQuaternion.fromAxisAndAngle(0, 1, 0, 180)
         self.real_mouse_position = (0, 0)
 
         self.updateTimer = QTimer(self)
@@ -50,16 +51,15 @@ class View3D(QOpenGLWidget):
         self.setGeometry(10, 10, 1200, 800)
 
         # HUD definition
-        hud1 = TextLabelNode(parent=None, text="Salut!")
-        hud1.position.z = 0
-        for v in hud1.vertices:
-            v[1] *= -600
-            v[1] += 100
-            v[0] *= -400
-            v[0] += 100
+        hud1 = TextLabelNode(parent=self.context.hud, text="Salut!")
+        hud1.layer = -1
+        # for v in hud1.vertices:
+        #     v[1] *= -600
+        #     v[1] += 100
+        #     v[0] *= -400
+        #     v[0] += 100
         hud1.refresh_vertices()
-        self.context.hud.append(hud1)
-
+        #self.context.hud.append(hud1)
 
     def initializeGL(self):
         GL.glEnable(GL.GL_DEPTH_TEST)
@@ -81,22 +81,17 @@ class View3D(QOpenGLWidget):
 
         # Add HUD/GUI layer here
         GL.glDisable(GL.GL_DEPTH_TEST)
-        w = self.geometry().width()
-        h = self.geometry().height()
-        mat = QMatrix4x4([2. / w,    0.0,      -1,      0,
-                          0.0,       -2. / h,  1,       0,
-                          0.0,       0.0,      0.0,     0,
-                          0,         0,         0,      1])
-        # Draw crosshair
-        crosshair = [QVector3D(w / 2, h / 2 - 20,   0),
-                     QVector3D(w / 2, h / 2 - 5,    0),
-                     QVector3D(w / 2, h / 2 + 20,   0),
-                     QVector3D(w / 2, h / 2 + 5,    0),
 
-                     QVector3D(w / 2 - 20, h / 2,   0),
-                     QVector3D(w / 2 - 5, h / 2,    0),
-                     QVector3D(w / 2 + 20, h / 2,   0),
-                     QVector3D(w / 2 + 5, h / 2,    0)]
+        # Draw crosshair
+        crosshair = [QVector3D(0, -0.05,   0),
+                     QVector3D(0, -0.01,   0),
+                     QVector3D(0, 0.05,   0),
+                     QVector3D(0, 0.01,   0),
+
+                     QVector3D(-0.04, 0,   0),
+                     QVector3D(-0.01, 0,   0),
+                     QVector3D(0.04,  0,   0),
+                     QVector3D(0.01,  0,   0)]
         crosshair_color = QVector4D(1.0, 1.0, 1.0, 0.5)
         program = ShadersLibrary.create_program('hud_2d')
         program.bind()
@@ -104,32 +99,17 @@ class View3D(QOpenGLWidget):
         transmat = QMatrix4x4()
         transmat.setToIdentity()
         program.setUniformValue('z_order', 1.)
-        # program.setUniformValue('transform_matrix', transmat)
-        program.setUniformValue('matrix', mat)
-        program.setUniformValue('material_color', crosshair_color)
 
-        GL.glDrawArrays(GL.GL_LINES, 0, 8)
-        program.setUniformValue('material_color', QVector4D(0.0, 0.0, 0.0, 0.5))
-        transmat = QMatrix4x4([1.0,    0.0,      1,     0.0,
-                               0.0,    1.0,      1,     0.0,
-                               0.0,    0.0,      1.0,   0.0,
-                               0.0,    0.0,      0.0,   1.0])
-        program.setUniformValue('matrix', mat * transmat)
+        program.setUniformValue('matrix', QMatrix4x4())
+        program.setUniformValue('material_color', crosshair_color)
         GL.glDrawArrays(GL.GL_LINES, 0, 8)
 
         program = ShadersLibrary.create_program('hud_2d_tex')
         program.bind()
         program.setUniformValue('z_order', 1.)
-        program.setUniformValue('matrix', mat)
-        program.setUniformValue('material_color', QVector4D(0.0, 0.0, 0.0, 0.5))
+        program.setUniformValue('matrix', transmat)
 
-        for h in self.context.hud:
-            h.update(0)
-            h.prog_matrix = mat
-            h.initialize_gl()
-            h.paint(program)
-
-
+        self.context.hud.paint_recurs(program, -1)
         GL.glEnable(GL.GL_DEPTH_TEST)
 
     def resizeGL(self, width, height):
@@ -139,6 +119,7 @@ class View3D(QOpenGLWidget):
 
     def scene_update(self):
         self.context.scene.update_recurs(0.01)
+        self.context.hud.update_recurs(0.01)
 
 
         # Put the collision detection in a more appropriate place (RootNode? Context?)

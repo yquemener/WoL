@@ -59,7 +59,7 @@ class SceneNode:
             self.parent = new_parent
             self.parent.children.append(self)
 
-    def compute_transform(self):
+    def compute_transform(self, project=True):
         if self.parent:
             m = QMatrix4x4(self.parent.transform)
         else:
@@ -69,7 +69,10 @@ class SceneNode:
         m.scale(self.scale)
         self.transform = m
         self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
-        self.prog_matrix = self.context.current_camera.projection_matrix * self.transform
+        if project:
+            self.prog_matrix = self.context.current_camera.projection_matrix * self.transform
+        else:
+            self.prog_matrix = self.transform
         if self.collider is not None:
             self.collider.transform = self.transform
 
@@ -138,7 +141,7 @@ class SceneNode:
         return
 
     def paint_recurs(self, program, layer=1):
-        self.compute_transform()
+        self.compute_transform(project=(layer != -1))
         if self.visible:
             if self.layer == layer:
                 if not self.gl_initialized:
@@ -253,13 +256,6 @@ class RootNode(SceneNode):
         self.forward = QVector3D()
         self.up = QVector3D()
 
-    def compute_transform(self):
-        m = QMatrix4x4()
-        m.translate(self.position)
-        m.rotate(self.orientation)
-        self.transform = m
-        self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
-
 
 class CameraNode(SceneNode):
     def __init__(self, parent, name):
@@ -268,7 +264,7 @@ class CameraNode(SceneNode):
         self.ratio = 4.0 / 3.0
         self.projection_matrix = QMatrix4x4()
 
-    def compute_transform(self):
+    def compute_transform(self, project=True):
         m = QMatrix4x4()
         m.rotate(self.orientation)
         la = self.position + m.mapVector(QVector3D(0, 0, 1))
@@ -325,7 +321,7 @@ class SkyBox(SceneNode):
         for img in self.texture_images:
             self.textures.append(QOpenGLTexture(img))
 
-    def compute_transform(self):
+    def compute_transform(self, project=True):
         if self.parent:
             m = QMatrix4x4(self.parent.transform)
         else:

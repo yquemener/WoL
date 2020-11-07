@@ -14,3 +14,4 @@ class PlayerContext:
         self.scene = None
         self.grabbed = None
         self.grabbed_transform = QMatrix4x4()
+
