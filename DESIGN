@@ -13,6 +13,9 @@ MVC vs visualizer/editor
 
 Networking
 ----------
+Keep it simple:
+We connect to a server.
+
 Simple protocol
     Knockknock: "Hi! I would like to see your scene" (placeholder for auth)
     list: "Show me the objects I can subscribe to"

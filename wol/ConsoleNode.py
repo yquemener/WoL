@@ -49,7 +49,12 @@ class ConsoleNode(CardNode):
             old_stdout = sys.stdout
             try:
                 redirected_output = sys.stdout = StringIO()
-                exec(cmd, globals(), self.locals)
+                try:
+                    a = eval(cmd, globals(), self.locals)
+                    if redirected_output.getvalue()=="":
+                        sys.stdout.write(repr(a)+"\n")
+                except Exception:
+                    exec(cmd, globals(), self.locals)
                 sys.stdout = old_stdout
                 result = redirected_output.getvalue()
             except Exception as e:
