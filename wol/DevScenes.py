@@ -3,7 +3,7 @@ from PyQt5.QtGui import QVector3D, QQuaternion, QVector4D
 
 from client import MyCamera
 from wol import Behavior
-from wol.CodeBumperNode import CodeBumperNode
+from wol.CodeBumperNode import CodeBumperNode, CodeRunnerEditorNode
 from wol.ConsoleNode import ConsoleNode
 from wol.GeomNodes import Grid, Sphere, WireframeCubeNode, CubeNode, CardNode
 from wol.PythonFileEditorNode import PythonFileEditorNode
@@ -35,6 +35,8 @@ def scene_tests(context):
 
 def scene_base(context):
     SkyBox(parent=context.scene.context.current_camera)
+    g = Grid(parent=context.scene)
+    g.orientation = QQuaternion.fromEulerAngles(0.0, 0.0, 90.0)
 
 
 def scene_load(context):
@@ -47,9 +49,8 @@ def scene_load(context):
 
 
 def scene_ide(context):
-    g = Grid(parent=context.scene)
-    g.orientation = QQuaternion.fromEulerAngles(0.0, 0.0, 90.0)
-    context.scene.context.current_camera.position = QVector3D(5, 5, 0)
+
+    context.scene.context.current_camera.position = QVector3D(5, 5, -10)
 
     o = ConsoleNode(parent=context.scene, name="ConsoleNode#1")
     o.position = QVector3D(0, 5, -5)
@@ -57,6 +58,14 @@ def scene_ide(context):
 
     objed = PythonFileEditorNode(parent=context.scene, target_file_name="my_project/main.py")
     objed.position = QVector3D(0, 2, 5)
+
+    objed = CodeRunnerEditorNode(parent=context.scene, filename="my_project/test.py")
+    objed.position = QVector3D(3, 4, -5)
+    objed.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
+
+    objed = CodeRunnerEditorNode(parent=context.scene, filename="my_project/main.py")
+    objed.position = QVector3D(5, 4, -5)
+    objed.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
 
     context.scene.context.debug_sphere = Sphere(name="SpherePointer", parent=context.scene)
     context.scene.context.debug_sphere.scale = QVector3D(0.1, 0.1, 0.1)

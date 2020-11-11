@@ -127,13 +127,14 @@ if __name__ == '__main__':
         context.scene.context.current_camera = my_cam
 
         DevScenes.scene_base(context)
-        DevScenes.scene_load(context)
-        # DevScenes.scene_ide(context)
+        # DevScenes.scene_load(context)
+        # DevScenes.scene_network(context)
+        DevScenes.scene_ide(context)
         # DevScenes.scene_tests(context)
 
     my_cam.add_behavior(Behavior.SnapToCamera())
     context.scene.context.current_camera = my_cam
-    context.scene.context.current_camera.position = QVector3D(5, 5, 0)
+    # context.scene.context.current_camera.position = QVector3D(5, 5, 0)
 
     window.show()
     signal.signal(signal.SIGINT, signal.SIG_DFL)

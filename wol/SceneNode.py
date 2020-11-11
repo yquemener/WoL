@@ -38,7 +38,7 @@ class SceneNode:
             0: skybox
             1: regular objects
             2: transparent objects
-            3: HUD UI
+           -1: HUD UI
             """
         self.layer = 1
         self.gl_initialized = False
@@ -229,6 +229,7 @@ class SceneNode:
     def add_behavior(self, behavior):
         behavior.obj = self
         self.behaviors.append(behavior)
+        return behavior
 
     def get_behavior(self, class_name):
         for b in self.behaviors:

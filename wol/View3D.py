@@ -123,8 +123,8 @@ class View3D(QOpenGLWidget):
             if self.context.hover_target is None:
                 pointed = " "
             else:
-                name = self.context.hover_target.name
-
+                if name is not None:
+                    name = str(self.context.hover_target.name)
 
             self.hud.hud1.set_text(name+"\n"+pointed)
         self.hud_root.paint_recurs(program, -1)

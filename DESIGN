@@ -10,19 +10,47 @@ MVC vs visualizer/editor
 
 
 
+User story
+----------
+We collaborate on a git tree.
+I have local modifications I want to show another person
+I want to show the result of the execution
+Together we change the file content until we are happy
+We end up doing a git commit
+
 
 Networking
 ----------
 Keep it simple:
 We connect to a server.
 
+- Submit objects to synchronization
+- Receive an id for the object
+- Do changes locally
+- Push them
+- Receive them
+
+- Could it simply be a Behavior?
+
+
 Simple protocol
-    Knockknock: "Hi! I would like to see your scene" (placeholder for auth)
-    list: "Show me the objects I can subscribe to"
-    subscribe [list]: "Send me initial states and update on all of these please"
-    sendstate [list]: "Send me initial states (again) on all of these per favor"
-    state <id> <state>: "Here is the state of obj <id>"
-    pose <id> <pos/orient/scale>: "Here is the pose of obj <id>"
+
+client -> Server:
+- Knockknock: "Hi! I would like to see your scene" (placeholder for auth)
+- sendall: "Send me initial states of the objects in the scene"
+- sendmenewid: "Create a new object and send my its ID"
+Server <- Client
+- newobjid <id>
+both:
+- state <id> <state>: "Here is the full state of obj <id>"
+- pose <id> <pos/orient/scale>: "Here is the pose of obj <id>"
+- update <id> <field> <value>: "Update field's value on obj <id>"
+
+Persistence
+- Is the state saved on the server?
+- On the clients?
+
+I like the idea of servers being empty "rooms" you populate with states and that you can also manipulate locally.
 
 Root
 |
