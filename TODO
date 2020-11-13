@@ -1,5 +1,6 @@
 Architecture
 ============
+- keybindings-> nav/tab -> on_key handlers in behaviors (collapse keymap et le truc commencé dans PlayerContext)
 - Put the collision logic in a saner place
 - Clean up the order of the updates
 - Debug transparency order
@@ -13,7 +14,6 @@ Architecture
 - Normaliser les noms d'attributs dans les shaders!
 - Does it make sense to create a collider hierarchy?
 - Should paint really use the self.program argument?
-- keybindings-> nav/tab -> on_key handlers in behaviors
 - onclick becomes a behavior only thing?
 - manage focus a bit more automatically
 - Add crosshairs under self.context.hud in View3D

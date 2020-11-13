@@ -91,6 +91,8 @@ class CodeRunnerEditorNode(SceneNode):
                                       name=self.name+"_edit",
                                       text=text,
                                       autosize=True)
+        self.text_edit.widget.textChanged.connect(self.on_text_changed)
+
         self.title_bar = TextLabelNode(name=self.name + "_titlebar", parent=self, text=filename)
         self.title_bar.position = QVector3D(0, 1, 0)
 
@@ -98,6 +100,11 @@ class CodeRunnerEditorNode(SceneNode):
 
         for c in self.children:
             c.properties["delegateGrabToParent"] = True
+
+    def on_text_changed(self):
+        f = open(self.filename, "w")
+        f.write(self.text_edit.widget.toPlainText())
+        f.close()
 
     def run_code(self):
         self.thread = threading.Thread(target=self.threaded_func)

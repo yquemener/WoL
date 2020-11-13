@@ -1,9 +1,12 @@
-from PyQt5.QtCore import QRegExp, Qt, QRect
+from PyQt5.QtCore import QRegExp, Qt, QRect, QObject
 from PyQt5.QtGui import QOpenGLTexture, QImage, QSyntaxHighlighter, QColor, QTextCharFormat, QFont
 from PyQt5.QtWidgets import QTextEdit, QApplication
 
 from wol import utils
 from wol.GeomNodes import CardNode
+
+def test():
+    print("Yo")
 
 
 class TextEditNode(CardNode):
