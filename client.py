@@ -9,7 +9,7 @@ import math
 from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4, QVector4D
 from PyQt5.QtWidgets import QApplication
 
-from wol import Behavior, DevScenes
+from wol import Behavior, DevScenes, stdout_helpers
 from wol.GeomNodes import Grid, Sphere, CardNode, WireframeCubeNode, CubeNode
 from wol.CodeBumperNode import CodeBumperNode
 from wol.ConsoleNode import ConsoleNode
@@ -115,6 +115,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = View3D()
     context = window.context
+    stdout_helpers.enable_proxy()
 
     load = False
     if load:

@@ -2,7 +2,9 @@
 editor with the code when e-clicked. Hopefully also saves the code from one session to the other.
 """
 from PyQt5.QtGui import QVector3D, QVector4D
+from io import StringIO
 
+from wol import stdout_helpers
 from wol.Behavior import Behavior, RotateConstantSpeed
 from wol.GeomNodes import CubeNode, WireframeCubeNode
 from wol.GuiElements import TextLabelNode
@@ -96,7 +98,12 @@ class CodeRunnerEditorNode(SceneNode):
         self.title_bar = TextLabelNode(name=self.name + "_titlebar", parent=self, text=filename)
         self.title_bar.position = QVector3D(0, 1, 0)
 
+        self.output_text = TextLabelNode(name=self.name + "_output", parent=self, text="test ")
+        self.output_text.position = QVector3D(0, -1, 0)
+
         self.thread = None
+        self.redirected_output = StringIO()
+        self.redirected_output_pos = 0
 
         for c in self.children:
             c.properties["delegateGrabToParent"] = True
@@ -112,14 +119,23 @@ class CodeRunnerEditorNode(SceneNode):
         pass
 
     def threaded_func(self):
-        # redirected_output = sys.stdout = StringIO()
-        exec(self.text_edit.text, dict(), dict())
+        new_globals = dict()
+        new_locals = dict()
+        self.redirected_output = stdout_helpers.redirect()
+        exec(self.text_edit.text, new_globals, new_locals)
 
     def update(self, dt):
+        # print(self.redirected_output.getvalue())
+        if self.redirected_output_pos != self.redirected_output.tell():
+            self.redirected_output_pos = self.redirected_output.tell()
+            self.output_text.set_text(self.redirected_output.getvalue())
+
         if self.thread is not None and self.thread.is_alive():
             self.indicator_behavior.speed = 200
+
         else:
             self.indicator_behavior.speed = 0
+
 
 
 
