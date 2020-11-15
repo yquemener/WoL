@@ -67,6 +67,10 @@ def scene_ide(context):
     objed.position = QVector3D(5, 4, -5)
     objed.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
 
+    objed = CodeRunnerEditorNode(parent=context.scene, filename="my_project/server.py")
+    objed.position = QVector3D(8, 4, -5)
+    objed.orientation = QQuaternion.fromEulerAngles(0, 230, 0)
+
     context.scene.context.debug_sphere = Sphere(name="SpherePointer", parent=context.scene)
     context.scene.context.debug_sphere.scale = QVector3D(0.1, 0.1, 0.1)
     context.scene.context.debug_sphere.collider = None

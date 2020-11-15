@@ -24,11 +24,11 @@ class View3D(QOpenGLWidget):
         QSurfaceFormat.setDefaultFormat(fmt)
         super(View3D, self).__init__(parent)
 
-
         self.clearColor = QColor(Qt.black)
         self.program = None
         self.context = PlayerContext()
-        self.context.scene = RootNode(self.context)
+        self.scene = RootNode(self.context)
+        self.context.scene = self.scene
         self.hud = DotDict()
         self.hud_root = RootNode(self.context)
         # self.hud_root.orientation = QQuaternion.fromAxisAndAngle(0, 1, 0, 180)
@@ -136,9 +136,10 @@ class View3D(QOpenGLWidget):
         self.context.current_camera.ratio = width / height
 
     def scene_update(self):
+        self.context.scene.lock.acquire()
         self.context.scene.update_recurs(0.01)
+        self.context.scene.lock.release()
         self.hud_root.update_recurs(0.01)
-
 
         # Put the collision detection in a more appropriate place (RootNode? Context?)
         if self.keepMouseCentered:

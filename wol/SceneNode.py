@@ -2,7 +2,7 @@ from OpenGL import GL
 from PyQt5.QtGui import QMatrix4x4, QQuaternion, QVector3D, QImage, QOpenGLTexture, QTransform, QMatrix3x3, QVector4D
 import struct
 import inspect
-
+from threading import Lock
 from wol import utils
 
 
@@ -256,6 +256,7 @@ class RootNode(SceneNode):
         self.position = QVector3D(0.0, 0.0, 0.0)
         self.forward = QVector3D()
         self.up = QVector3D()
+        self.lock = Lock()
 
 
 class CameraNode(SceneNode):

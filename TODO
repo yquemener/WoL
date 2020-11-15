@@ -11,7 +11,7 @@ Architecture
 - Reorganize the module hierarchy into something cleaner
     - Rename the files that now contain several classes appropriately
 - Put the loading code somewhere else than in the main
-- Normaliser les noms d'attributs dans les shaders!
+- Standardiser les noms d'attributs dans les shaders!
 - Does it make sense to create a collider hierarchy?
 - Should paint really use the self.program argument?
 - onclick becomes a behavior only thing?
@@ -31,15 +31,14 @@ Graphics Enhancements
 - shader with ambient
 - better mesh structure with faces, normals, option for doing wireframe, etc...
 - Redo the shadow of the crosshair
-- Ability to "align-right-top"
 - Make a shader to make transparent text visible over white background
+- Fix the light, either by making it good from all angles or making it a placeable object
 
 
 UI
 ==
 - Add HUD tooltips
 - Find a better code highliter
-- UI logic
 - Debug console scrolling (allow clicks and check why the scrollbar renders weirdly)
 - Add smart indentation to the code view
 - Add rlcompleter to TextEdit
@@ -48,7 +47,7 @@ UI
 - Find a good scrolling implementation for too long pages when snapped in view
 - Altitude guides? (dashed line a la starcraft for flying units) or shadows
 - allow grab of elements in Tab mode
-- copy-paste from outside
+
 
 Debug
 =====
@@ -56,7 +55,10 @@ Debug
 - Compute the correct collision point in Sphere-Ray collisions
 - Can't move again after `ESC` on text
 - Tab, leave window, come back on window -> pointer is gone
-- Handle tab correctly when in code editor window!
+- Handle 'tab' correctly when in code editor window!
+- Grab, snap -> object is not under cursor anymore, means grab can't release!
+- Understand why I can't create objects from a CodeRunnerEditor
+- Remove formatting when copypasting from outside
 
 Features
 ========
@@ -87,3 +89,5 @@ X Nettoyer Context d'ailleurs (Why? C'est pas trop mal...)
 - There is a seam on of the sides of the skybox
 - Think of a cleaner way to display a HUD sceneroot (shader with no proj matrix at all maybe?)
 - HUD elements that bypass rescaling ratio?
+- UI logic
+- copy-paste from outside

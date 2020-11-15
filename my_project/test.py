@@ -1,6 +1,13 @@
 import random
 import time
+import sys
 
-for i in range(50):
-    print(str(i)+" Coucou")
-    time.sleep(0.1)
+print("coucou")
+
+print(self)
+print(self.context)
+print(self.context.scene)
+
+self.context.scene.lock.acquire()
+CodeRunnerEditorNode(parent=self.context.scene, filename="my_project/server.py")
+self.context.scene.lock.release()
