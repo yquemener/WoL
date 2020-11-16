@@ -1,25 +1,14 @@
 #!/usr/bin/env python
-import sys
 import signal
-import os
+import socket
+import sys
 
-import time
-
-import math
-from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4, QVector4D
+from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4
 from PyQt5.QtWidgets import QApplication
 
 from wol import Behavior, DevScenes, stdout_helpers
-from wol.GeomNodes import Grid, Sphere, CardNode, WireframeCubeNode, CubeNode
-from wol.CodeBumperNode import CodeBumperNode
-from wol.ConsoleNode import ConsoleNode
-from wol.ObjectEditorNode import ObjectEditorNode
-from wol.PythonFileEditorNode import PythonFileEditorNode
-from wol.SceneNode import CameraNode, SkyBox, SceneNode
-from wol.Server import ServerNode, ClientNode
-from wol.TextEditNode import TextEditNode
+from wol.SceneNode import CameraNode, SceneNode
 from wol.View3D import View3D
-import socket
 
 
 class MyCamera(CameraNode):

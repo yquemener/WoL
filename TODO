@@ -57,8 +57,8 @@ Debug
 - Tab, leave window, come back on window -> pointer is gone
 - Handle 'tab' correctly when in code editor window!
 - Grab, snap -> object is not under cursor anymore, means grab can't release!
-- Understand why I can't create objects from a CodeRunnerEditor
 - Remove formatting when copypasting from outside
+- Remove hud visor when 'tab' is pressed or code is focused
 
 Features
 ========

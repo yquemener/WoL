@@ -6,7 +6,6 @@ from threading import Lock
 from wol import utils
 
 
-
 class SceneNode:
     next_uid = 0
     uid_map = dict()
@@ -257,6 +256,15 @@ class RootNode(SceneNode):
         self.forward = QVector3D()
         self.up = QVector3D()
         self.lock = Lock()
+
+    def clear(self):
+        # TODO: actually clear everything cleanly and recursively
+        # for c in self.children:
+        #     del c
+        for c in self.children:
+            print(c)
+        self.children = list()
+        self.children.append(self.context.current_camera)
 
 
 class CameraNode(SceneNode):

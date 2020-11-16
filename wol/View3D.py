@@ -261,6 +261,7 @@ class View3D(QOpenGLWidget):
             s = fout.read()
             fout.close()
             d = globals()
+            self.context.scene.clear()
             d["context"] = self.context
             exec(s, d, d)
 

@@ -6,6 +6,7 @@ from wol import Behavior
 from wol.CodeBumperNode import CodeBumperNode, CodeRunnerEditorNode
 from wol.ConsoleNode import ConsoleNode
 from wol.GeomNodes import Grid, Sphere, WireframeCubeNode, CubeNode, CardNode
+from wol.GuiElements import WidgetTestNode
 from wol.PythonFileEditorNode import PythonFileEditorNode
 from wol.SceneNode import SceneNode, SkyBox
 from wol.Server import ServerNode, ClientNode
@@ -70,6 +71,10 @@ def scene_ide(context):
     objed = CodeRunnerEditorNode(parent=context.scene, filename="my_project/server.py")
     objed.position = QVector3D(8, 4, -5)
     objed.orientation = QQuaternion.fromEulerAngles(0, 230, 0)
+
+    objed = WidgetTestNode(parent=context.scene, text="my_project\nserver.py")
+    objed.position = QVector3D(5, 0, -5)
+    objed.orientation = QQuaternion.fromEulerAngles(-90, 230, 0)
 
     context.scene.context.debug_sphere = Sphere(name="SpherePointer", parent=context.scene)
     context.scene.context.debug_sphere.scale = QVector3D(0.1, 0.1, 0.1)

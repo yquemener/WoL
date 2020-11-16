@@ -149,9 +149,9 @@ class CodeRunnerEditorNode(SceneNode):
     def threaded_func(self, stdout_queue):
         sys.stdout = stdout_queue
         new_globals = globals()
-        new_locals = locals()
+        # new_locals = locals()
         # new_globals = dict()
-        # new_locals = dict()
+        new_locals = dict()
         exec(self.text_edit.text, new_globals, new_locals)
 
     def update(self, dt):
