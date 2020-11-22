@@ -1,3 +1,9 @@
+# The goal of this file is to redirect the stdout of different threads to different StringIO objects
+# A surprisingly non-trivial task.
+# Proxy objects are defined: they act like real objects but when accessed they can return different
+# objects depending on the context. Here, we replace sys.stdout by proxies that return different
+# objects depending on the current thread.
+#
 # copied from https://stackoverflow.com/a/43667367/1193986
 #
 # (c) umichscoots 2017

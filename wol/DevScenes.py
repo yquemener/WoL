@@ -13,7 +13,6 @@ from wol.Server import ServerNode, ClientNode
 
 
 def scene_tests(context):
-
     o5 = CardNode(parent=context.scene, filename="resources/alphatest.png")
     o5.anim_timer = 0.0
     o5.add_behavior(Behavior.SlerpAnim(10.0))
@@ -50,7 +49,6 @@ def scene_load(context):
 
 
 def scene_ide(context):
-
     context.scene.context.current_camera.position = QVector3D(5, 5, -10)
 
     o = ConsoleNode(parent=context.scene, name="ConsoleNode#1")
@@ -101,3 +99,9 @@ def scene_network(context):
     cli.position = QVector3D(3, 4, 0)
 
 
+def scene_gui_test(context):
+    context.scene.context.current_camera.position = QVector3D(5, 5, -10)
+
+    objed = WidgetTestNode(parent=context.scene, text="my_project\nserver.py")
+    objed.position = QVector3D(3, 4, -5)
+    objed.orientation = QQuaternion.fromEulerAngles(0, 180, 0)

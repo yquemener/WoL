@@ -1,8 +1,9 @@
 import random
 import time
-import sys
+import sys                                                 
 
 print("coucou")
 
 for i in range(10):
-	print(i)
+    print(i)
+    time.sleep(0.2)

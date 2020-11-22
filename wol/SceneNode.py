@@ -33,6 +33,7 @@ class SceneNode:
         self.visible = True
         self.properties = dict()
         self.behaviors = list()
+        self.tooltip = None
         """ Layers:
             0: skybox
             1: regular objects

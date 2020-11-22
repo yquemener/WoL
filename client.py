@@ -121,6 +121,7 @@ if __name__ == '__main__':
         # DevScenes.scene_network(context)
         DevScenes.scene_ide(context)
         # DevScenes.scene_tests(context)
+        # DevScenes.scene_gui_test(context)
 
     my_cam.add_behavior(Behavior.SnapToCamera())
     context.scene.context.current_camera = my_cam

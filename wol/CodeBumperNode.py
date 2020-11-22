@@ -2,6 +2,7 @@
 editor with the code when e-clicked. Hopefully also saves the code from one session to the other.
 """
 import multiprocessing
+import threading
 import queue
 
 import sys
@@ -10,6 +11,7 @@ from multiprocessing.queues import Queue
 from PyQt5.QtGui import QVector3D, QVector4D
 from io import StringIO
 
+from wol import stdout_helpers
 from wol.Behavior import Behavior, RotateConstantSpeed
 from wol.GeomNodes import CubeNode, WireframeCubeNode
 from wol.GuiElements import TextLabelNode
@@ -17,6 +19,8 @@ from wol.SceneNode import SceneNode
 from wol.TextEditNode import TextEditNode
 
 from random import random
+
+from wol.utils import KillableThread
 
 
 class StdoutQueue(Queue):
@@ -73,11 +77,12 @@ class CodeBumperNode(TextLabelNode):
 
 
 class CodeRunnerEditorRunBehaviorRun(Behavior):
-    def __init__(self):
+    def __init__(self, run_mode=1):
         super().__init__()
+        self.run_mode = run_mode
 
     def on_click(self, evt, pos):
-        self.obj.parent.run_code()
+        self.obj.parent.run_code(self.run_mode)
 
 
 class CodeRunnerEditorRunBehaviorKill(Behavior):
@@ -86,8 +91,14 @@ class CodeRunnerEditorRunBehaviorKill(Behavior):
 
     def on_click(self, evt, pos):
         # self.obj.parent.thread.kill()
-        if self.obj.parent.process.is_alive():
-            self.obj.parent.process.terminate()
+        if self.obj.parent.process is not None:
+            if self.obj.parent.process.is_alive():
+                self.obj.parent.process.terminate()
+        if self.obj.parent.thread is not None:
+            self.obj.parent.thread.kill_me = True
+        # self.obj.parent.redirected_output_thread = None
+        # self.obj.parent.redirected_output_process = None
+        # self.obj.parent.redirected_output_pos = 0
 
 
 class CodeRunnerEditorNode(SceneNode):
@@ -101,19 +112,28 @@ class CodeRunnerEditorNode(SceneNode):
         except FileNotFoundError:
             text = " "
 
-        self.button_run = CubeNode(parent=self, color=QVector4D(0, 1, 0, 0.5))
-        self.button_run.position = QVector3D(1, 0.5, 0)
-        self.button_run.scale = QVector3D(0.1, 0.1, 0.1)
-        self.button_run.add_behavior(CodeRunnerEditorRunBehaviorRun())
+        self.button_run_process = CubeNode(parent=self, color=QVector4D(0, 1, 0, 0.5))
+        self.button_run_process.position = QVector3D(1, 0.5, 0)
+        self.button_run_process.scale = QVector3D(0.1, 0.1, 0.1)
+        self.button_run_process.add_behavior(CodeRunnerEditorRunBehaviorRun(1))
+        self.button_run_process.tooltip = "Run in a process"
+
+        self.button_run_thread = CubeNode(parent=self, color=QVector4D(0, 1, 0, 0.5))
+        self.button_run_thread.position = QVector3D(1.24, 0.5, 0)
+        self.button_run_thread.scale = QVector3D(0.1, 0.1, 0.1)
+        self.button_run_thread.add_behavior(CodeRunnerEditorRunBehaviorRun(2))
+        self.button_run_thread.tooltip = "Run in a thread"
 
         self.button_kill = CubeNode(parent=self, color=QVector4D(0.3, 0.3, 0.3, 0.5))
         self.button_kill.scale = QVector3D(0.1, 0.1, 0.1)
         self.button_kill.position = QVector3D(1, 0.3, 0)
         self.button_kill.add_behavior(CodeRunnerEditorRunBehaviorKill())
+        self.button_kill.tooltip = "Kill"
 
         self.run_indicator = WireframeCubeNode(parent=self, color=QVector4D(1, 1, 1, 1))
         self.run_indicator.scale = QVector3D(0.1, 0.1, 0.1)
         self.run_indicator.position = QVector3D(1, 1, 0)
+        self.run_indicator.tooltip = "Not running"
         self.indicator_behavior = self.run_indicator.add_behavior(RotateConstantSpeed())
 
         self.text_edit = TextEditNode(parent=self,
@@ -129,7 +149,9 @@ class CodeRunnerEditorNode(SceneNode):
         self.output_text.position = QVector3D(0, -1, 0)
 
         self.process = None
-        self.redirected_output = None
+        self.thread = None
+        self.redirected_output_process = None
+        self.redirected_output_thread = None
         self.redirected_output_pos = 0
 
         for c in self.children:
@@ -140,37 +162,55 @@ class CodeRunnerEditorNode(SceneNode):
         f.write(self.text_edit.widget.toPlainText())
         f.close()
 
-    def run_code(self):
-        self.redirected_output = StdoutQueue()
-        self.process = multiprocessing.Process(target=self.threaded_func, args=(self.redirected_output,))
-        self.process.start()
-        pass
+    def run_code(self, mode=1):
+        self.output_text.set_text(" ")
+        if mode == 1:
+            self.redirected_output_process = StdoutQueue()
+            self.process = multiprocessing.Process(target=self.threaded_func, args=(mode, self.redirected_output_process,))
+            self.process.start()
+        elif mode == 2:
+            self.redirected_output_thread = StringIO()
+            self.thread = KillableThread(target=self.threaded_func, args=(mode, self.redirected_output_process))
+            self.thread.start()
 
-    def threaded_func(self, stdout_queue):
-        sys.stdout = stdout_queue
+    def threaded_func(self, mode, stdout_queue):
+        if mode == 1:
+            sys.stdout = stdout_queue
+        elif mode == 2:
+            self.redirected_output_thread = stdout_helpers.redirect()
         new_globals = globals()
         # new_locals = locals()
         # new_globals = dict()
         new_locals = dict()
-        exec(self.text_edit.text, new_globals, new_locals)
+        try:
+            exec(self.text_edit.text, new_globals, new_locals)
+        except KeyboardInterrupt:
+            pass
 
     def update(self, dt):
-        if self.redirected_output is not None:
+        if self.redirected_output_process is not None:
             try:
                 newtext = self.output_text.text
-                newtext += self.redirected_output.get(False)
+                newtext += self.redirected_output_process.get(False)
                 self.output_text.set_text(newtext)
+                print("process update")
             except queue.Empty:
                 pass
-        # if self.redirected_output_pos != self.redirected_output.tell():
-        #     self.redirected_output_pos = self.redirected_output.tell()
-        #     self.output_text.set_text(self.redirected_output.getvalue())
 
-        if self.process is not None and self.process.is_alive():
+        if self.redirected_output_thread is not None:
+            if self.redirected_output_pos != self.redirected_output_thread.tell():
+                self.redirected_output_pos = self.redirected_output_thread.tell()
+                self.output_text.set_text(self.redirected_output_thread.getvalue())
+                print("Thread update")
+
+        if (self.process is not None and self.process.is_alive()) or \
+                (self.thread is not None and self.thread.is_alive()):
             self.indicator_behavior.speed = 200
+            self.run_indicator.tooltip = "Running"
 
         else:
             self.indicator_behavior.speed = 0
+            self.run_indicator.tooltip = "Not running"
 
 
 
