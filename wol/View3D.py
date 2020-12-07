@@ -53,7 +53,7 @@ class View3D(QOpenGLWidget):
         self.setGeometry(10, 10, 1200, 800)
 
         # HUD definition
-        self.hud.hud1 = TextLabelNode(parent=self.hud_root, text=" ")
+        self.hud.hud1 = TextLabelNode(parent=self.hud_root, text="")
         self.hud.hud1.layer = -1
         self.hud.hud1.position.setX(0.5)
         self.hud.hud1.position.setY(0.5)
@@ -130,7 +130,9 @@ class View3D(QOpenGLWidget):
             if self.context.hover_target.tooltip is not None:
                 self.hud.hud1.set_text(str(self.context.hover_target.tooltip))
             else:
-                self.hud.hud1.set_text(" ")
+                self.hud.hud1.set_text("")
+        else:
+            self.hud.hud1.set_text("")
         self.hud_root.paint_recurs(program, -1)
         GL.glEnable(GL.GL_DEPTH_TEST)
 

@@ -193,7 +193,6 @@ class CodeRunnerEditorNode(SceneNode):
                 newtext = self.output_text.text
                 newtext += self.redirected_output_process.get(False)
                 self.output_text.set_text(newtext)
-                print("process update")
             except queue.Empty:
                 pass
 
@@ -201,7 +200,6 @@ class CodeRunnerEditorNode(SceneNode):
             if self.redirected_output_pos != self.redirected_output_thread.tell():
                 self.redirected_output_pos = self.redirected_output_thread.tell()
                 self.output_text.set_text(self.redirected_output_thread.getvalue())
-                print("Thread update")
 
         if (self.process is not None and self.process.is_alive()) or \
                 (self.thread is not None and self.thread.is_alive()):

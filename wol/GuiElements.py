@@ -1,3 +1,4 @@
+import time
 from PyQt5.QtGui import QColor, QOpenGLTexture, QImage, QWindow, QPalette
 from PyQt5.QtWidgets import QLabel, QFrame, QMainWindow, QApplication, QWidget, QVBoxLayout
 from PyQt5.QtCore import Qt, QRect
@@ -20,7 +21,7 @@ class TextLabelNode(CardNode):
         self.widget.setText(text)
         qfm = self.widget.fontMetrics()
         rect = qfm.boundingRect(QApplication.desktop().geometry(), Qt.TextWordWrap, text, 4)
-        self.margin = 5
+        self.margin = 15
         w = rect.width() + self.margin*2
         h = rect.height() + self.margin*2
         self.frame.setGeometry(0, 0, w, h)
@@ -42,7 +43,10 @@ class TextLabelNode(CardNode):
 
     def update(self, dt):
         if self.needs_refresh:
-            self.texture = QOpenGLTexture(QImage(self.frame.grab()))
+            if self.text == "":
+                self.texture = QOpenGLTexture(QImage(b'\0\0\0\0', 1, 1, QImage.Format_ARGB32))
+            else:
+                self.texture = QOpenGLTexture(QImage(self.frame.grab()))
             self.needs_refresh = False
 
     def set_text(self, t):
@@ -54,7 +58,8 @@ class TextLabelNode(CardNode):
         rect = qfm.boundingRect(QApplication.desktop().geometry(), Qt.TextWordWrap, t, 4)
         w = rect.width() + self.margin*2
         h = rect.height() + self.margin*2
-        self.frame.setGeometry(0, 0, w, h)
+        self.frame.setFixedSize(w, h)
+
         self.vertices = utils.generate_square_vertices_fan()
         wscale = w/512.0
         hscale = h/512.0
@@ -122,7 +127,10 @@ class WidgetTestNode(CardNode):
 
     def update(self, dt):
         if self.needs_refresh:
-            self.texture = QOpenGLTexture(QImage(self.widget.grab()))
+            if self.text=="":
+                self.texture = QOpenGLTexture(QImage(self.frame.grab()))
+            else:
+                self.texture = None
             self.needs_refresh = False
 
     def set_text(self, t):
@@ -142,6 +150,7 @@ class WidgetTestNode(CardNode):
             v[1] *= hscale
             v[0] *= wscale
         self.refresh_vertices()
+
         self.needs_refresh = True
 
 
