@@ -1,20 +1,20 @@
 Architecture
 ============
-- keybindings-> nav/tab -> on_key handlers in behaviors (collapse keymap et le truc commencé dans PlayerContext)
+- keybindings-> nav/tab -> on_key handlers in behaviors
+    -> finish the cleanup
+- onclick becomes a behavior only thing?
+    -> Yes and all actions get a "click" coordinate
 - Put the collision logic in a saner place
+- Does it make sense to create a collider hierarchy?
 - Clean up the order of the updates
-- Debug transparency order
-- Make position/orientation properties to help serialization
 - Switch to new pos/orient values after the scene update (why, again? (because I think there is
     some frame delay in some updates in child-parents mess))
+- Debug transparency order
+- Make position/orientation properties to help serialization
 - Make constructors parameter-less and have an init() call, to help serialization
-- Reorganize the module hierarchy into something cleaner
-    - Rename the files that now contain several classes appropriately
 - Put the loading code somewhere else than in the main
 - Standardiser les noms d'attributs dans les shaders!
-- Does it make sense to create a collider hierarchy?
 - Should paint really use the self.program argument?
-- onclick becomes a behavior only thing?
 - manage focus a bit more automatically
 - Add crosshairs under self.context.hud in View3D
 - Should .scene really be a member of .context? Why not just View3D?
@@ -47,6 +47,8 @@ UI
 - Find a good scrolling implementation for too long pages when snapped in view
 - Altitude guides? (dashed line a la starcraft for flying units) or shadows
 - allow grab of elements in Tab mode
+- When a window is being edited, cheat with the Z-buffer to make it appear above other objects
+    (switch it to HUD layer?)
 
 
 Debug

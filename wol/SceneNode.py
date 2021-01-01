@@ -247,6 +247,10 @@ class SceneNode:
     def on_click(self, pos, evt):
         return
 
+    def on_action(self, act):
+        for b in self.behaviors:
+            b.on_action(act)
+
 
 class RootNode(SceneNode):
     def __init__(self, context, name="root"):

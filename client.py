@@ -15,51 +15,9 @@ class MyCamera(CameraNode):
     def __init__(self, parent, name="MyCam"):
         CameraNode.__init__(self, parent=parent, name=name)
         self.speed = 0.2
-
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.logged_in = False
-
-    def update(self, dt):
-        yaw = self.context.mouse_position.x() * 180.0
-        pitch = -self.context.mouse_position.y() * 90.0
-
-        xaxis = QVector3D(1, 0, 0)
-        yaw_rotation = QQuaternion.fromAxisAndAngle(0, 1, 0, yaw)
-        pitch_axis = yaw_rotation.rotatedVector(xaxis)
-        pitch_rotation = QQuaternion.fromAxisAndAngle(pitch_axis, pitch)
-
-        m = QMatrix4x4()
-        m.rotate(pitch_rotation)
-        m.rotate(yaw_rotation)
-        direction = m * QVector3D(0, 0, 1)
-        self.context.current_camera.look_at = self.context.current_camera.position + direction
-        self.context.current_camera.up = QVector3D(0, 1, 0)
-        self.orientation = pitch_rotation * yaw_rotation
-        right = QVector3D.crossProduct(direction,
-                                       self.context.current_camera.up).normalized() * self.speed
-
-        for action, delta in (
-                ('forward', direction*self.speed),
-                ('back',    -direction*self.speed),
-                ('left',    -right),
-                ('right',   right),
-                ('up', self.context.current_camera.up * self.speed),
-                ('down', -self.context.current_camera.up * self.speed)):
-            if self.context.abstract_input.get(action, False):
-                self.context.current_camera.position += delta
-                self.context.current_camera.look_at += delta
-
-        """self.socket.sendto(
-            bytes(f"pos {self.position[0]} {self.position[1]} {self.position[2]}", "ascii"), 
-            ('localhost', 8971))
-
-        if not self.logged_in:
-            try:
-                self.socket.sendto(bytes("Hi! Yves", 'ascii'), ('localhost', 8971))
-                self.logged_in = True
-                print("Logged in")
-            finally:
-                pass"""
+        self.add_behavior(Behavior.MoveAround(0.2))
 
 
 def load_scene_ini():

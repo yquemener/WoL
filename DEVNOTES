@@ -144,3 +144,10 @@ un merge d'une scene locale et remote.
 
 Ça simplifiera un peu les choses je pense.
 
+2020-12-31
+----------
+Pour les serveurs, il me faudra de la containerization. Je ne pense pas que ce soit négotiable.
+Personne ne souhaite ouvrir un SSH chez soi, même pour des amis. Idée simple: lancer ça dans un
+container docker. À plus long terme: avoir un serveur qui soit une sorte d'hyperviseur lançant des
+container à la demande.
+

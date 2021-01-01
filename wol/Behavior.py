@@ -1,12 +1,17 @@
 # Behaviors are things that are attached to objects and are called on each update. They can hold
 # states and describe pieces of behaviors, hence their name
+from collections import defaultdict
+
 from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4, QMatrix3x3
+
+from wol.PlayerContext import UserActions
 
 
 class Behavior:
     def __init__(self):
         self.obj = None
         self.kill_me = False
+        self.handlers = defaultdict(list)
 
     def on_update(self, dt):
         return
@@ -14,11 +19,52 @@ class Behavior:
     def on_click(self, evt, pos):
         return
 
+    def on_action(self, act):
+        for h in self.handlers[act]:
+            h()
+        return
+
     def kill(self):
         self.kill_me = True
 
 
 # A few built-in behaviors:
+
+# Move the Camera
+class MoveAround(Behavior):
+    def __init__(self, speed=0.2):
+        super().__init__()
+        self.speed = speed
+
+    def on_update(self, dt):
+        yaw = self.obj.context.mouse_position.x() * 180.0
+        pitch = -self.obj.context.mouse_position.y() * 90.0
+
+        xaxis = QVector3D(1, 0, 0)
+        yaw_rotation = QQuaternion.fromAxisAndAngle(0, 1, 0, yaw)
+        pitch_axis = yaw_rotation.rotatedVector(xaxis)
+        pitch_rotation = QQuaternion.fromAxisAndAngle(pitch_axis, pitch)
+
+        m = QMatrix4x4()
+        m.rotate(pitch_rotation)
+        m.rotate(yaw_rotation)
+        direction = m * QVector3D(0, 0, 1)
+        self.obj.look_at = self.obj.position + direction
+        self.obj.up = QVector3D(0, 1, 0)
+        self.obj.orientation = pitch_rotation * yaw_rotation
+        right = QVector3D.crossProduct(direction,
+                                       self.obj.up).normalized() * self.speed
+
+        for action, delta in (
+                ('forward', direction*self.speed),
+                ('back',    -direction*self.speed),
+                ('left',    -right),
+                ('right',   right),
+                ('up', self.obj.up * self.speed),
+                ('down', -self.obj.up * self.speed)):
+            if self.obj.context.abstract_input.get(action, False):
+                self.obj.position += delta
+                self.obj.look_at += delta
 
 # Makes a slerp animation between two positions and orientations
 class SlerpAnim(Behavior):

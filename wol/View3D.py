@@ -9,7 +9,7 @@ from math import sin
 
 from wol.ConsoleNode import ConsoleNode
 from wol.GuiElements import TextLabelNode
-from wol.PlayerContext import PlayerContext
+from wol.PlayerContext import PlayerContext, MappingTypes
 from wol.ShadersLibrary import ShadersLibrary
 from wol.SceneNode import RootNode, SceneNode
 import wol.Collisions as Collisions
@@ -189,6 +189,10 @@ class View3D(QOpenGLWidget):
     def keyPressEvent(self, evt):
         #if evt.key() == Qt.Key_Escape:
         #    self.close()
+
+        actions = self.context.mappings.get((MappingTypes.Key, evt.key()), [])
+        for a in actions:
+            self.context.current_camera.on_action(a)
 
         if evt.key() == Qt.Key_Escape:
             if self.context.focused is not None:

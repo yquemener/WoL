@@ -1,5 +1,5 @@
 Some guiding principles
------------------------
+=======================
 - Text is a first class citizen in this 3D world
 - Give users a feeling of control: don't hide things
 
@@ -8,7 +8,7 @@ Some guiding principles
 
 
 MVC vs visualizer/editor
-------------------------
+========================
 - This project is a visualizer and an editor.
 - It aims at visualizing a lot of different things:
     1. files and folders
@@ -20,7 +20,7 @@ MVC vs visualizer/editor
 
 
 User story
-----------
+==========
 We collaborate on a git tree.
 I have local modifications I want to show another person
 I want to show the result of the execution
@@ -29,7 +29,7 @@ We end up doing a git commit
 
 
 Networking
-----------
+==========
 Keep it simple:
 We connect to a server.
 
@@ -43,7 +43,7 @@ We connect to a server.
 
 
 Simple protocol
-
+---------------
 client -> Server:
 - Knockknock: "Hi! I would like to see your scene" (placeholder for auth)
 - sendall: "Send me initial states of the objects in the scene"
@@ -56,6 +56,7 @@ both:
 - update <id> <field> <value>: "Update field's value on obj <id>"
 
 Persistence
+-----------
 - Is the state saved on the server?
 - On the clients?
 
@@ -82,21 +83,37 @@ Root
     - Only users choose which piece of code they are going to run at a given time
     - Code is run locally. The results of the code running can be seen remotely.
 
+Security
+--------
+We will need some containerization at one point. For now, run servers inside a docker container.
+Later on, have a "hypervisor" that starts containers as needed.
+
 GUI
----
+===
 Layout management
 
 
 
 3D Objects interactions
------------------------
+========================
 - The user interacts with objects by sending them actions. E.g. 'activate', 'edit', 'open'.
 - There is a mapping between key/clicks events and actions
     - Several actions can be attributed to the same key
     - A default mapping is provided
 - Behaviors maintain a mapping between actions and handlers
+- Movement keys (that are active as long as they are pressed) are different types of events
+- All actions can have "click" coordinates. Pass it as action arguments, not as .context member as
+it can get ugly in case of delays
+
+Event dispatch order:
+1. Global behaviors
+2. Current camera behaviors
+3. Grabbed object
+4. Hovered object
+
+Can't we just do with 1 and 2 and put the grab and hovering in a camera behavior?
 
 
 HUD
----
+===
 A hud describes the current object type and the possible actions to it
