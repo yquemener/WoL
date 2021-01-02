@@ -1,4 +1,4 @@
-from wol.CodeBumperNode import CodeBumperNode
+from wol.CodeEdit import CodeBumperNode
 from wol.GuiElements import TextLabelNode
 import inspect
 from PyQt5.QtGui import QVector3D

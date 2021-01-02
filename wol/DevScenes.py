@@ -3,7 +3,7 @@ from PyQt5.QtGui import QVector3D, QQuaternion, QVector4D
 
 from client import MyCamera
 from wol import Behavior
-from wol.CodeBumperNode import CodeBumperNode, CodeRunnerEditorNode
+from wol.CodeEdit import CodeBumperNode, CodeRunnerEditorNode
 from wol.ConsoleNode import ConsoleNode
 from wol.GeomNodes import Grid, Sphere, WireframeCubeNode, CubeNode, CardNode
 from wol.GuiElements import WidgetTestNode
@@ -60,6 +60,10 @@ def scene_ide(context):
 
     objed = CodeRunnerEditorNode(parent=context.scene, filename="my_project/test.py")
     objed.position = QVector3D(3, 4, -5)
+    objed.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
+
+    objed = CodeRunnerEditorNode(parent=context.scene, filename="my_project/torchtest.py")
+    objed.position = QVector3D(10, 4, -5)
     objed.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
 
     objed = CodeRunnerEditorNode(parent=context.scene, filename="my_project/main.py")

@@ -11,12 +11,18 @@ class TextLabelNode(CardNode):
     def __init__(self, parent, text="label", name="LabelNode"):
         CardNode.__init__(self, name=name, parent=parent)
         self.frame = QMainWindow()
+        self.frame.setStyleSheet("""
+            color: rgba(255,255,255,255); 
+            background-color: rgba(0,128,0,100); 
+            border: 2px solid rgba(255,255,255,255);;
+            """)
+
         self.widget = QLabel()
         self.widget.setWordWrap(False)
         self.widget.setStyleSheet("""
             color: rgba(255,255,255,255); 
             background-color: rgba(0,128,0,0); 
-            border: 2px solid rgba(255,255,255,255);;
+            border: 0px solid rgba(255,255,255,255);;
             """)
         self.widget.setText(text)
         qfm = self.widget.fontMetrics()
@@ -127,7 +133,7 @@ class WidgetTestNode(CardNode):
 
     def update(self, dt):
         if self.needs_refresh:
-            if self.text=="":
+            if self.text == "":
                 self.texture = QOpenGLTexture(QImage(self.frame.grab()))
             else:
                 self.texture = None

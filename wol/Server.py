@@ -5,7 +5,7 @@ from hashlib import sha256
 
 from PyQt5.QtGui import QVector3D
 
-from wol.CodeBumperNode import CodeBumperNode
+from wol.CodeEdit import CodeBumperNode
 from wol.GeomNodes import Sphere
 from wol.GuiElements import TextLabelNode
 from wol.SceneNode import SceneNode

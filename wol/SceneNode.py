@@ -29,7 +29,7 @@ class SceneNode:
         self.transform = QMatrix4x4()
         self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
         self.collider = None
-        self.prog_matrix = self.transform
+        self.proj_matrix = self.transform
         self.visible = True
         self.properties = dict()
         self.behaviors = list()
@@ -70,9 +70,9 @@ class SceneNode:
         self.transform = m
         self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
         if project:
-            self.prog_matrix = self.context.current_camera.projection_matrix * self.transform
+            self.proj_matrix = self.context.current_camera.projection_matrix * self.transform
         else:
-            self.prog_matrix = self.transform
+            self.proj_matrix = self.transform
         if self.collider is not None:
             self.collider.transform = self.transform
 
@@ -349,7 +349,7 @@ class SkyBox(SceneNode):
         m.rotate(self.orientation)
         self.transform = m
         self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
-        self.prog_matrix = self.context.current_camera.projection_matrix * self.transform
+        self.proj_matrix = self.context.current_camera.projection_matrix * self.transform
         if self.collider is not None:
             self.collider.transform = self.transform
 
@@ -363,6 +363,6 @@ class SkyBox(SceneNode):
         GL.glDepthMask(False)
         for i in range(6):
             self.textures[i].bind()
-            program.setUniformValue('matrix', self.prog_matrix * self.face_transforms[i])
+            program.setUniformValue('matrix', self.proj_matrix * self.face_transforms[i])
             GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
         GL.glPopAttrib(GL.GL_DEPTH_WRITEMASK)

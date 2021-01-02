@@ -2,7 +2,7 @@ from random import random
 
 from wol import Behavior
 from wol.Behavior import TransmitClickTo
-from wol.CodeBumperNode import CodeBumperNode
+from wol.CodeEdit import CodeBumperNode
 from wol.GeomNodes import CubeNode, WireframeCubeNode
 from wol.GuiElements import TextLabelNode
 from PyQt5.QtGui import QVector3D, QVector4D

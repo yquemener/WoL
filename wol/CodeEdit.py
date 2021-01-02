@@ -8,7 +8,8 @@ import queue
 import sys
 from multiprocessing.queues import Queue
 
-from PyQt5.QtGui import QVector3D, QVector4D
+from OpenGL import GL
+from PyQt5.QtGui import QVector3D, QVector4D, QQuaternion, QMatrix4x4
 from io import StringIO
 
 from wol import stdout_helpers
@@ -16,11 +17,61 @@ from wol.Behavior import Behavior, RotateConstantSpeed
 from wol.GeomNodes import CubeNode, WireframeCubeNode
 from wol.GuiElements import TextLabelNode
 from wol.SceneNode import SceneNode
+from wol.ShadersLibrary import ShadersLibrary
 from wol.TextEditNode import TextEditNode
 
 from random import random
 
 from wol.utils import KillableThread
+
+
+def render(obj):
+    renderlist = globals().get("_wol_render_list", list())
+    renderlist.append(obj)
+    globals()["_wol_render_list"] = renderlist
+
+
+class DataViewer(SceneNode):
+    def __init__(self, parent, target):
+        super().__init__(parent=parent)
+        self.target = target
+        self.type_label = TextLabelNode(parent=self, text=str(type(target)))
+        self.content_view = TextLabelNode(parent=self, text="")
+        self.content_view.position += QVector3D(0, -0.2, 0)
+        if isinstance(target, str):
+            self.content_view.set_text(str(target))
+
+        for c in self.children:
+            c.properties["delegateGrabToParent"] = True
+
+        self.vertices = list()
+        self.program = None
+        self.refresh_vertices()
+
+    def initialize_gl(self):
+        self.program = ShadersLibrary.create_program('simple_color')
+
+    def refresh_vertices(self):
+        self.vertices.clear()
+        fverts = list()
+        fverts.append((self.content_view.vertices[3], self.content_view.position))
+        fverts.append((self.type_label.vertices[0], self.type_label.position))
+        fverts.append((self.content_view.vertices[2], self.content_view.position))
+        fverts.append((self.type_label.vertices[1], self.type_label.position))
+        for fv, p in fverts:
+            self.vertices.append(QVector3D(fv[0], fv[1], fv[2])+p)
+
+    def paint(self, program):
+        self.program.bind()
+        self.program.setAttributeArray(0, self.vertices)
+        # identity = QMatrix4x4()
+        # identity.setToIdentity()
+        # self.program.setUniformValue('matrix', self.context.current_camera.projection_matrix)
+        self.program.setUniformValue('matrix', self.proj_matrix)
+        self.program.setUniformValue('material_color', QVector4D(1.0, 1.0, 1.0, 1.0))
+        GL.glDrawArrays(GL.GL_LINES, 0, int(len(self.vertices)))
+        program.bind()
+        return
 
 
 class StdoutQueue(Queue):
@@ -157,6 +208,27 @@ class CodeRunnerEditorNode(SceneNode):
         for c in self.children:
             c.properties["delegateGrabToParent"] = True
 
+        self.vertices = list()
+        self.program = None
+        self.refresh_vertices()
+
+    def initialize_gl(self):
+        self.program = ShadersLibrary.create_program('simple_color')
+
+    def refresh_vertices(self):
+        self.vertices.clear()
+        fverts = list()
+        fverts.append((self.text_edit.vertices[3], self.text_edit.position))
+        fverts.append((self.title_bar.vertices[0], self.title_bar.position))
+        fverts.append((self.text_edit.vertices[2], self.text_edit.position))
+        fverts.append((self.title_bar.vertices[1], self.title_bar.position))
+        fverts.append((self.text_edit.vertices[0], self.text_edit.position))
+        fverts.append((self.output_text.vertices[3], self.output_text.position))
+        fverts.append((self.text_edit.vertices[1], self.text_edit.position))
+        fverts.append((self.output_text.vertices[2], self.output_text.position))
+        for fv, p in fverts:
+            self.vertices.append(QVector3D(fv[0], fv[1], fv[2])+p)
+
     def on_text_changed(self):
         f = open(self.filename, "w")
         f.write(self.text_edit.widget.toPlainText())
@@ -170,7 +242,8 @@ class CodeRunnerEditorNode(SceneNode):
             self.process.start()
         elif mode == 2:
             self.redirected_output_thread = StringIO()
-            self.thread = KillableThread(target=self.threaded_func, args=(mode, self.redirected_output_process))
+            # self.thread = KillableThread(target=self.threaded_func, args=(mode, self.redirected_output_process))
+            self.thread = threading.Thread(target=self.threaded_func, args=(mode, self.redirected_output_process))
             self.thread.start()
 
     def threaded_func(self, mode, stdout_queue):
@@ -179,9 +252,9 @@ class CodeRunnerEditorNode(SceneNode):
         elif mode == 2:
             self.redirected_output_thread = stdout_helpers.redirect()
         new_globals = globals()
-        # new_locals = locals()
+        new_locals = locals()
         # new_globals = dict()
-        new_locals = dict()
+        # new_locals = dict()
         try:
             exec(self.text_edit.text, new_globals, new_locals)
         except KeyboardInterrupt:
@@ -193,6 +266,7 @@ class CodeRunnerEditorNode(SceneNode):
                 newtext = self.output_text.text
                 newtext += self.redirected_output_process.get(False)
                 self.output_text.set_text(newtext)
+                self.refresh_vertices()
             except queue.Empty:
                 pass
 
@@ -200,6 +274,7 @@ class CodeRunnerEditorNode(SceneNode):
             if self.redirected_output_pos != self.redirected_output_thread.tell():
                 self.redirected_output_pos = self.redirected_output_thread.tell()
                 self.output_text.set_text(self.redirected_output_thread.getvalue())
+                self.refresh_vertices()
 
         if (self.process is not None and self.process.is_alive()) or \
                 (self.thread is not None and self.thread.is_alive()):
@@ -210,7 +285,25 @@ class CodeRunnerEditorNode(SceneNode):
             self.indicator_behavior.speed = 0
             self.run_indicator.tooltip = "Not running"
 
+        try:
+            while True:
+                obj = globals().get("_wol_render_list", []).pop()
+                print("Created", str(obj))
+                dv = DataViewer(parent=self.context.scene, target=obj)
+                cam = self.context.current_camera
+                dv.position = cam.look_at
+                dir = cam.look_at - cam.position
+                dv.position = cam.position + dir.normalized()*5.0
+                dv.orientation = cam.orientation
+                dv.orientation *= QQuaternion.fromAxisAndAngle(0, 1, 0, 180)
+        except IndexError:
+            pass
 
-
-
-
+    def paint(self, program):
+        self.program.bind()
+        self.program.setAttributeArray(0, self.vertices)
+        self.program.setUniformValue('matrix', self.proj_matrix)
+        self.program.setUniformValue('material_color', QVector4D(1.0, 1.0, 1.0, 1.0))
+        GL.glDrawArrays(GL.GL_LINES, 0, int(len(self.vertices)))
+        program.bind()
+        return

@@ -28,7 +28,7 @@ class Grid(SceneNode):
     def paint(self, program):
         self.program.bind()
         self.program.setAttributeArray(0, self.vertices)
-        self.program.setUniformValue('matrix', self.prog_matrix)
+        self.program.setUniformValue('matrix', self.proj_matrix)
         self.program.setUniformValue('material_color', self.color)
         GL.glDrawArrays(GL.GL_LINES, 0, 65*4)
         program.bind()
@@ -76,7 +76,7 @@ class WireframeCubeNode(SceneNode):
     def paint(self, program):
         self.program.bind()
         self.program.setAttributeArray(0, self.vertices)
-        self.program.setUniformValue('matrix', self.prog_matrix)
+        self.program.setUniformValue('matrix', self.proj_matrix)
         self.program.setUniformValue('material_color', self.color)
         GL.glDrawArrays(GL.GL_LINES, 0, 24)
         program.bind()
@@ -168,7 +168,7 @@ class CubeNode(SceneNode):
         self.program.setUniformValue('light_position', QVector3D(1.0, 10.0, -10.0))
         self.program.setUniformValue('matmodel', self.transform)
         self.program.setUniformValue('material_color', self.color)
-        self.program.setUniformValue('mvp', self.prog_matrix)
+        self.program.setUniformValue('mvp', self.proj_matrix)
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, 36)
         program.bind()
 
@@ -192,7 +192,7 @@ class Sphere(SceneNode):
         self.program.setUniformValue('light_position', QVector3D(1.0, 10.0, -10.0))
         self.program.setUniformValue('matmodel', self.transform)
         self.program.setUniformValue('material_color', self.color)
-        self.program.setUniformValue('mvp', self.prog_matrix)
+        self.program.setUniformValue('mvp', self.proj_matrix)
         GLU.gluSphere(self.quadric, self.size, 20, 20)
         program.bind()
 
@@ -229,7 +229,7 @@ class CardNode(SceneNode):
         program.setAttributeArray(1, self.texCoords)
         if self.texture:
             self.texture.bind()
-        program.setUniformValue('matrix', self.prog_matrix)
+        program.setUniformValue('matrix', self.proj_matrix)
         GL.glEnable(GL.GL_BLEND)
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
