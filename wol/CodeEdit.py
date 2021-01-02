@@ -8,13 +8,14 @@ import queue
 import sys
 from multiprocessing.queues import Queue
 
+import numpy
 from OpenGL import GL
-from PyQt5.QtGui import QVector3D, QVector4D, QQuaternion, QMatrix4x4
+from PyQt5.QtGui import QVector3D, QVector4D, QQuaternion, QMatrix4x4, QImage
 from io import StringIO
 
 from wol import stdout_helpers
 from wol.Behavior import Behavior, RotateConstantSpeed
-from wol.GeomNodes import CubeNode, WireframeCubeNode
+from wol.GeomNodes import CubeNode, WireframeCubeNode, CardNode
 from wol.GuiElements import TextLabelNode
 from wol.SceneNode import SceneNode
 from wol.ShadersLibrary import ShadersLibrary
@@ -36,10 +37,21 @@ class DataViewer(SceneNode):
         super().__init__(parent=parent)
         self.target = target
         self.type_label = TextLabelNode(parent=self, text=str(type(target)))
-        self.content_view = TextLabelNode(parent=self, text="")
-        self.content_view.position += QVector3D(0, -0.2, 0)
+        self.content_view_text = TextLabelNode(parent=self, text="")
+        self.content_view_text.position += QVector3D(0, -0.2, 0)
+        self.content_view_image = CardNode(parent=self)
+        self.content_view_image.position += QVector3D(0, -0.2, 0.5)
+        self.content_view_image.visible = False
+        self.content_view_image.interpolation = GL.GL_NEAREST
         if isinstance(target, str):
-            self.content_view.set_text(str(target))
+            self.content_view_text.set_text(str(target))
+        elif isinstance(target, numpy.ndarray):
+            im = numpy.require(target, numpy.uint8, 'C')
+            self.content_view_image.texture_image = \
+                QImage(im.data, im.shape[1], im.shape[0], im.strides[0], QImage.Format_RGB888).copy()
+            self.content_view_image.initialize_gl()
+            self.content_view_image.visible = True
+            self.content_view_text.set_text(str(target))
 
         for c in self.children:
             c.properties["delegateGrabToParent"] = True
@@ -52,11 +64,25 @@ class DataViewer(SceneNode):
         self.program = ShadersLibrary.create_program('simple_color')
 
     def refresh_vertices(self):
+        # Refresh layout
+        margin = 0.05
+        h1 = self.type_label.vertices[3][1]-self.type_label.vertices[0][1]
+        h2 = self.content_view_text.vertices[3][1] - self.content_view_text.vertices[0][1]
+        h3 = self.content_view_image.vertices[3][1] - self.content_view_image.vertices[0][1]
+
+        self.content_view_text.position.setY(-h2 / 2 - h1 / 2 - margin)
+        self.content_view_image.position.setY(-h3 / 2 - h1 / 2 - margin)
+
+        # Refresh vertices
         self.vertices.clear()
         fverts = list()
-        fverts.append((self.content_view.vertices[3], self.content_view.position))
+        fverts.append((self.content_view_text.vertices[3], self.content_view_text.position))
         fverts.append((self.type_label.vertices[0], self.type_label.position))
-        fverts.append((self.content_view.vertices[2], self.content_view.position))
+        fverts.append((self.content_view_text.vertices[2], self.content_view_text.position))
+        fverts.append((self.type_label.vertices[1], self.type_label.position))
+        fverts.append((self.content_view_image.vertices[3], self.content_view_image.position))
+        fverts.append((self.type_label.vertices[0], self.type_label.position))
+        fverts.append((self.content_view_image.vertices[2], self.content_view_image.position))
         fverts.append((self.type_label.vertices[1], self.type_label.position))
         for fv, p in fverts:
             self.vertices.append(QVector3D(fv[0], fv[1], fv[2])+p)
