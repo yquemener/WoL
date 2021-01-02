@@ -216,15 +216,24 @@ class CodeRunnerEditorNode(SceneNode):
         self.program = ShadersLibrary.create_program('simple_color')
 
     def refresh_vertices(self):
+        # Refresh layout first
+        margin = 0.05
+        h1 = self.title_bar.vertices[3][1]-self.title_bar.vertices[0][1]
+        h2 = self.text_edit.vertices[3][1] - self.text_edit.vertices[0][1]
+        h3 = self.output_text.vertices[3][1] - self.output_text.vertices[0][1]
+        self.title_bar.position.setY(h2/2 + h1/2 + margin)
+        self.output_text.position.setY(-h2/2 - h3 / 2 - margin)
+
+        # Now refresh vertices
         self.vertices.clear()
         fverts = list()
-        fverts.append((self.text_edit.vertices[3], self.text_edit.position))
+        fverts.append((self.text_edit.vertices[3], QVector3D()))
         fverts.append((self.title_bar.vertices[0], self.title_bar.position))
-        fverts.append((self.text_edit.vertices[2], self.text_edit.position))
+        fverts.append((self.text_edit.vertices[2], QVector3D()))
         fverts.append((self.title_bar.vertices[1], self.title_bar.position))
-        fverts.append((self.text_edit.vertices[0], self.text_edit.position))
+        fverts.append((self.text_edit.vertices[0], QVector3D()))
         fverts.append((self.output_text.vertices[3], self.output_text.position))
-        fverts.append((self.text_edit.vertices[1], self.text_edit.position))
+        fverts.append((self.text_edit.vertices[1], QVector3D()))
         fverts.append((self.output_text.vertices[2], self.output_text.position))
         for fv, p in fverts:
             self.vertices.append(QVector3D(fv[0], fv[1], fv[2])+p)
@@ -233,6 +242,7 @@ class CodeRunnerEditorNode(SceneNode):
         f = open(self.filename, "w")
         f.write(self.text_edit.widget.toPlainText())
         f.close()
+        self.refresh_vertices()
 
     def run_code(self, mode=1):
         self.output_text.set_text(" ")
@@ -300,6 +310,9 @@ class CodeRunnerEditorNode(SceneNode):
             pass
 
     def paint(self, program):
+        stc = self.context.current_camera.get_behavior("SnapToCamera")
+        if stc.target is self.text_edit and stc.grabbed_something:
+            return
         self.program.bind()
         self.program.setAttributeArray(0, self.vertices)
         self.program.setUniformValue('matrix', self.proj_matrix)
