@@ -191,7 +191,7 @@ class SceneNode:
                     val = getattr(self, arg)
                     if val is not None:
                         if type(val) is str:
-                            rendered = f'"{str(val)}"'
+                            rendered = '"' + val.replace("\n", "\\n") + '"'
                         else:
                             rendered = str(val)
                         s += f",{arg}={rendered}"

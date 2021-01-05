@@ -1,3 +1,13 @@
+DL tool user story
+==================
+- Switch between views of the dataView
+- Make a good numerical rendering of the ndarray
+- Ability to add cells
+- Try to actually train a MNIST with it
+- Make load/save scene the default
+
+
+
 Architecture
 ============
 - keybindings-> nav/tab -> on_key handlers in behaviors
@@ -61,6 +71,7 @@ Debug
 - Grab, snap -> object is not under cursor anymore, means grab can't release!
 - Remove formatting when copypasting from outside
 - Remove hud visor when 'tab' is pressed or code is focused
+- Actually use the `dt` parameter in update functions, and use it in the DataViewer update
 
 Features
 ========

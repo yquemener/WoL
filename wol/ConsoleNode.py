@@ -2,9 +2,23 @@ from PyQt5.QtGui import QOpenGLTexture, QImage, QTextCursor, QQuaternion, QVecto
 from PyQt5.QtWidgets import QPlainTextEdit
 from PyQt5.QtCore import Qt
 from io import StringIO
+
+from wol import CodeEdit
 from wol.GeomNodes import CardNode
 
 import sys
+
+
+def add_object():
+    return
+
+
+def list_objects():
+    return
+
+
+def del_objects():
+    return
 
 
 class ConsoleNode(CardNode):
@@ -16,8 +30,11 @@ class ConsoleNode(CardNode):
         self.focused = False
         self.history = list()
         self.history_cursor = 0
-        self.locals = locals()
         self.focusable = True
+        self.context.execution_context["add_object"] = add_object
+        self.context.execution_context["list_objects"] = list_objects
+        self.context.execution_context["del_objects"] = del_objects
+        self.context.execution_context["watch"] = CodeEdit.watch
 
     def update(self, dt):
         if self.focused:
@@ -50,11 +67,11 @@ class ConsoleNode(CardNode):
             try:
                 redirected_output = sys.stdout = StringIO()
                 try:
-                    a = eval(cmd, globals(), self.locals)
+                    a = eval(cmd, self.context.execution_context)
                     if redirected_output.getvalue()=="":
                         sys.stdout.write(repr(a)+"\n")
                 except Exception:
-                    exec(cmd, globals(), self.locals)
+                    exec(cmd, self.context.execution_context)
                 sys.stdout = old_stdout
                 result = redirected_output.getvalue()
             except Exception as e:

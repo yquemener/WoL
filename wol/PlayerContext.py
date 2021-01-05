@@ -37,6 +37,7 @@ class PlayerContext:
         self.scene = None
         self.grabbed = None
         self.grabbed_transform = QMatrix4x4()
+        self.execution_context = dict()
         self.mappings = {
             (MappingTypes.Mouse_Button, Qt.LeftButton): [UserActions.Activate],
             (MappingTypes.Key, Qt.Key_E): [UserActions.Edit],

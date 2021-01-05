@@ -273,6 +273,8 @@ class View3D(QOpenGLWidget):
             d = globals()
             self.context.scene.clear()
             d["context"] = self.context
+            for i, l in enumerate(s.split('\n')):
+                print(i, l)
             exec(s, d, d)
 
         if evt.key() == Qt.Key_O:

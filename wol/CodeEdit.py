@@ -6,6 +6,7 @@ import threading
 import queue
 
 import sys
+import time
 from multiprocessing.queues import Queue
 
 import numpy
@@ -26,16 +27,20 @@ from random import random
 from wol.utils import KillableThread
 
 
-def render(obj):
+def watch(obj, period=0):
+    print("Watch:", id(obj))
     renderlist = globals().get("_wol_render_list", list())
-    renderlist.append(obj)
+    renderlist.append((obj, period))
+    print("Watch:",id(renderlist[-1][0]))
     globals()["_wol_render_list"] = renderlist
 
 
 class DataViewer(SceneNode):
-    def __init__(self, parent, target):
+    def __init__(self, parent, target, period):
         super().__init__(parent=parent)
         self.target = target
+        print("DV:", id(target), id(self.target))
+        self.period = period
         self.type_label = TextLabelNode(parent=self, text=str(type(target)))
         self.content_view_text = TextLabelNode(parent=self, text="")
         self.content_view_text.position += QVector3D(0, -0.2, 0)
@@ -43,22 +48,37 @@ class DataViewer(SceneNode):
         self.content_view_image.position += QVector3D(0, -0.2, 0.5)
         self.content_view_image.visible = False
         self.content_view_image.interpolation = GL.GL_NEAREST
-        if isinstance(target, str):
-            self.content_view_text.set_text(str(target))
-        elif isinstance(target, numpy.ndarray):
-            im = numpy.require(target, numpy.uint8, 'C')
-            self.content_view_image.texture_image = \
-                QImage(im.data, im.shape[1], im.shape[0], im.strides[0], QImage.Format_RGB888).copy()
-            self.content_view_image.initialize_gl()
-            self.content_view_image.visible = True
-            self.content_view_text.set_text(str(target))
-
         for c in self.children:
             c.properties["delegateGrabToParent"] = True
 
         self.vertices = list()
         self.program = None
         self.refresh_vertices()
+        self.last_update = 0
+        self.refresh_content()
+
+    def refresh_content(self):
+        try:
+            target_obj = eval(self.target, self.context.execution_context)
+        except Exception as e:
+            print(e)
+            return
+        if isinstance(target_obj, str):
+            self.content_view_text.set_text(str(target_obj))
+        elif isinstance(target_obj, numpy.ndarray):
+            im = numpy.require(target_obj, numpy.uint8, 'C')
+            self.content_view_image.texture_image = \
+                QImage(im.data, im.shape[1], im.shape[0], im.strides[0], QImage.Format_RGB888).copy()
+            self.content_view_image.initialize_gl()
+            self.content_view_image.visible = True
+            self.content_view_text.set_text(str(target_obj))
+        self.last_update = time.time()
+
+    def update(self, dt):
+        if self.period > 0:
+            t = time.time()
+            if t-self.last_update > self.period:
+                self.refresh_content()
 
     def initialize_gl(self):
         self.program = ShadersLibrary.create_program('simple_color')
@@ -287,12 +307,12 @@ class CodeRunnerEditorNode(SceneNode):
             sys.stdout = stdout_queue
         elif mode == 2:
             self.redirected_output_thread = stdout_helpers.redirect()
-        new_globals = globals()
-        new_locals = locals()
+        # new_globals = globals()
+        # new_locals = locals()
         # new_globals = dict()
-        # new_locals = dict()
+        new_locals = dict()
         try:
-            exec(self.text_edit.text, new_globals, new_locals)
+            exec(self.text_edit.text, self.context.execution_context)
         except KeyboardInterrupt:
             pass
 
@@ -323,9 +343,9 @@ class CodeRunnerEditorNode(SceneNode):
 
         try:
             while True:
-                obj = globals().get("_wol_render_list", []).pop()
-                print("Created", str(obj))
-                dv = DataViewer(parent=self.context.scene, target=obj)
+                obj, period = globals().get("_wol_render_list", []).pop()
+                print("Created", id(obj), period)
+                dv = DataViewer(parent=self.context.scene, target=obj, period=period)
                 cam = self.context.current_camera
                 dv.position = cam.look_at
                 dir = cam.look_at - cam.position

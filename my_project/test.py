@@ -2,8 +2,16 @@ import random
 import time
 import sys                                                 
 
-print("coucou")
+b="coucou"
+print(b)
 
-for i in range(10):
-    print(i)
-    time.sleep(0.2)
+global a
+a=1
+
+l=list(locals().keys())
+for ll in l:
+    print(ll)
+for i in range(100):
+    a=str(i)
+    print(a)
+    time.sleep(0.5)
