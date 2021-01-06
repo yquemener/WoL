@@ -1,7 +1,10 @@
+import os
 from enum import auto
 
 from PyQt5.QtGui import QVector2D, QVector3D, QMatrix4x4
 from PyQt5.QtCore import Qt
+
+from wol.CodeEdit import FileCodeNode
 
 
 class UserActions(int):
@@ -37,6 +40,7 @@ class PlayerContext:
         self.scene = None
         self.grabbed = None
         self.grabbed_transform = QMatrix4x4()
+        self.project_dir = os.getcwd() + "/my_project/"
         self.execution_context = {
             "add": self.add_object,
             "ls": self.list_objects,
@@ -56,7 +60,11 @@ class PlayerContext:
             (MappingTypes.Key, Qt.Key_D): [UserActions.Strafe_Right],
         }
 
-    def add_object(self):
+    def add_object(self, name=None):
+        if name is None:
+            nums = [int(fn.split("_")[1].split(".")[0]) for fn in os.listdir(self.project_dir) if fn.startswith("cell_")]
+            name = f"{self.project_dir}/cell_{max(nums)+1}.py"
+        newobj = FileCodeNode(parent=self.scene, filename=name)
         return
 
     def list_objects(self):

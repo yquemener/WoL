@@ -211,6 +211,7 @@ class FileCodeNode(SceneNode):
         self.code_editor = CodeRunnerEditorNode(name, parent=self, initial_text=text)
         self.code_editor.title_bar.set_text(filename)
         self.code_editor.text_edit.widget.textChanged.connect(self.on_text_changed)
+        self.code_editor.properties["delegateGrabToParent"] = True
 
     def on_text_changed(self):
         f = open(self.filename, "w")

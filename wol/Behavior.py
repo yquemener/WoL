@@ -4,9 +4,6 @@ from collections import defaultdict
 
 from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4, QMatrix3x3
 
-from wol.PlayerContext import UserActions
-
-
 class Behavior:
     def __init__(self):
         self.obj = None
