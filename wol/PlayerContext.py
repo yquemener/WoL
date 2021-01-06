@@ -37,7 +37,11 @@ class PlayerContext:
         self.scene = None
         self.grabbed = None
         self.grabbed_transform = QMatrix4x4()
-        self.execution_context = dict()
+        self.execution_context = {
+            "add": self.add_object,
+            "ls": self.list_objects,
+            "rm": self.del_objects
+        }
         self.mappings = {
             (MappingTypes.Mouse_Button, Qt.LeftButton): [UserActions.Activate],
             (MappingTypes.Key, Qt.Key_E): [UserActions.Edit],
@@ -52,3 +56,14 @@ class PlayerContext:
             (MappingTypes.Key, Qt.Key_D): [UserActions.Strafe_Right],
         }
 
+    def add_object(self):
+        return
+
+    def list_objects(self):
+        for i, obj in enumerate(self.scene.children):
+            print(f"{i}: {obj.name}")
+        return
+
+    def del_objects(self, num):
+        self.scene.children[num].remove()
+        return

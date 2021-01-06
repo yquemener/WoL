@@ -28,10 +28,8 @@ from wol.utils import KillableThread
 
 
 def watch(obj, period=0):
-    print("Watch:", id(obj))
     renderlist = globals().get("_wol_render_list", list())
     renderlist.append((obj, period))
-    print("Watch:",id(renderlist[-1][0]))
     globals()["_wol_render_list"] = renderlist
 
 
@@ -39,7 +37,6 @@ class DataViewer(SceneNode):
     def __init__(self, parent, target, period):
         super().__init__(parent=parent)
         self.target = target
-        print("DV:", id(target), id(self.target))
         self.period = period
         self.type_label = TextLabelNode(parent=self, text=str(type(target)))
         self.content_view_text = TextLabelNode(parent=self, text="")
@@ -198,16 +195,33 @@ class CodeRunnerEditorRunBehaviorKill(Behavior):
         # self.obj.parent.redirected_output_pos = 0
 
 
-class CodeRunnerEditorNode(SceneNode):
-    def __init__(self, name="codeRunnerEditor", parent=None, filename=None):
-        super().__init__(name, parent=parent)
+class FileCodeNode(SceneNode):
+    def __init__(self, name=None, parent=None, filename=None):
         if filename is None:
             raise ValueError("You have to specify a textfile")
+        if name is None:
+            name = "Editor: "+str(filename)
+        super().__init__(name, parent=parent)
         self.filename = filename
         try:
             text = open(filename).read()
         except FileNotFoundError:
             text = " "
+
+        self.code_editor = CodeRunnerEditorNode(name, parent=self, initial_text=text)
+        self.code_editor.title_bar.set_text(filename)
+        self.code_editor.text_edit.widget.textChanged.connect(self.on_text_changed)
+
+    def on_text_changed(self):
+        f = open(self.filename, "w")
+        f.write(self.code_editor.text_edit.widget.toPlainText())
+        f.close()
+        self.code_editor.refresh_vertices()
+
+
+class CodeRunnerEditorNode(SceneNode):
+    def __init__(self, name="codeRunnerEditor", parent=None, initial_text=""):
+        super().__init__(name, parent=parent)
 
         self.button_run_process = CubeNode(parent=self, color=QVector4D(0, 1, 0, 0.5))
         self.button_run_process.position = QVector3D(1, 0.5, 0)
@@ -235,11 +249,10 @@ class CodeRunnerEditorNode(SceneNode):
 
         self.text_edit = TextEditNode(parent=self,
                                       name=self.name+"_edit",
-                                      text=text,
+                                      text=initial_text,
                                       autosize=True)
-        self.text_edit.widget.textChanged.connect(self.on_text_changed)
 
-        self.title_bar = TextLabelNode(name=self.name + "_titlebar", parent=self, text=filename)
+        self.title_bar = TextLabelNode(name=self.name + "_titlebar", parent=self, text=name)
         self.title_bar.position = QVector3D(0, 1, 0)
 
         self.output_text = TextLabelNode(name=self.name + "_output", parent=self, text="test ")
@@ -284,11 +297,6 @@ class CodeRunnerEditorNode(SceneNode):
         for fv, p in fverts:
             self.vertices.append(QVector3D(fv[0], fv[1], fv[2])+p)
 
-    def on_text_changed(self):
-        f = open(self.filename, "w")
-        f.write(self.text_edit.widget.toPlainText())
-        f.close()
-        self.refresh_vertices()
 
     def run_code(self, mode=1):
         self.output_text.set_text(" ")
@@ -344,7 +352,6 @@ class CodeRunnerEditorNode(SceneNode):
         try:
             while True:
                 obj, period = globals().get("_wol_render_list", []).pop()
-                print("Created", id(obj), period)
                 dv = DataViewer(parent=self.context.scene, target=obj, period=period)
                 cam = self.context.current_camera
                 dv.position = cam.look_at

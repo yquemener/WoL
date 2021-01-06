@@ -124,6 +124,12 @@ class SceneNode:
     def update(self, dt):
         return
 
+    def remove(self):
+        # TODO: Check if this is enough to make the garbage collector delete the object
+        for c in self.children:
+            c.remove()
+        self.parent.children.remove(self)
+
     def update_recurs(self, dt=0.0):
         self.update(dt)
         self.compute_transform()

@@ -9,18 +9,6 @@ from wol.GeomNodes import CardNode
 import sys
 
 
-def add_object():
-    return
-
-
-def list_objects():
-    return
-
-
-def del_objects():
-    return
-
-
 class ConsoleNode(CardNode):
     def __init__(self, parent, name="GuiNode"):
         CardNode.__init__(self, name=name, parent=parent)
@@ -31,9 +19,6 @@ class ConsoleNode(CardNode):
         self.history = list()
         self.history_cursor = 0
         self.focusable = True
-        self.context.execution_context["add_object"] = add_object
-        self.context.execution_context["list_objects"] = list_objects
-        self.context.execution_context["del_objects"] = del_objects
         self.context.execution_context["watch"] = CodeEdit.watch
 
     def update(self, dt):

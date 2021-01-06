@@ -3,7 +3,7 @@ from PyQt5.QtGui import QVector3D, QQuaternion, QVector4D
 
 from client import MyCamera
 from wol import Behavior
-from wol.CodeEdit import CodeBumperNode, CodeRunnerEditorNode
+from wol.CodeEdit import CodeBumperNode, CodeRunnerEditorNode, FileCodeNode
 from wol.ConsoleNode import ConsoleNode
 from wol.GeomNodes import Grid, Sphere, WireframeCubeNode, CubeNode, CardNode
 from wol.GuiElements import WidgetTestNode
@@ -58,19 +58,19 @@ def scene_ide(context):
     objed = PythonFileEditorNode(parent=context.scene, target_file_name="my_project/main.py")
     objed.position = QVector3D(0, 2, 5)
 
-    objed = CodeRunnerEditorNode(parent=context.scene, filename="my_project/test.py")
+    objed = FileCodeNode(parent=context.scene, filename="my_project/test.py")
     objed.position = QVector3D(3, 4, -5)
     objed.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
 
-    objed = CodeRunnerEditorNode(parent=context.scene, filename="my_project/torchtest.py")
+    objed = FileCodeNode(parent=context.scene, filename="my_project/torchtest.py")
     objed.position = QVector3D(10, 4, -5)
     objed.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
 
-    objed = CodeRunnerEditorNode(parent=context.scene, filename="my_project/main.py")
+    objed = FileCodeNode(parent=context.scene, filename="my_project/main.py")
     objed.position = QVector3D(5, 4, -5)
     objed.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
 
-    objed = CodeRunnerEditorNode(parent=context.scene, filename="my_project/server.py")
+    objed = FileCodeNode(parent=context.scene, filename="my_project/server.py")
     objed.position = QVector3D(8, 4, -5)
     objed.orientation = QQuaternion.fromEulerAngles(0, 230, 0)
 
