@@ -58,7 +58,6 @@ class View3D(QOpenGLWidget):
         self.hud.hud1.position.setX(0.5)
         self.hud.hud1.position.setY(0.5)
 
-
     def initializeGL(self):
         GL.glEnable(GL.GL_DEPTH_TEST)
 
@@ -253,32 +252,13 @@ class View3D(QOpenGLWidget):
                 stc.restore()
 
         if evt.key() == Qt.Key_R:
-            s = "import wol\nimport PyQt5\n\n"
-
-            num = 0
-            for o in self.context.scene.children:
-                ss, num = o.serialize(num)
-                s += ss
-            print(s)
-            fout = open("init_scene.py", "w")
-            fout.write(s)
-            fout.close()
-            if hasattr(self.context.hover_target, "on_save"):
-                self.context.hover_target.on_save(self.context.debug_point)
+            self.save_scene()
 
         if evt.key() == Qt.Key_L:
-            fout = open("init_scene.py", "r")
-            s = fout.read()
-            fout.close()
-            d = globals()
-            self.context.scene.clear()
-            d["context"] = self.context
-            for i, l in enumerate(s.split('\n')):
-                print(i, l)
-            exec(s, d, d)
+            self.load_scene()
 
         if evt.key() == Qt.Key_O:
-            self.saveScene()
+            self.save_scene()
 
         if evt.key() == Qt.Key_1:
             self.snap_to_90()
@@ -305,6 +285,17 @@ class View3D(QOpenGLWidget):
         if action:
             self.context.abstract_input[action] = True
 
+    def load_scene(self):
+        fout = open("init_scene.py", "r")
+        s = fout.read()
+        fout.close()
+        d = globals()
+        self.context.scene.clear()
+        d["context"] = self.context
+        for i, l in enumerate(s.split('\n')):
+            print(i, l)
+        exec(s, d, d)
+
     def snap_to_90(self):
         if self.context.grabbed is None:
             return
@@ -316,12 +307,19 @@ class View3D(QOpenGLWidget):
         g.set_world_orientation(QQuaternion.fromEulerAngles(euler))
         # g.set_world_orientation(g.world_orientation())
 
-    def saveScene(self):
-        scenefile = open("scene.ini", "w")
-        s = ""
-        for c in self.context.scene.children:
-            s += c.serialize_recurs()
-        scenefile.write(s)
+    def save_scene(self):
+        s = "import wol\nimport PyQt5\n\n"
+
+        num = 0
+        for o in self.context.scene.children:
+            ss, num = o.serialize(num)
+            s += ss
+        print(s)
+        fout = open("init_scene.py", "w")
+        fout.write(s)
+        fout.close()
+        if hasattr(self.context.hover_target, "on_save"):
+            self.context.hover_target.on_save(self.context.debug_point)
 
     def inputMethodEvent(self, evt):
         if self.context.focused is not None:

@@ -7,7 +7,7 @@ from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4
 from PyQt5.QtWidgets import QApplication
 
 from wol import Behavior, DevScenes, stdout_helpers
-from wol.SceneNode import CameraNode, SceneNode
+from wol.SceneNode import CameraNode, SceneNode, SkyBox
 from wol.View3D import View3D
 
 
@@ -64,15 +64,20 @@ if __name__ == '__main__':
     context = window.context
     stdout_helpers.enable_proxy()
 
-    load = False
+    my_cam = MyCamera(context.scene)
+    context.scene.context.current_camera = my_cam
+    my_cam.add_behavior(Behavior.SnapToCamera())
+    context.scene.context.current_camera = my_cam
+    SkyBox(parent=context.scene.context.current_camera)
+
+    load = True
     if load:
         try:
-            my_cam = load_scene_ini()
+            window.load_scene()
+            # my_cam = load_scene_ini()
         except FileNotFoundError:
             load = False
     if not load:
-        my_cam = MyCamera(context.scene)
-        context.scene.context.current_camera = my_cam
 
         DevScenes.scene_base(context)
         # DevScenes.scene_load(context)
@@ -81,10 +86,8 @@ if __name__ == '__main__':
         # DevScenes.scene_tests(context)
         # DevScenes.scene_gui_test(context)
 
-    my_cam.add_behavior(Behavior.SnapToCamera())
-    context.scene.context.current_camera = my_cam
     # context.scene.context.current_camera.position = QVector3D(5, 5, 0)
-
+    context.scene.context.current_camera.position = QVector3D(5, 5, -10)
     window.show()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     sys.exit(app.exec_())

@@ -2,7 +2,6 @@ DL tool user story
 ==================
 - Switch between views of the dataView
 - Make a good numerical rendering of the ndarray
-- Ability to add cells
 - Try to actually train a MNIST with it
 - Make load/save scene the default
 
@@ -104,3 +103,4 @@ X Nettoyer Context d'ailleurs (Why? C'est pas trop mal...)
 - HUD elements that bypass rescaling ratio?
 - UI logic
 - copy-paste from outside
+- Ability to add cells
