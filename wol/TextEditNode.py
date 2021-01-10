@@ -4,6 +4,8 @@ from PyQt5.QtWidgets import QTextEdit, QApplication
 
 from wol import utils
 from wol.GeomNodes import CardNode
+import re
+
 
 def test():
     print("Yo")
@@ -25,6 +27,8 @@ class TextEditNode(CardNode):
         self.highlight = PythonHighlighter(self.widget.document())
         self.widget.setTextColor(QColor(255, 255, 255))
         self.widget.setStyleSheet("QWidget{color: white; background-color: black;}");
+        qfm = self.widget.fontMetrics()
+        self.widget.setTabStopDistance(qfm.horizontalAdvance(' ') * 4)
         self.focused = False
 
     def do_autosize(self):
@@ -58,7 +62,18 @@ class TextEditNode(CardNode):
         self.focused = False
 
     def keyPressEvent(self, evt):
-        self.widget.keyPressEvent(evt)
+        if evt.key() == Qt.Key_Return:
+            cursi = self.widget.textCursor().position()
+            lstart = self.text.rfind("\n", 0, cursi)
+            whitespaces_re = re.compile("^([ \t]*)")
+            matches = whitespaces_re.match(self.text[lstart:cursi].lstrip("\n"))
+            if not matches is None:
+                self.widget.keyPressEvent(evt)
+                self.widget.insertPlainText(matches.group())
+            else:
+                self.widget.keyPressEvent(evt)
+        else:
+            self.widget.keyPressEvent(evt)
         self.text = self.widget.toPlainText()
 
     def inputMethodEvent(self, evt):

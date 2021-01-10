@@ -4,6 +4,11 @@ DL tool user story
 - Make a good numerical rendering of the ndarray
 - Try to actually train a MNIST with it
 - Make load/save scene the default
+- Tab size
+- Smart indent
+- Close/Del through click
+- object explorer
+- rotate the grabbed object
 
 
 
