@@ -7,6 +7,7 @@ from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4
 from PyQt5.QtWidgets import QApplication
 
 from wol import Behavior, DevScenes, stdout_helpers
+from wol.GuiElements import CodeSnippetReceiver, CodeSnippet
 from wol.SceneNode import CameraNode, SceneNode, SkyBox
 from wol.View3D import View3D
 
@@ -70,7 +71,16 @@ if __name__ == '__main__':
     context.scene.context.current_camera = my_cam
     SkyBox(parent=context.scene.context.current_camera)
 
-    load = True
+    snip = CodeSnippetReceiver(parent=context.scene)
+    snip.position = QVector3D(0, 4, 0)
+    snip.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
+
+    snip = CodeSnippet(parent=context.scene)
+    snip.position = QVector3D(4, 4, 0)
+    snip.set_text('print("Hello world")')
+    snip.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
+
+    load = False
     if load:
         try:
             window.load_scene()
@@ -88,6 +98,7 @@ if __name__ == '__main__':
 
     # context.scene.context.current_camera.position = QVector3D(5, 5, 0)
     context.scene.context.current_camera.position = QVector3D(5, 5, -10)
+
     window.show()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     sys.exit(app.exec_())

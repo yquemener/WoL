@@ -4,11 +4,16 @@ from collections import defaultdict
 
 from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4, QMatrix3x3
 
+
 class Behavior:
     def __init__(self):
         self.obj = None
         self.kill_me = False
         self.handlers = defaultdict(list)
+        self.init_handlers()
+
+    def init_handlers(self):
+        return
 
     def on_update(self, dt):
         return

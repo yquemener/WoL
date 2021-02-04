@@ -113,6 +113,22 @@ Event dispatch order:
 
 Can't we just do with 1 and 2 and put the grab and hovering in a camera behavior?
 
+Code Snippet
+============
+Code snippets are pieces of code that can be put inside CodeSnippetReceivers. Note that the CodeSnippet
+object only exists when the snipper is freefloating. Otherwise it is just a piece of text. The clipboard
+actions can be applied to them:
+
+'X' takes the snippet:
+    - If it was inside a Receiver, the Receiver becomes empty and the code snippet is now grabbed
+    - If it was free floating, it is the same as grabbing the object
+'C' duplicates the snippet as a free floating object and the duplicate is now grabbed. If something was
+grabbed, this action is not possible.
+'V' drops the snippet:
+    - If a Receiver is currently hovered, the text is set in the receiver and the grabbed object is destroyed
+    - Otherwise the freefloating object is ungrabbed.
+
+
 
 HUD
 ===

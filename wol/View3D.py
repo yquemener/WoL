@@ -165,9 +165,10 @@ class View3D(QOpenGLWidget):
         colliders = self.context.scene.collide_recurs(ray)
         colliders_sort = list()
         for obj, point in colliders:
-            colliders_sort.append((point,
-                                   obj,
-                                   (point-self.context.current_camera.position).length()))
+            if obj is not self.context.grabbed:
+                colliders_sort.append((point,
+                                       obj,
+                                       (point-self.context.current_camera.position).length()))
         colliders_sort.sort(key=lambda s: s[2])
         if len(colliders_sort) > 0:
             self.context.debug_point = colliders_sort[0][0]
@@ -192,6 +193,10 @@ class View3D(QOpenGLWidget):
         actions = self.context.mappings.get((MappingTypes.Key, evt.key()), [])
         for a in actions:
             self.context.current_camera.on_action(a)
+            if self.context.hover_target is not None:
+                self.context.hover_target.on_action(a)
+            if self.context.grabbed is not None:
+                self.context.grabbed.on_action(a)
 
         if evt.key() == Qt.Key_Escape:
             if self.context.focused is not None:
@@ -264,9 +269,9 @@ class View3D(QOpenGLWidget):
             self.snap_to_90()
 
         if evt.key() == Qt.Key_Q:
-            if self.context.hover_target:
-                gr = self.context.grabbed
-                if gr is None:
+            gr = self.context.grabbed
+            if gr is None:
+                if self.context.hover_target:
                     anchor = self.context.hover_target
                     while anchor.properties.get("delegateGrabToParent", False) \
                             and anchor.parent is not None \
@@ -275,9 +280,9 @@ class View3D(QOpenGLWidget):
                     self.context.grabbed = anchor
                     self.context.grabbed_former_parent = self.context.grabbed.parent
                     self.context.grabbed.reparent(self.context.current_camera)
-                else:
-                    self.context.grabbed.reparent(self.context.grabbed_former_parent)
-                    self.context.grabbed = None
+            else:
+                self.context.grabbed.reparent(self.context.grabbed_former_parent)
+                self.context.grabbed = None
 
         if evt.isAutoRepeat():
             return

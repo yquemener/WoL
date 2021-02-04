@@ -63,6 +63,7 @@ UI
 - allow grab of elements in Tab mode
 - When a window is being edited, cheat with the Z-buffer to make it appear above other objects
     (switch it to HUD layer?)
+- Remove formatting when copy-pasting from external sources
 
 
 Debug

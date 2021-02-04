@@ -4,6 +4,8 @@ from PyQt5.QtWidgets import QLabel, QFrame, QMainWindow, QApplication, QWidget, 
 from PyQt5.QtCore import Qt, QRect
 
 from wol import utils
+from wol.Behavior import Behavior
+from wol.Constants import UserActions
 from wol.GeomNodes import CardNode
 
 
@@ -28,11 +30,11 @@ class TextLabelNode(CardNode):
         qfm = self.widget.fontMetrics()
         rect = qfm.boundingRect(QApplication.desktop().geometry(), Qt.TextWordWrap, text, 4)
         self.margin = 15
-        w = rect.width() + self.margin*2
-        h = rect.height() + self.margin*2
+        w = rect.width() + self.margin * 2
+        h = rect.height() + self.margin * 2
         self.frame.setGeometry(0, 0, w, h)
-        wscale = w/512.0
-        hscale = h/512.0
+        wscale = w / 512.0
+        hscale = h / 512.0
         for v in self.vertices:
             v[1] *= hscale
             v[0] *= wscale
@@ -62,18 +64,102 @@ class TextLabelNode(CardNode):
         self.widget.setText(t)
         qfm = self.widget.fontMetrics()
         rect = qfm.boundingRect(QApplication.desktop().geometry(), Qt.TextWordWrap, t, 4)
-        w = rect.width() + self.margin*2
-        h = rect.height() + self.margin*2
+        w = rect.width() + self.margin * 2
+        h = rect.height() + self.margin * 2
         self.frame.setFixedSize(w, h)
 
         self.vertices = utils.generate_square_vertices_fan()
-        wscale = w/512.0
-        hscale = h/512.0
+        wscale = w / 512.0
+        hscale = h / 512.0
         for v in self.vertices:
             v[1] *= hscale
             v[0] *= wscale
         self.refresh_vertices()
         self.needs_refresh = True
+
+
+class CodeSnippet(TextLabelNode):
+    def __init__(self, parent):
+        TextLabelNode.__init__(self, parent=parent)
+        self.add_behavior(CodeSnippetBehavior())
+
+
+class CodeSnippetReceiver(TextLabelNode):
+    def __init__(self, parent):
+        TextLabelNode.__init__(self, parent=parent)
+        self.frame.setStyleSheet("""
+            color: rgba(255,255,255,255); 
+            background-color: rgba(0,128,0,100); 
+            border: 2px solid rgba(255,255,255,255);;
+            """)
+        self.widget.setStyleSheet("""
+            color: rgba(255,255,255,255); 
+            background-color: rgba(0,128,0,0); 
+            border: 0px solid rgba(255,255,255,255);;
+            """)
+        self.widget.setText("Receiver")
+
+    def update(self, dt):
+        if self.context.hover_target is self:
+            if isinstance(self.context.grabbed, CodeSnippet):
+                self.frame.setStyleSheet("""
+                    color: rgba(255,255,255,255); 
+                    background-color: rgba(0,128,0,100); 
+                    border: 10px solid rgba(0,0,200,200);;
+                    """)
+
+        else:
+            self.frame.setStyleSheet("""
+                color: rgba(255,255,255,255); 
+                background-color: rgba(0,128,0,100); 
+                border: 2px solid rgba(255,255,255,255);;
+                """)
+        super().update(dt)
+
+
+class CodeSnippetBehavior(Behavior):
+    def init_handlers(self):
+        self.handlers[UserActions.Copy] = [self.copy]
+        self.handlers[UserActions.Cut] = [self.cut]
+        self.handlers[UserActions.Paste] = [self.paste]
+
+    def copy(self):
+        if isinstance(self.obj.context.grabbed, CodeSnippet) or \
+                isinstance(self.obj.context.grabbed, CodeSnippetReceiver):
+            pass
+            # create a CodeSnippet at the same place as the target , grab it
+
+    def cut(self):
+        if isinstance(self.obj.context.grabbed, CodeSnippet):
+            self.grab()
+        elif isinstance(self.obj.context.grabbed, CodeSnippetReceiver):
+            pass
+            # setText("") on target, create a CodeSnippet at the same place, grab it
+
+    def paste(self):
+        target = self.obj.context.hover_target
+        if target is None:
+            return
+        if isinstance(target, CodeSnippetReceiver):
+            target.set_text(self.obj.text)
+            print(self.obj.text)
+            self.obj.remove()
+            self.obj.context.hover_target = None
+        else:
+            self.ungrab()
+
+    def grab(self):
+        gr = self.obj.context.grabbed
+        if gr is None:
+            self.obj.context.grabbed = self
+            self.obj.context.grabbed_former_parent = self.obj.context.grabbed.parent
+            self.obj.context.grabbed.reparent(self.obj.context.current_camera)
+
+    def ungrab(self):
+        gr = self.obj.context.grabbed
+        if gr is not None:
+            self.obj.context.grabbed.reparent(self.obj.context.grabbed_former_parent)
+            self.obj.context.grabbed = None
 
 
 class WidgetTestNode(CardNode):
@@ -150,13 +236,11 @@ class WidgetTestNode(CardNode):
         h = rect.height()
         self.widget.setGeometry(0, 0, w, h)
         self.vertices = utils.generate_square_vertices_fan()
-        wscale = w/512.0
-        hscale = h/512.0
+        wscale = w / 512.0
+        hscale = h / 512.0
         for v in self.vertices:
             v[1] *= hscale
             v[0] *= wscale
         self.refresh_vertices()
 
         self.needs_refresh = True
-
-

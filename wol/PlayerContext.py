@@ -5,26 +5,7 @@ from PyQt5.QtGui import QVector2D, QVector3D, QMatrix4x4
 from PyQt5.QtCore import Qt
 
 from wol.CodeEdit import FileCodeNode
-
-
-class UserActions(int):
-    Edit = 1
-    Activate = 2
-    Unselect = 3
-    Grab = 4
-    Release = 5
-    Invoke_Console = 6
-    Save = 6
-    Snap_To_90 = 7
-    Move_Forward = 8
-    Move_Back = 9
-    Strafe_Left = 10
-    Strafe_Right = 11
-
-
-class MappingTypes(int):
-    Key = 1
-    Mouse_Button = 2
+from wol.Constants import UserActions, MappingTypes
 
 
 # Huge potential for becoming a registry anti-pattern. Make sure things added here make sense.
@@ -58,6 +39,9 @@ class PlayerContext:
             (MappingTypes.Key, Qt.Key_S): [UserActions.Move_Back],
             (MappingTypes.Key, Qt.Key_A): [UserActions.Strafe_Left],
             (MappingTypes.Key, Qt.Key_D): [UserActions.Strafe_Right],
+            (MappingTypes.Key, Qt.Key_C): [UserActions.Copy],
+            (MappingTypes.Key, Qt.Key_X): [UserActions.Cut],
+            (MappingTypes.Key, Qt.Key_V): [UserActions.Paste],
         }
 
     def add_object(self, name=None):
