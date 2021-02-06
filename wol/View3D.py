@@ -54,7 +54,7 @@ class View3D(QOpenGLWidget):
         screenRect = QApplication.desktop().screenGeometry(0)
 
         self.setGeometry(10, 10, 1200, 800)
-        self.move(QPoint(screenRect.x()+20, screenRect.y()+20))
+        self.move(QPoint(screenRect.x()+150, screenRect.y()+50))
 
         # HUD definition
         self.hud.hud1 = TextLabelNode(parent=self.hud_root, text="")

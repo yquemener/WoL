@@ -79,6 +79,14 @@ class TextEditNode(CardNode):
     def inputMethodEvent(self, evt):
         return self.widget.inputMethodEvent(evt)
 
+    def set_text(self, t):
+        if t == self.text:
+            return
+        self.text = t
+        self.widget.setText(t)
+        self.do_autosize()
+        self.needs_refresh = True
+
 
 def formatter(color, style=''):
     """Return a QTextCharFormat with the given attributes.

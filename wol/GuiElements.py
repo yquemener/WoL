@@ -7,6 +7,7 @@ from wol import utils
 from wol.Behavior import Behavior
 from wol.Constants import UserActions
 from wol.GeomNodes import CardNode
+from wol.TextEditNode import TextEditNode
 
 
 class TextLabelNode(CardNode):
@@ -48,6 +49,7 @@ class TextLabelNode(CardNode):
         self.frame.setCentralWidget(widget)
         self.frame.setAttribute(Qt.WA_TranslucentBackground, True)
         self.layer = 2
+        self.focusable = True
 
     def update(self, dt):
         if self.needs_refresh:
@@ -78,28 +80,23 @@ class TextLabelNode(CardNode):
         self.needs_refresh = True
 
 
-class CodeSnippet(TextLabelNode):
+class CodeSnippet(TextEditNode):
     def __init__(self, parent):
-        TextLabelNode.__init__(self, parent=parent)
+        super().__init__(parent=parent, autosize=True)
         self.add_behavior(CodeSnippetBehaviorPaste())
         self.add_behavior(CodeSnippetBehaviorCopy())
         self.add_behavior(CodeSnippetBehaviorCut())
 
 
-class CodeSnippetReceiver(TextLabelNode):
+class CodeSnippetReceiver(TextEditNode):
     def __init__(self, parent):
-        TextLabelNode.__init__(self, parent=parent)
-        self.frame.setStyleSheet("""
-            color: rgba(255,255,255,255); 
-            background-color: rgba(0,128,0,100); 
-            border: 2px solid rgba(255,255,255,255);;
-            """)
+        super().__init__(parent=parent, autosize=True)
         self.widget.setStyleSheet("""
-            color: rgba(255,255,255,255); 
-            background-color: rgba(0,128,0,0); 
-            border: 0px solid rgba(255,255,255,255);;
+                color: rgba(255,255,255,255);
+                background-color: rgba(0,0,0,100);
+                border: 2px solid rgba(255,255,255,255);;
             """)
-        self.widget.setText("Receiver")
+        self.set_text("Receiver")
         self.old_text = self.text
         self.hovered = False
         self.add_behavior(CodeSnippetBehaviorCopy())
@@ -109,18 +106,18 @@ class CodeSnippetReceiver(TextLabelNode):
         if self.context.hover_target and self.context.hover_target is self\
                 and not self.hovered:
             if self.context.grabbed is not None and isinstance(self.context.grabbed, CodeSnippet):
-                self.frame.setStyleSheet("""
+                self.widget.setStyleSheet("""
                     color: rgba(255,255,255,255); 
-                    background-color: rgba(0,128,0,100); 
+                    background-color: rgba(0,0,0,100); 
                     border: 10px solid rgba(0,0,200,200);;
                     """)
                 self.needs_refresh = True
 
         if self.hovered and  \
                 (not self.context.hover_target or self.context.hover_target is not self):
-            self.frame.setStyleSheet("""
+            self.widget.setStyleSheet("""
                 color: rgba(255,255,255,255);
-                background-color: rgba(0,128,0,100);
+                background-color: rgba(0,0,0,100);
                 border: 2px solid rgba(255,255,255,255);;
                 """)
             self.needs_refresh = True
@@ -147,7 +144,6 @@ class CodeSnippetBehaviorCopy(Behavior):
     def grab(self, target):
         gr = self.obj.context.grabbed
         if gr is None:
-            print("Hif!")
             self.obj.context.grabbed = target
             self.obj.context.grabbed_former_parent = self.obj.context.grabbed.parent
             self.obj.context.grabbed.reparent(self.obj.context.current_camera)
@@ -175,7 +171,6 @@ class CodeSnippetBehaviorCut(Behavior):
     def grab(self, target):
         gr = self.obj.context.grabbed
         if gr is None:
-            print("Hif!")
             self.obj.context.grabbed = target
             self.obj.context.grabbed_former_parent = self.obj.context.grabbed.parent
             self.obj.context.grabbed.reparent(self.obj.context.current_camera)

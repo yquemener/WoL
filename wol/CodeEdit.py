@@ -298,7 +298,6 @@ class CodeRunnerEditorNode(SceneNode):
         for fv, p in fverts:
             self.vertices.append(QVector3D(fv[0], fv[1], fv[2])+p)
 
-
     def run_code(self, mode=1):
         self.output_text.set_text(" ")
         if mode == 1:
