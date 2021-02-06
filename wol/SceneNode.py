@@ -55,7 +55,10 @@ class SceneNode:
             self.orientation = QQuaternion.fromDirection(new_transform.mapVector(QVector3D(0, 0, 1)),
                                                          new_transform.mapVector(QVector3D(0, 1, 0)))
         if self.parent:
-            self.parent.children.remove(self)
+            try:    # If object has been removed, this will fail
+                self.parent.children.remove(self)
+            except:
+                pass
             self.parent = new_parent
             self.parent.children.append(self)
 

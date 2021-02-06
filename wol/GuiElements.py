@@ -81,7 +81,9 @@ class TextLabelNode(CardNode):
 class CodeSnippet(TextLabelNode):
     def __init__(self, parent):
         TextLabelNode.__init__(self, parent=parent)
-        self.add_behavior(CodeSnippetBehavior())
+        self.add_behavior(CodeSnippetBehaviorPaste())
+        self.add_behavior(CodeSnippetBehaviorCopy())
+        self.add_behavior(CodeSnippetBehaviorCut())
 
 
 class CodeSnippetReceiver(TextLabelNode):
@@ -98,62 +100,100 @@ class CodeSnippetReceiver(TextLabelNode):
             border: 0px solid rgba(255,255,255,255);;
             """)
         self.widget.setText("Receiver")
+        self.old_text = self.text
+        self.hovered = False
+        self.add_behavior(CodeSnippetBehaviorCopy())
+        self.add_behavior(CodeSnippetBehaviorCut())
 
     def update(self, dt):
-        if self.context.hover_target is self:
-            if isinstance(self.context.grabbed, CodeSnippet):
+        if self.context.hover_target and self.context.hover_target is self\
+                and not self.hovered:
+            if self.context.grabbed is not None and isinstance(self.context.grabbed, CodeSnippet):
                 self.frame.setStyleSheet("""
                     color: rgba(255,255,255,255); 
                     background-color: rgba(0,128,0,100); 
                     border: 10px solid rgba(0,0,200,200);;
                     """)
+                self.needs_refresh = True
 
-        else:
+        if self.hovered and  \
+                (not self.context.hover_target or self.context.hover_target is not self):
             self.frame.setStyleSheet("""
-                color: rgba(255,255,255,255); 
-                background-color: rgba(0,128,0,100); 
+                color: rgba(255,255,255,255);
+                background-color: rgba(0,128,0,100);
                 border: 2px solid rgba(255,255,255,255);;
                 """)
+            self.needs_refresh = True
         super().update(dt)
+        self.hovered = (self.context.hover_target is self)
 
 
-class CodeSnippetBehavior(Behavior):
+class CodeSnippetBehaviorCopy(Behavior):
     def init_handlers(self):
         self.handlers[UserActions.Copy] = [self.copy]
-        self.handlers[UserActions.Cut] = [self.cut]
-        self.handlers[UserActions.Paste] = [self.paste]
 
     def copy(self):
-        if isinstance(self.obj.context.grabbed, CodeSnippet) or \
-                isinstance(self.obj.context.grabbed, CodeSnippetReceiver):
-            pass
+        if self.obj.context.grabbed:
+            return
+        if self.obj is self.obj.context.hover_target:
+            new_snippet = CodeSnippet(parent=self.obj.context.scene)
+            new_snippet.position = self.obj.position
+            new_snippet.orientation = self.obj.orientation
+            new_snippet.compute_transform()
+            new_snippet.set_text(self.obj.text)
+            self.grab(new_snippet)
             # create a CodeSnippet at the same place as the target , grab it
 
+    def grab(self, target):
+        gr = self.obj.context.grabbed
+        if gr is None:
+            print("Hif!")
+            self.obj.context.grabbed = target
+            self.obj.context.grabbed_former_parent = self.obj.context.grabbed.parent
+            self.obj.context.grabbed.reparent(self.obj.context.current_camera)
+
+
+class CodeSnippetBehaviorCut(Behavior):
+    def init_handlers(self):
+        self.handlers[UserActions.Cut] = [self.cut]
+
     def cut(self):
-        if isinstance(self.obj.context.grabbed, CodeSnippet):
-            self.grab()
-        elif isinstance(self.obj.context.grabbed, CodeSnippetReceiver):
-            pass
-            # setText("") on target, create a CodeSnippet at the same place, grab it
+        if self.obj.context.grabbed:
+            return
+        if self.obj.context.hover_target is self.obj:
+            if isinstance(self.obj, CodeSnippet):
+                self.grab(self.obj)
+            elif isinstance(self.obj, CodeSnippetReceiver):
+                new_snippet = CodeSnippet(parent=self.obj.context.scene)
+                new_snippet.position = self.obj.position
+                new_snippet.orientation = self.obj.orientation
+                new_snippet.compute_transform()
+                new_snippet.set_text(self.obj.text)
+                self.grab(new_snippet)
+                self.obj.set_text(" ")
+
+    def grab(self, target):
+        gr = self.obj.context.grabbed
+        if gr is None:
+            print("Hif!")
+            self.obj.context.grabbed = target
+            self.obj.context.grabbed_former_parent = self.obj.context.grabbed.parent
+            self.obj.context.grabbed.reparent(self.obj.context.current_camera)
+
+
+class CodeSnippetBehaviorPaste(Behavior):
+    def init_handlers(self):
+        self.handlers[UserActions.Paste] = [self.paste]
 
     def paste(self):
         target = self.obj.context.hover_target
-        if target is None:
-            return
-        if isinstance(target, CodeSnippetReceiver):
+        if target and isinstance(target, CodeSnippetReceiver):
             target.set_text(self.obj.text)
             print(self.obj.text)
             self.obj.remove()
-            self.obj.context.hover_target = None
+            self.obj.context.grabbed = None
         else:
             self.ungrab()
-
-    def grab(self):
-        gr = self.obj.context.grabbed
-        if gr is None:
-            self.obj.context.grabbed = self
-            self.obj.context.grabbed_former_parent = self.obj.context.grabbed.parent
-            self.obj.context.grabbed.reparent(self.obj.context.current_camera)
 
     def ungrab(self):
         gr = self.obj.context.grabbed

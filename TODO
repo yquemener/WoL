@@ -33,6 +33,7 @@ Architecture
 - Add crosshairs under self.context.hud in View3D
 - Should .scene really be a member of .context? Why not just View3D?
 - Check if PytonFileEditornode and ObjectEditorNode and InstanciatedObject are not redundant
+- Put grab/ungrab on camera node
 
 
 

@@ -3,7 +3,7 @@
 from PyQt5.QtCore import Qt, QTimer, QPoint
 from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor, QVector4D, QMatrix3x3, QQuaternion, \
     QMatrix4x4
-from PyQt5.QtWidgets import QOpenGLWidget
+from PyQt5.QtWidgets import QOpenGLWidget, QApplication
 from OpenGL import GL
 from math import sin
 
@@ -50,7 +50,11 @@ class View3D(QOpenGLWidget):
         self.skipNextMouseMove = True
         self.keepMouseCentered = True
         self.setAttribute(Qt.WA_InputMethodEnabled, True)
+
+        screenRect = QApplication.desktop().screenGeometry(0)
+
         self.setGeometry(10, 10, 1200, 800)
+        self.move(QPoint(screenRect.x()+20, screenRect.y()+20))
 
         # HUD definition
         self.hud.hud1 = TextLabelNode(parent=self.hud_root, text="")
