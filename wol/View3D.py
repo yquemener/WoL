@@ -8,6 +8,7 @@ from OpenGL import GL
 from math import sin
 
 from wol.ConsoleNode import ConsoleNode
+from wol.Constants import Events
 from wol.GuiElements import TextLabelNode
 from wol.PlayerContext import PlayerContext, MappingTypes
 from wol.ShadersLibrary import ShadersLibrary
@@ -205,6 +206,7 @@ class View3D(QOpenGLWidget):
         if evt.key() == Qt.Key_Escape:
             if self.context.focused is not None:
                 self.context.focused.focused = False
+                self.context.focused.on_event(Events.LostFocus)
                 self.context.focused = None
                 stc = self.context.current_camera.get_behavior("SnapToCamera")
                 if stc.grabbed_something:
@@ -352,13 +354,15 @@ class View3D(QOpenGLWidget):
         if evt.button() == Qt.LeftButton:
             target = self.context.hover_target
             if target is not None:
-                target.on_click(self.context.debug_point, evt)
+                target.on_click(self.context.debug_point, evt)  # Change to on_event
                 for b in target.behaviors:
-                    b.on_click(self.context.debug_point, evt)
+                    b.on_click(self.context.debug_point, evt) # Change to on_event
                 if hasattr(target, 'focusable') and target.focusable:
                     if self.context.focused:
                         self.context.focused.focused = False
+                        self.context.focused.on_event(Events.LostFocus)
                     self.context.focused = target
+                    self.context.focused.on_event(Events.GotFocus)
                     target.focused = True
                     stc = self.context.current_camera.get_behavior("SnapToCamera")
                     if stc.grabbed_something:

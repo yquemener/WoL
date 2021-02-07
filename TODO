@@ -14,6 +14,7 @@ DL tool user story
 
 Architecture
 ============
+- Collpse CodeSnippet and CodeSnippetReceiver? Are they different?
 - keybindings-> nav/tab -> on_key handlers in behaviors
     -> finish the cleanup
 - onclick becomes a behavior only thing?

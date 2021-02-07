@@ -19,3 +19,11 @@ class UserActions(int):
 class MappingTypes(int):
     Key = 1
     Mouse_Button = 2
+
+
+class Events(int):
+    TextChanged = 1
+    Clicked = 2  #TODO
+    GotFocus = 3
+    LostFocus = 4
+    AnimationFinished = 5

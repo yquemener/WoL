@@ -42,6 +42,7 @@ class SceneNode:
             """
         self.layer = 1
         self.gl_initialized = False
+        self.events_handlers = list()
 
     def set_uid(self, uid):
         self.uid = uid
@@ -61,6 +62,10 @@ class SceneNode:
                 pass
             self.parent = new_parent
             self.parent.children.append(self)
+
+    def on_event(self, event):
+        for h in self.events_handlers:
+            h(event)
 
     def compute_transform(self, project=True):
         if self.parent:

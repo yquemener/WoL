@@ -34,11 +34,11 @@ class TextLabelNode(CardNode):
         w = rect.width() + self.margin * 2
         h = rect.height() + self.margin * 2
         self.frame.setGeometry(0, 0, w, h)
-        wscale = w / 512.0
-        hscale = h / 512.0
+        self.wscale = w / 512.0
+        self.hscale = h / 512.0
         for v in self.vertices:
-            v[1] *= hscale
-            v[0] *= wscale
+            v[1] *= self.hscale
+            v[0] *= self.wscale
         self.refresh_vertices()
         self.needs_refresh = True
         self.text = text
@@ -71,11 +71,11 @@ class TextLabelNode(CardNode):
         self.frame.setFixedSize(w, h)
 
         self.vertices = utils.generate_square_vertices_fan()
-        wscale = w / 512.0
-        hscale = h / 512.0
+        self.wscale = w / 512.0
+        self.hscale = h / 512.0
         for v in self.vertices:
-            v[1] *= hscale
-            v[0] *= wscale
+            v[1] *= self.hscale
+            v[0] *= self.wscale
         self.refresh_vertices()
         self.needs_refresh = True
 
@@ -134,8 +134,8 @@ class CodeSnippetBehaviorCopy(Behavior):
             return
         if self.obj is self.obj.context.hover_target:
             new_snippet = CodeSnippet(parent=self.obj.context.scene)
-            new_snippet.position = self.obj.position
-            new_snippet.orientation = self.obj.orientation
+            new_snippet.position = self.obj.world_position()
+            new_snippet.orientation = self.obj.world_orientation()
             new_snippet.compute_transform()
             new_snippet.set_text(self.obj.text)
             self.grab(new_snippet)
@@ -161,8 +161,8 @@ class CodeSnippetBehaviorCut(Behavior):
                 self.grab(self.obj)
             elif isinstance(self.obj, CodeSnippetReceiver):
                 new_snippet = CodeSnippet(parent=self.obj.context.scene)
-                new_snippet.position = self.obj.position
-                new_snippet.orientation = self.obj.orientation
+                new_snippet.position = self.obj.world_position()
+                new_snippet.orientation = self.obj.world_orientation()
                 new_snippet.compute_transform()
                 new_snippet.set_text(self.obj.text)
                 self.grab(new_snippet)

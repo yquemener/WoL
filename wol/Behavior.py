@@ -4,6 +4,8 @@ from collections import defaultdict
 
 from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4, QMatrix3x3
 
+from wol.Constants import Events
+
 
 class Behavior:
     def __init__(self):
@@ -88,9 +90,11 @@ class SlerpAnim(Behavior):
         alpha = abs(self.anim_timer / self.delay)
         if alpha > 1.0:
             alpha = 1.0
-            self.kill_me = True
         self.obj.position = self.pos2*alpha + self.pos1*(1.0-alpha)
         self.obj.orientation = QQuaternion.slerp(self.orient1, self.orient2, alpha)
+        if alpha == 1.0:
+            self.kill_me = True
+            self.obj.on_event(Events.AnimationFinished)
 
 
 # Snaps a target to the camera. This behavior assumes it is attached to the camera

@@ -3,6 +3,7 @@ from PyQt5.QtGui import QOpenGLTexture, QImage, QSyntaxHighlighter, QColor, QTex
 from PyQt5.QtWidgets import QTextEdit, QApplication
 
 from wol import utils
+from wol.Constants import Events
 from wol.GeomNodes import CardNode
 import re
 
@@ -37,12 +38,12 @@ class TextEditNode(CardNode):
         w = rect.width() + 30
         h = rect.height() + 30
         self.widget.setGeometry(0, 0, w, h)
-        wscale = w / 512.0
-        hscale = h / 512.0
+        self.hscale = h / 512.0
+        self.wscale = w / 512.0
         self.vertices = utils.generate_square_vertices_fan()
         for v in self.vertices:
-            v[1] *= hscale
-            v[0] *= wscale
+            v[1] *= self.hscale
+            v[0] *= self.wscale
         self.refresh_vertices()
 
     def update(self, dt):
@@ -75,6 +76,7 @@ class TextEditNode(CardNode):
         else:
             self.widget.keyPressEvent(evt)
         self.text = self.widget.toPlainText()
+        self.on_event(Events.TextChanged)
 
     def inputMethodEvent(self, evt):
         return self.widget.inputMethodEvent(evt)
@@ -86,6 +88,7 @@ class TextEditNode(CardNode):
         self.widget.setText(t)
         self.do_autosize()
         self.needs_refresh = True
+        self.on_event(Events.TextChanged)
 
 
 def formatter(color, style=''):
