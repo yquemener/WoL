@@ -3,6 +3,8 @@ from wol.GuiElements import TextLabelNode
 import inspect
 from PyQt5.QtGui import QVector3D
 
+from wol.TextEditNode import TextEditNode
+
 
 class ObjectEditorNode(TextLabelNode):
     def __init__(self, parent=None, name="ObjectEditorNode", target_object=None):
@@ -22,7 +24,9 @@ class ObjectEditorNode(TextLabelNode):
                     f = open(fn, "w")
                     f.write(inspect.getsource(member[1]))
                     f.close()
-                    o = CodeBumperNode(parent=self, filename=fn, text=member[0])
+                    # o = CodeBumperNode(parent=self, filename=fn, text=member[0])
+                    o = TextEditNode(parent=self, text=member[0])
+                    o.do_autosize()
                     o.position = QVector3D(0.3, y, 0.0)
                     y -= 0.15
             self.widget.setStyleSheet("QWidget{color: white; background-color: gray;}")

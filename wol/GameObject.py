@@ -13,22 +13,36 @@ class GameObject(SceneNode):
         self.title_bar.position = QVector3D(0, 1, 0)
 
         self.slots = list()
+        self.add_slot("init",
+"""self.quadric = GLU.gluNewQuadric()
+self.size = 1.0
+self.collider = Collisions.Sphere()
+self.color = QVector4D(1.0, 0.5, 0.5, 1.0)
+self.program = ShadersLibrary.create_program('simple_lighting')""")
+
         self.add_slot("update")
         self.add_slot("on_click")
+        self.add_slot("paint",
+"""self.program.bind()
+self.program.setUniformValue('light_position', QVector3D(1.0, 10.0, -10.0))
+self.program.setUniformValue('matmodel', self.transform)
+self.program.setUniformValue('material_color', self.color)
+self.program.setUniformValue('mvp', self.proj_matrix)
+GLU.gluSphere(self.quadric, self.size, 20, 20)
+program.bind()""")
         self.layout()
 
         for c in self.children:
             c.properties["delegateGrabToParent"] = True
 
-    def add_slot(self, name):
+    def add_slot(self, name, text="# code"):
         slot = CodeSnippetReceiver(parent=self)
-        slot.set_text("# "+name+" code\n\n\n\fdssafdas")
+        slot.set_text(text)
         slot.events_handlers.append(lambda ev: self.on_lost_focus(ev, slot))
         label = TextLabelNode(name=name + "_slot_label", parent=self, text=name)
         self.slots.append((name, label, slot))
 
     def on_lost_focus(self, evt, slot):
-        print(evt)
         if evt == Events.LostFocus:
             self.layout()
         if evt == Events.AnimationFinished and not slot.focused:

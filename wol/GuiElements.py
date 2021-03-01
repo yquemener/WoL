@@ -184,7 +184,6 @@ class CodeSnippetBehaviorPaste(Behavior):
         target = self.obj.context.hover_target
         if target and isinstance(target, CodeSnippetReceiver):
             target.set_text(self.obj.text)
-            print(self.obj.text)
             self.obj.remove()
             self.obj.context.grabbed = None
         else:

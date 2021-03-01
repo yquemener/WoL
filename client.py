@@ -85,6 +85,8 @@ if __name__ == '__main__':
     go.position = QVector3D(4, 4, -6)
     go.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
 
+    #po = PythonIbjectEditor(parent=context.scene)
+
     load = False
     if load:
         try:
