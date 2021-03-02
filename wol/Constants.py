@@ -11,14 +11,17 @@ class UserActions(int):
     Move_Back = 9
     Strafe_Left = 10
     Strafe_Right = 11
-    Copy = 12
-    Cut = 13
-    Paste = 14
+    Move_Up = 12
+    Move_Down = 13
+    Copy = 14
+    Cut = 15
+    Paste = 16
 
 
 class MappingTypes(int):
-    Key = 1
-    Mouse_Button = 2
+    KeyDown = 1
+    KeyPressed = 2
+    MouseButtonClicked = 3
 
 
 class Events(int):

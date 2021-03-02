@@ -11,7 +11,6 @@ from wol.Constants import UserActions, MappingTypes
 # Huge potential for becoming a registry anti-pattern. Make sure things added here make sense.
 class PlayerContext:
     def __init__(self):
-        self.abstract_input = dict()
         self.mouse_position = QVector2D(0, 0)
         self.old_mouse_position = QVector2D()
         self.debug_point = QVector3D()
@@ -28,20 +27,22 @@ class PlayerContext:
             "rm": self.del_objects
         }
         self.mappings = {
-            (MappingTypes.Mouse_Button, Qt.LeftButton): [UserActions.Activate],
-            (MappingTypes.Key, Qt.Key_E): [UserActions.Edit],
-            (MappingTypes.Key, Qt.Key_Escape): [UserActions.Unselect, UserActions.Release],
-            (MappingTypes.Key, Qt.Key_Q): [UserActions.Grab],
-            (MappingTypes.Key, Qt.Key_QuoteLeft): [UserActions.Invoke_Console],
-            (MappingTypes.Key, Qt.Key_1): [UserActions.Snap_To_90],
-            (MappingTypes.Key, Qt.Key_2): [UserActions.Save],
-            (MappingTypes.Key, Qt.Key_W): [UserActions.Move_Forward],
-            (MappingTypes.Key, Qt.Key_S): [UserActions.Move_Back],
-            (MappingTypes.Key, Qt.Key_A): [UserActions.Strafe_Left],
-            (MappingTypes.Key, Qt.Key_D): [UserActions.Strafe_Right],
-            (MappingTypes.Key, Qt.Key_C): [UserActions.Copy],
-            (MappingTypes.Key, Qt.Key_X): [UserActions.Cut],
-            (MappingTypes.Key, Qt.Key_V): [UserActions.Paste],
+            (MappingTypes.MouseButtonClicked, Qt.LeftButton): [UserActions.Activate],
+            (MappingTypes.KeyDown, Qt.Key_E): [UserActions.Edit],
+            (MappingTypes.KeyDown, Qt.Key_Escape): [UserActions.Unselect, UserActions.Release],
+            (MappingTypes.KeyDown, Qt.Key_Q): [UserActions.Grab],
+            (MappingTypes.KeyDown, Qt.Key_QuoteLeft): [UserActions.Invoke_Console],
+            (MappingTypes.KeyDown, Qt.Key_1): [UserActions.Snap_To_90],
+            (MappingTypes.KeyDown, Qt.Key_2): [UserActions.Save],
+            (MappingTypes.KeyPressed, Qt.Key_W): [UserActions.Move_Forward],
+            (MappingTypes.KeyPressed, Qt.Key_S): [UserActions.Move_Back],
+            (MappingTypes.KeyPressed, Qt.Key_A): [UserActions.Strafe_Left],
+            (MappingTypes.KeyPressed, Qt.Key_D): [UserActions.Strafe_Right],
+            (MappingTypes.KeyPressed, Qt.Key_Space): [UserActions.Move_Up],
+            (MappingTypes.KeyPressed, Qt.Key_Shift): [UserActions.Move_Down],
+            (MappingTypes.KeyDown, Qt.Key_C): [UserActions.Copy],
+            (MappingTypes.KeyDown, Qt.Key_X): [UserActions.Cut],
+            (MappingTypes.KeyDown, Qt.Key_V): [UserActions.Paste],
         }
 
     def add_object(self, name=None):

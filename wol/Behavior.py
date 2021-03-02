@@ -4,18 +4,14 @@ from collections import defaultdict
 
 from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4, QMatrix3x3
 
-from wol.Constants import Events
+from wol.Constants import Events, UserActions
 
 
 class Behavior:
     def __init__(self):
         self.obj = None
         self.kill_me = False
-        self.handlers = defaultdict(list)
-        self.init_handlers()
-
-    def init_handlers(self):
-        return
+        self.events_handlers = defaultdict(list)
 
     def on_update(self, dt):
         return
@@ -23,9 +19,7 @@ class Behavior:
     def on_click(self, evt, pos):
         return
 
-    def on_action(self, act):
-        for h in self.handlers[act]:
-            h()
+    def on_action(self, action):
         return
 
     def kill(self):
@@ -36,9 +30,43 @@ class Behavior:
 
 # Move the Camera
 class MoveAround(Behavior):
-    def __init__(self, speed=0.2):
+    def __init__(self, speed=0.6):
         super().__init__()
         self.speed = speed
+        self.events_handlers[UserActions.Move_Up].append(self.on_go_up)
+        self.events_handlers[UserActions.Move_Down].append(self.on_go_down)
+        self.events_handlers[UserActions.Strafe_Left].append(self.on_go_left)
+        self.events_handlers[UserActions.Strafe_Right].append(self.on_go_right)
+        self.events_handlers[UserActions.Move_Forward].append(self.on_go_forward)
+        self.events_handlers[UserActions.Move_Back].append(self.on_go_back)
+        self.reset_movement()
+
+    def reset_movement(self):
+        self.go_up = 0
+        self.go_down = 0
+        self.go_right = 0
+        self.go_left = 0
+        self.go_forward = 0
+        self.go_back = 0
+
+    def on_go_up(self):
+        self.go_up = self.speed
+
+    def on_go_down(self):
+        self.go_down = self.speed
+
+    def on_go_forward(self):
+        self.go_forward = self.speed
+
+    def on_go_back(self):
+        self.go_back = self.speed
+
+    def on_go_left(self):
+        self.go_left = self.speed
+
+    def on_go_right(self):
+        self.go_right = self.speed
+
 
     def on_update(self, dt):
         yaw = self.obj.context.mouse_position.x() * 180.0
@@ -56,19 +84,16 @@ class MoveAround(Behavior):
         self.obj.look_at = self.obj.position + direction
         self.obj.up = QVector3D(0, 1, 0)
         self.obj.orientation = pitch_rotation * yaw_rotation
-        right = QVector3D.crossProduct(direction,
-                                       self.obj.up).normalized() * self.speed
+        right = QVector3D.crossProduct(direction, self.obj.up).normalized()
 
-        for action, delta in (
-                ('forward', direction*self.speed),
-                ('back',    -direction*self.speed),
-                ('left',    -right),
-                ('right',   right),
-                ('up', self.obj.up * self.speed),
-                ('down', -self.obj.up * self.speed)):
-            if self.obj.context.abstract_input.get(action, False):
-                self.obj.position += delta
-                self.obj.look_at += delta
+        delta = QVector3D(0, 0, 0)
+        delta += self.obj.up * (self.go_up - self.go_down)
+        delta += right * (self.go_right - self.go_left)
+        delta += direction * (self.go_forward - self.go_back)
+        self.obj.position += delta
+        self.obj.look_at += delta
+        self.reset_movement()
+
 
 # Makes a slerp animation between two positions and orientations
 class SlerpAnim(Behavior):

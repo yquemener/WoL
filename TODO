@@ -1,3 +1,12 @@
+Short list
+==========
+- View3D:
+    - remove self.context.abstract_input
+    - remove self.key_map
+    - make a self.key_pressed set
+    - use self.context.mappings to move
+    - use events instead of all the if event.key() ==
+
 DL tool user story
 ==================
 - Switch between views of the dataView

@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from OpenGL import GL
 from PyQt5.QtGui import QMatrix4x4, QQuaternion, QVector3D, QImage, QOpenGLTexture, QTransform, QMatrix3x3, QVector4D
 import struct
@@ -42,7 +44,7 @@ class SceneNode:
             """
         self.layer = 1
         self.gl_initialized = False
-        self.events_handlers = list()
+        self.events_handlers = defaultdict(list)
 
     def set_uid(self, uid):
         self.uid = uid
@@ -64,8 +66,11 @@ class SceneNode:
             self.parent.children.append(self)
 
     def on_event(self, event):
-        for h in self.events_handlers:
-            h(event)
+        for h in self.events_handlers[event]:
+            h()
+        for b in self.behaviors:
+            for h in b.events_handlers[event]:
+                h()
 
     def compute_transform(self, project=True):
         if self.parent:

@@ -40,13 +40,14 @@ class View3D(QOpenGLWidget):
         self.updateTimer.timeout.connect(self.scene_update)
         self.updateTimer.start()
 
-        self.key_map = {
-            Qt.Key_W: 'forward',
-            Qt.Key_S: 'back',
-            Qt.Key_A: 'left',
-            Qt.Key_D: 'right',
-            Qt.Key_Space: 'up',
-            Qt.Key_Shift: "down"}
+        self.key_pressed = set()
+        # self.key_map = {
+        #     Qt.Key_W: 'forward',
+        #     Qt.Key_S: 'back',
+        #     Qt.Key_A: 'left',
+        #     Qt.Key_D: 'right',
+        #     Qt.Key_Space: 'up',
+        #     Qt.Key_Shift: "down"}
         self.setMouseTracking(True)
         self.skipNextMouseMove = True
         self.keepMouseCentered = True
@@ -146,6 +147,12 @@ class View3D(QOpenGLWidget):
         self.context.current_camera.ratio = width / height
 
     def scene_update(self):
+        for k in self.key_pressed:
+            actions = self.context.mappings.get((MappingTypes.KeyPressed, k), [])
+            for action in actions:
+                self.context.current_camera.on_event(action)
+                if self.context.hover_target is not None:
+                    self.context.hover_target.on_event(action)
         self.context.scene.lock.acquire()
         self.context.scene.update_recurs(0.01)
         self.context.scene.lock.release()
@@ -187,15 +194,13 @@ class View3D(QOpenGLWidget):
     def keyReleaseEvent(self, evt):
         if evt.isAutoRepeat():
             return
-        action = self.key_map.get(evt.key(), None)
-        if action:
-            self.context.abstract_input[action] = False
+        try:
+            self.key_pressed.remove(evt.key())
+        except KeyError:
+            pass
 
     def keyPressEvent(self, evt):
-        #if evt.key() == Qt.Key_Escape:
-        #    self.close()
-
-        actions = self.context.mappings.get((MappingTypes.Key, evt.key()), [])
+        actions = self.context.mappings.get((MappingTypes.KeyDown, evt.key()), [])
         for a in actions:
             self.context.current_camera.on_action(a)
             if self.context.hover_target is not None:
@@ -292,9 +297,7 @@ class View3D(QOpenGLWidget):
 
         if evt.isAutoRepeat():
             return
-        action = self.key_map.get(evt.key(), None)
-        if action:
-            self.context.abstract_input[action] = True
+        self.key_pressed.add(evt.key())
 
     def load_scene(self):
         fout = open("init_scene.py", "r")

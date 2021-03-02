@@ -38,14 +38,13 @@ program.bind()""")
     def add_slot(self, name, text="# code"):
         slot = CodeSnippetReceiver(parent=self)
         slot.set_text(text)
-        slot.events_handlers.append(lambda ev: self.on_lost_focus(ev, slot))
+        slot.events_handlers[Events.LostFocus].append(lambda: self.on_lost_focus(slot))
+        slot.events_handlers[Events.AnimationFinished].append(lambda: self.on_lost_focus(slot))
         label = TextLabelNode(name=name + "_slot_label", parent=self, text=name)
         self.slots.append((name, label, slot))
 
-    def on_lost_focus(self, evt, slot):
-        if evt == Events.LostFocus:
-            self.layout()
-        if evt == Events.AnimationFinished and not slot.focused:
+    def on_lost_focus(self, slot):
+        if not slot.focused:
             self.layout()
 
     def layout(self):
