@@ -65,11 +65,11 @@ class SceneNode:
             self.parent = new_parent
             self.parent.children.append(self)
 
-    def on_event(self, event):
-        for h in self.events_handlers[event]:
+    def on_event(self, action):
+        for h in self.events_handlers[action]:
             h()
         for b in self.behaviors:
-            for h in b.events_handlers[event]:
+            for h in b.events_handlers[action]:
                 h()
 
     def compute_transform(self, project=True):
@@ -265,11 +265,6 @@ class SceneNode:
 
     def on_click(self, pos, evt):
         return
-
-    def on_action(self, act):
-        for b in self.behaviors:
-            b.on_action(act)
-
 
 class RootNode(SceneNode):
     def __init__(self, context, name="root"):

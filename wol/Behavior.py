@@ -19,7 +19,7 @@ class Behavior:
     def on_click(self, evt, pos):
         return
 
-    def on_action(self, action):
+    def on_event(self, action):
         return
 
     def kill(self):
@@ -133,6 +133,15 @@ class SnapToCamera(Behavior):
         self.anim = None
         self.grabbed_something = False
         self.grab_animation_length = 0.15
+        self.events_handlers[UserActions.Release].append(self.on_release)
+
+    def on_release(self):
+        if self.obj.context.focused is not None:
+            self.obj.context.focused.focused = False
+            self.obj.context.focused.on_event(Events.LostFocus)
+            self.obj.context.focused = None
+            if self.grabbed_something:
+                self.restore()
 
     def grab(self, target):
         self.target = target

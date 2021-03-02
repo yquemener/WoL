@@ -41,13 +41,6 @@ class View3D(QOpenGLWidget):
         self.updateTimer.start()
 
         self.key_pressed = set()
-        # self.key_map = {
-        #     Qt.Key_W: 'forward',
-        #     Qt.Key_S: 'back',
-        #     Qt.Key_A: 'left',
-        #     Qt.Key_D: 'right',
-        #     Qt.Key_Space: 'up',
-        #     Qt.Key_Shift: "down"}
         self.setMouseTracking(True)
         self.skipNextMouseMove = True
         self.keepMouseCentered = True
@@ -202,24 +195,20 @@ class View3D(QOpenGLWidget):
     def keyPressEvent(self, evt):
         actions = self.context.mappings.get((MappingTypes.KeyDown, evt.key()), [])
         for a in actions:
-            self.context.current_camera.on_action(a)
-            if self.context.hover_target is not None:
-                self.context.hover_target.on_action(a)
-            if self.context.grabbed is not None:
-                self.context.grabbed.on_action(a)
-
-        if evt.key() == Qt.Key_Escape:
+            self.context.current_camera.on_event(a)
             if self.context.focused is not None:
-                self.context.focused.focused = False
-                self.context.focused.on_event(Events.LostFocus)
-                self.context.focused = None
-                stc = self.context.current_camera.get_behavior("SnapToCamera")
-                if stc.grabbed_something:
-                    stc.restore()
+                self.context.focused.on_event(a)
+            elif self.context.grabbed is not None:
+                self.context.grabbed.on_event(a)
+            elif self.context.hover_target is not None:
+                self.context.hover_target.on_event(a)
 
         if self.context.focused is not None:
-            self.context.focused.keyPressEvent(evt)
-            return
+            try:
+                self.context.focused.keyPressEvent(evt)
+                return
+            except AttributeError:
+                pass
 
         if evt.key() == Qt.Key_Tab:
             self.releaseMouse()

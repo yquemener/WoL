@@ -76,7 +76,6 @@ class TextEditNode(CardNode):
         else:
             self.widget.keyPressEvent(evt)
         self.text = self.widget.toPlainText()
-        self.on_event(Events.TextChanged)
 
     def inputMethodEvent(self, evt):
         return self.widget.inputMethodEvent(evt)
@@ -88,7 +87,6 @@ class TextEditNode(CardNode):
         self.widget.setText(t)
         self.do_autosize()
         self.needs_refresh = True
-        self.on_event(Events.TextChanged)
 
 
 def formatter(color, style=''):
