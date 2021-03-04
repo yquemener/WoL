@@ -44,7 +44,7 @@ Architecture
 - Should .scene really be a member of .context? Why not just View3D?
 - Check if PytonFileEditornode and ObjectEditorNode and InstanciatedObject are not redundant
 - Put grab/ungrab on camera node
-
+- Remove .grabbed de PlayerContext and attach it to a camera behavior instead
 
 
 Graphics Enhancements

@@ -34,6 +34,8 @@ class PlayerContext:
             (MappingTypes.KeyDown, Qt.Key_QuoteLeft): [UserActions.Invoke_Console],
             (MappingTypes.KeyDown, Qt.Key_1): [UserActions.Snap_To_90],
             (MappingTypes.KeyDown, Qt.Key_2): [UserActions.Save],
+            (MappingTypes.KeyDown, Qt.Key_R): [UserActions.Save],
+            (MappingTypes.KeyDown, Qt.Key_L): [UserActions.Load],
             (MappingTypes.KeyPressed, Qt.Key_W): [UserActions.Move_Forward],
             (MappingTypes.KeyPressed, Qt.Key_S): [UserActions.Move_Back],
             (MappingTypes.KeyPressed, Qt.Key_A): [UserActions.Strafe_Left],
@@ -43,6 +45,7 @@ class PlayerContext:
             (MappingTypes.KeyDown, Qt.Key_C): [UserActions.Copy],
             (MappingTypes.KeyDown, Qt.Key_X): [UserActions.Cut],
             (MappingTypes.KeyDown, Qt.Key_V): [UserActions.Paste],
+            (MappingTypes.KeyDown, Qt.Key_Tab): [UserActions.Change_Cursor_Mode],
         }
 
     def add_object(self, name=None):

@@ -134,6 +134,8 @@ class SnapToCamera(Behavior):
         self.grabbed_something = False
         self.grab_animation_length = 0.15
         self.events_handlers[UserActions.Release].append(self.on_release)
+        self.events_handlers[UserActions.Snap_To_90].append(self.snap_to_90)
+        self.events_handlers[UserActions.Grab].append(self.on_grab)
 
     def on_release(self):
         if self.obj.context.focused is not None:
@@ -142,6 +144,23 @@ class SnapToCamera(Behavior):
             self.obj.context.focused = None
             if self.grabbed_something:
                 self.restore()
+
+    def on_grab(self):
+        context = self.obj.context
+        gr = context.grabbed
+        if gr is None:
+            if context.hover_target:
+                anchor = context.hover_target
+                while anchor.properties.get("delegateGrabToParent", False) \
+                        and anchor.parent is not None \
+                        and anchor.parent is not context.scene:
+                    anchor = anchor.parent
+                context.grabbed = anchor
+                context.grabbed_former_parent = context.grabbed.parent
+                context.grabbed.reparent(context.current_camera)
+        else:
+            context.grabbed.reparent(context.grabbed_former_parent)
+            context.grabbed = None
 
     def grab(self, target):
         self.target = target
@@ -177,6 +196,16 @@ class SnapToCamera(Behavior):
                               self.target_original_position, self.target_original_orientation)
         self.target.add_behavior(self.anim)
         self.grabbed_something = False
+
+    def snap_to_90(self):
+        if self.obj.context.grabbed is None:
+            return
+        g = self.obj.context.grabbed
+        euler = g.world_orientation().toEulerAngles()
+        euler.setX(round(euler.x() / 90) * 90)
+        euler.setY(round(euler.y() / 90) * 90)
+        euler.setZ(round(euler.z() / 90) * 90)
+        g.set_world_orientation(QQuaternion.fromEulerAngles(euler))
 
 
 class RotateConstantSpeed(Behavior):

@@ -6,16 +6,18 @@ class UserActions(int):
     Release = 5
     Invoke_Console = 6
     Save = 6
-    Snap_To_90 = 7
-    Move_Forward = 8
-    Move_Back = 9
-    Strafe_Left = 10
-    Strafe_Right = 11
-    Move_Up = 12
-    Move_Down = 13
-    Copy = 14
-    Cut = 15
-    Paste = 16
+    Load = 7
+    Snap_To_90 = 8
+    Move_Forward = 9
+    Move_Back = 10
+    Strafe_Left = 11
+    Strafe_Right = 12
+    Move_Up = 13
+    Move_Down = 14
+    Copy = 15
+    Cut = 16
+    Paste = 17
+    Change_Cursor_Mode = 18
 
 
 class MappingTypes(int):

@@ -4,6 +4,8 @@ from PyQt5.QtCore import Qt
 from io import StringIO
 
 from wol import CodeEdit
+from wol.Behavior import Behavior
+from wol.Constants import UserActions
 from wol.GeomNodes import CardNode
 
 import sys
@@ -72,3 +74,30 @@ class ConsoleNode(CardNode):
 
     def inputMethodEvent(self, evt):
         return self.widget.inputMethodEvent(evt)
+
+
+class InvokeConsole(Behavior):
+    def __init__(self):
+        super().__init__()
+        self.events_handlers[UserActions.Invoke_Console].append(self.invoke)
+        self.console = None
+
+    def invoke(self):
+        context = self.obj.context
+        if self.console is None:
+            self.console = ConsoleNode(parent=context.scene)
+
+        stc = context.current_camera.get_behavior("SnapToCamera")
+        if stc.grabbed_something:
+            if stc.target is self.console:
+                stc.restore()
+                context.focused = None
+                self.console.focused = False
+
+                return
+            stc.restore()
+        stc.grab(self.console)
+        if context.focused:
+            context.focused.focused = False
+        context.focused = self.console
+        self.console.focused = True

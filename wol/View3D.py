@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from collections import defaultdict
 
 from PyQt5.QtCore import Qt, QTimer, QPoint
 from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor, QVector4D, QMatrix3x3, QQuaternion, \
@@ -7,8 +8,7 @@ from PyQt5.QtWidgets import QOpenGLWidget, QApplication
 from OpenGL import GL
 from math import sin
 
-from wol.ConsoleNode import ConsoleNode
-from wol.Constants import Events
+from wol.Constants import Events, UserActions
 from wol.GuiElements import TextLabelNode
 from wol.PlayerContext import PlayerContext, MappingTypes
 from wol.ShadersLibrary import ShadersLibrary
@@ -34,6 +34,10 @@ class View3D(QOpenGLWidget):
         self.hud_root = RootNode(self.context)
         # self.hud_root.orientation = QQuaternion.fromAxisAndAngle(0, 1, 0, 180)
         self.real_mouse_position = (0, 0)
+        self.events_handlers = defaultdict(list)
+        self.events_handlers[UserActions.Save].append(self.save_scene)
+        self.events_handlers[UserActions.Load].append(self.load_scene)
+        self.events_handlers[UserActions.Change_Cursor_Mode].append(self.toggle_mouse_captive)
 
         self.updateTimer = QTimer(self)
         self.updateTimer.setInterval(20)
@@ -192,6 +196,10 @@ class View3D(QOpenGLWidget):
         except KeyError:
             pass
 
+    def on_event(self, action):
+        for h in self.events_handlers[action]:
+            h()
+
     def keyPressEvent(self, evt):
         actions = self.context.mappings.get((MappingTypes.KeyDown, evt.key()), [])
         for a in actions:
@@ -210,83 +218,17 @@ class View3D(QOpenGLWidget):
             except AttributeError:
                 pass
 
-        if evt.key() == Qt.Key_Tab:
-            self.releaseMouse()
-            self.keepMouseCentered = not self.keepMouseCentered
-            if self.keepMouseCentered:
-                self.setCursor(Qt.BlankCursor)
-            else:
-                self.setCursor(Qt.ArrowCursor)
-
-        if evt.key() == Qt.Key_QuoteLeft:
-            stc = self.context.current_camera.get_behavior("SnapToCamera")
-
-            if not hasattr(self.context, "current_console"):
-                console = None
-                for o in self.context.scene.children:
-                    if isinstance(o, ConsoleNode):
-                        console = o
-                if console is None:
-                    console = ConsoleNode(parent=self.context.scene)
-                self.context.current_console = console
-
-            if stc.grabbed_something:
-                if stc.target is self.context.current_console:
-                    stc.restore()
-                    self.context.focused = None
-                    self.context.current_console.focused = False
-
-                    return
-                stc.restore()
-            stc.grab(self.context.current_console)
-            if self.context.focused:
-                self.context.focused.focused = False
-            self.context.focused = self.context.current_console
-            self.context.current_console.focused = True
-
-        if evt.key() == Qt.Key_E:
-            if hasattr(self.context.hover_target, "on_edit"):
-                self.context.hover_target.on_edit(self.context.debug_point)
-
-        if evt.key() == Qt.Key_T:
-            stc = self.context.current_camera.get_behavior("SnapToCamera")
-            if not stc.grabbed_something:
-                if self.context.hover_target is not None:
-                    stc.grab(self.context.hover_target)
-            else:
-                stc.restore()
-
-        if evt.key() == Qt.Key_R:
-            self.save_scene()
-
-        if evt.key() == Qt.Key_L:
-            self.load_scene()
-
-        if evt.key() == Qt.Key_O:
-            self.save_scene()
-
-        if evt.key() == Qt.Key_1:
-            self.snap_to_90()
-
-        if evt.key() == Qt.Key_Q:
-            gr = self.context.grabbed
-            if gr is None:
-                if self.context.hover_target:
-                    anchor = self.context.hover_target
-                    while anchor.properties.get("delegateGrabToParent", False) \
-                            and anchor.parent is not None \
-                            and anchor.parent is not self.context.scene:
-                        anchor = anchor.parent
-                    self.context.grabbed = anchor
-                    self.context.grabbed_former_parent = self.context.grabbed.parent
-                    self.context.grabbed.reparent(self.context.current_camera)
-            else:
-                self.context.grabbed.reparent(self.context.grabbed_former_parent)
-                self.context.grabbed = None
-
         if evt.isAutoRepeat():
             return
         self.key_pressed.add(evt.key())
+
+    def toggle_mouse_captive(self):
+        self.releaseMouse()
+        self.keepMouseCentered = not self.keepMouseCentered
+        if self.keepMouseCentered:
+            self.setCursor(Qt.BlankCursor)
+        else:
+            self.setCursor(Qt.ArrowCursor)
 
     def load_scene(self):
         fout = open("init_scene.py", "r")
@@ -298,17 +240,6 @@ class View3D(QOpenGLWidget):
         for i, l in enumerate(s.split('\n')):
             print(i, l)
         exec(s, d, d)
-
-    def snap_to_90(self):
-        if self.context.grabbed is None:
-            return
-        g = self.context.grabbed
-        euler = g.world_orientation().toEulerAngles()
-        euler.setX(round(euler.x() / 90) * 90)
-        euler.setY(round(euler.y() / 90) * 90)
-        euler.setZ(round(euler.z() / 90) * 90)
-        g.set_world_orientation(QQuaternion.fromEulerAngles(euler))
-        # g.set_world_orientation(g.world_orientation())
 
     def save_scene(self):
         s = "import wol\nimport PyQt5\n\n"

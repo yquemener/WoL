@@ -6,7 +6,7 @@ import sys
 from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4
 from PyQt5.QtWidgets import QApplication
 
-from wol import Behavior, DevScenes, stdout_helpers
+from wol import Behavior, DevScenes, stdout_helpers, ConsoleNode
 from wol.GameObject import GameObject
 from wol.GuiElements import CodeSnippetReceiver, CodeSnippet
 from wol.SceneNode import CameraNode, SceneNode, SkyBox
@@ -69,6 +69,7 @@ if __name__ == '__main__':
     my_cam = MyCamera(context.scene)
     context.scene.context.current_camera = my_cam
     my_cam.add_behavior(Behavior.SnapToCamera())
+    my_cam.add_behavior(ConsoleNode.InvokeConsole())
     context.scene.context.current_camera = my_cam
     SkyBox(parent=context.scene.context.current_camera)
 
