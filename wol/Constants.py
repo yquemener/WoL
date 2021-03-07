@@ -19,6 +19,13 @@ class UserActions(int):
     Paste = 17
     Change_Cursor_Mode = 18
 
+class Events(int):
+    TextChanged = 1001
+    Clicked = 1002  #TODO
+    GotFocus = 1003
+    LostFocus = 1004
+    AnimationFinished = 1005
+
 
 class MappingTypes(int):
     KeyDown = 1
@@ -26,9 +33,3 @@ class MappingTypes(int):
     MouseButtonClicked = 3
 
 
-class Events(int):
-    TextChanged = 1
-    Clicked = 2  #TODO
-    GotFocus = 3
-    LostFocus = 4
-    AnimationFinished = 5

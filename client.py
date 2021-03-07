@@ -7,7 +7,7 @@ from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4
 from PyQt5.QtWidgets import QApplication
 
 from wol import Behavior, DevScenes, stdout_helpers, ConsoleNode
-from wol.GameObject import GameObject
+from wol.SceneNodeEditor import SceneNodeEditor
 from wol.GuiElements import CodeSnippetReceiver, CodeSnippet
 from wol.SceneNode import CameraNode, SceneNode, SkyBox
 from wol.View3D import View3D
@@ -82,7 +82,10 @@ if __name__ == '__main__':
     snip.set_text('print("Hello world")')
     snip.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
 
-    go = GameObject(parent=context.scene)
+    testobj = SceneNode(parent=context.scene)
+    testobj.code = open("my_project/TestNode.py").read()
+
+    go = SceneNodeEditor(parent=context.scene, target=testobj)
     go.position = QVector3D(4, 4, -6)
     go.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
 

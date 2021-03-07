@@ -202,6 +202,15 @@ class View3D(QOpenGLWidget):
 
     def keyPressEvent(self, evt):
         actions = self.context.mappings.get((MappingTypes.KeyDown, evt.key()), [])
+
+        if self.context.focused is not None:
+            try:
+                self.context.focused.keyPressEvent(evt)
+                if UserActions.Release not in actions:
+                    return
+            except AttributeError:
+                pass
+
         for a in actions:
             self.context.current_camera.on_event(a)
             if self.context.focused is not None:
@@ -211,12 +220,6 @@ class View3D(QOpenGLWidget):
             elif self.context.hover_target is not None:
                 self.context.hover_target.on_event(a)
 
-        if self.context.focused is not None:
-            try:
-                self.context.focused.keyPressEvent(evt)
-                return
-            except AttributeError:
-                pass
 
         if evt.isAutoRepeat():
             return

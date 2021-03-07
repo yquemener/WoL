@@ -127,7 +127,7 @@ class CodeSnippetReceiver(TextEditNode):
 
 class CodeSnippetBehaviorCopy(Behavior):
     def init_handlers(self):
-        self.handlers[UserActions.Copy] = [self.copy]
+        self.events_handlers[UserActions.Copy] = [self.copy]
 
     def copy(self):
         if self.obj.context.grabbed:
@@ -151,7 +151,7 @@ class CodeSnippetBehaviorCopy(Behavior):
 
 class CodeSnippetBehaviorCut(Behavior):
     def init_handlers(self):
-        self.handlers[UserActions.Cut] = [self.cut]
+        self.events_handlers[UserActions.Cut] = [self.cut]
 
     def cut(self):
         if self.obj.context.grabbed:
@@ -178,7 +178,7 @@ class CodeSnippetBehaviorCut(Behavior):
 
 class CodeSnippetBehaviorPaste(Behavior):
     def init_handlers(self):
-        self.handlers[UserActions.Paste] = [self.paste]
+        self.events_handlers[UserActions.Paste] = [self.paste]
 
     def paste(self):
         target = self.obj.context.hover_target

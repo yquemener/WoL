@@ -18,6 +18,11 @@ MVC vs visualizer/editor
 - I especially consider 3. to be the main goal, with 1. being a necessary intermediate step
 
 
+File/scene structure
+====================
+- Save as many things as possible as directly usable python libraries
+- Have a `init_scene.py` used to initialize the scene
+
 
 User story
 ==========

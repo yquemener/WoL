@@ -5,19 +5,21 @@ Short list
     V remove self.key_map
     V make a self.key_pressed set
     V use self.context.mappings to move
-    - use events instead of all the if event.key() ==
-
-DL tool user story
-==================
-- Switch between views of the dataView
-- Make a good numerical rendering of the ndarray
-- Try to actually train a MNIST with it
-- Make load/save scene the default
-- Tab size
-- Smart indent
-- Close/Del through click
-- object explorer
-- rotate the grabbed object
+    V use events instead of all the if event.key() ==
+- Code editor
+    - Update class code when text is edited (make it live!)
+        - Keep copy of compiling code in case new code is failing
+    - Add a way to save code in the save_scene function
+    - Change the way slots work in the GameObject
+            (just an arbitrary list of slots, auto split around function defs)
+- TextEditor   
+    - Scroll over page long codes
+- Code GameObjects!
+    - np arrays viewer
+    - fdir "lens" (HUD?)
+    - MNIST trainer with live weights viewer
+    - server to share positions/textures (think about local/remote execution models)
+    - file system explorer?
 
 
 

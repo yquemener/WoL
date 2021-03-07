@@ -12,6 +12,10 @@ class Behavior:
         self.obj = None
         self.kill_me = False
         self.events_handlers = defaultdict(list)
+        self.init_handlers()
+
+    def init_handlers(self):
+        return
 
     def on_update(self, dt):
         return
@@ -20,6 +24,9 @@ class Behavior:
         return
 
     def on_event(self, action):
+        print(self, action)
+        for h in self.events_handlers[action]:
+            h()
         return
 
     def kill(self):
