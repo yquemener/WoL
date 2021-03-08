@@ -5,19 +5,19 @@ class UserActions(int):
     Grab = 4
     Release = 5
     Invoke_Console = 6
-    Save = 6
-    Load = 7
-    Snap_To_90 = 8
-    Move_Forward = 9
-    Move_Back = 10
-    Strafe_Left = 11
-    Strafe_Right = 12
-    Move_Up = 13
-    Move_Down = 14
-    Copy = 15
-    Cut = 16
-    Paste = 17
-    Change_Cursor_Mode = 18
+    Save = 7
+    Load = 8
+    Snap_To_90 = 9
+    Move_Forward = 10
+    Move_Back = 11
+    Strafe_Left = 12
+    Strafe_Right = 13
+    Move_Up = 14
+    Move_Down = 15
+    Copy = 16
+    Cut = 17
+    Paste = 18
+    Change_Cursor_Mode = 19
 
 class Events(int):
     TextChanged = 1001

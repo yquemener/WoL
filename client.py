@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QApplication
 from wol import Behavior, DevScenes, stdout_helpers, ConsoleNode
 from wol.SceneNodeEditor import SceneNodeEditor
 from wol.GuiElements import CodeSnippetReceiver, CodeSnippet
-from wol.SceneNode import CameraNode, SceneNode, SkyBox
+from wol.SceneNode import CameraNode, SceneNode, SkyBox, instanciate_from_project_file
 from wol.View3D import View3D
 
 
@@ -82,8 +82,7 @@ if __name__ == '__main__':
     snip.set_text('print("Hello world")')
     snip.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
 
-    testobj = SceneNode(parent=context.scene)
-    testobj.code = open("my_project/TestNode.py").read()
+    testobj = instanciate_from_project_file("my_project/TestNode.py", "TestNode", (context.scene,))
 
     go = SceneNodeEditor(parent=context.scene, target=testobj)
     go.position = QVector3D(4, 4, -6)

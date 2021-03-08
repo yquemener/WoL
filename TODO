@@ -7,11 +7,21 @@ Short list
     V use self.context.mappings to move
     V use events instead of all the if event.key() ==
 - Code editor
-    - Update class code when text is edited (make it live!)
+    V Update class code when text is edited (make it live!)
         - Keep copy of compiling code in case new code is failing
-    - Add a way to save code in the save_scene function
+        - Errors displayed in game (HUD or child TextWidget)
+            - Reset error messages on code update
+    V Add a way to save code in the save_scene function
     - Change the way slots work in the GameObject
-            (just an arbitrary list of slots, auto split around function defs)
+        V Just an arbitrary list of slots, auto split around function defs
+        - Have a last empty slot
+            - create a new one when the empty one is filled
+            - remove one when two empty slots follow each other
+    - Error management
+        - Try...except when running user code (update, render, init)
+        - Errors displayed in game (HUD or child TextWidget)
+            - Reset error messages on code update
+
 - TextEditor   
     - Scroll over page long codes
 - Code GameObjects!

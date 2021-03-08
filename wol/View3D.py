@@ -213,6 +213,7 @@ class View3D(QOpenGLWidget):
 
         for a in actions:
             self.context.current_camera.on_event(a)
+            self.on_event(a)
             if self.context.focused is not None:
                 self.context.focused.on_event(a)
             elif self.context.grabbed is not None:
@@ -249,14 +250,13 @@ class View3D(QOpenGLWidget):
 
         num = 0
         for o in self.context.scene.children:
+            o.save_code_file()
             ss, num = o.serialize(num)
             s += ss
         print(s)
         fout = open("init_scene.py", "w")
         fout.write(s)
         fout.close()
-        if hasattr(self.context.hover_target, "on_save"):
-            self.context.hover_target.on_save(self.context.debug_point)
 
     def inputMethodEvent(self, evt):
         if self.context.focused is not None:

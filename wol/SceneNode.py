@@ -8,6 +8,16 @@ from threading import Lock
 from wol import utils
 
 
+def instanciate_from_project_file(filename, class_name, args):
+    local = dict()
+    code = open(filename, "r").read()
+    exec(code, globals(), local)
+    cl = local[class_name](*args)
+    cl.source_file = filename
+    cl.code = code
+    return cl
+
+
 class SceneNode:
     next_uid = 0
     uid_map = dict()
@@ -45,6 +55,8 @@ class SceneNode:
         self.layer = 1
         self.gl_initialized = False
         self.events_handlers = defaultdict(list)
+        self.source_file = None
+        self.code = None
 
     def set_uid(self, uid):
         self.uid = uid
@@ -189,6 +201,13 @@ class SceneNode:
         self.orientation = QQuaternion(p[3], p[4], p[5], p[6])
         self.scale = QVector3D(p[7], p[8], p[9])
 
+    def save_code_file(self):
+        if self.code is not None and len(self.code)>0:
+            if self.source_file is not None:
+                f = open(self.source_file, "w")
+                f.write(self.code)
+                f.close()
+
     def serialize(self, current_obj_num):
         attribs = ["position", "orientation", "scale", "properties", "color", "visible"]
         exclude_types = ["wol.PythonFileEditorNode.InstanciatedObject"]
@@ -200,7 +219,11 @@ class SceneNode:
             if f"{self.__class__.__module__}.{self.__class__.__name__}" in exclude_types:
                 return "", current_obj_num
 
-            s += f"obj_{current_obj_num} = {self.__class__.__module__}.{self.__class__.__name__}("
+            if self.source_file is None:
+                s += f"obj_{current_obj_num} = {self.__class__.__module__}.{self.__class__.__name__}("
+            else:
+                s += f"obj_{current_obj_num} = instanciate_from_project_file('{self.source_file}',"
+                s += f"{self.__class__.__name__.split('.')[-1]}, ("
             s += "parent=context.scene"
             constructor_args = list(inspect.signature(self.__init__).parameters)
             for arg in constructor_args:
@@ -214,7 +237,10 @@ class SceneNode:
                         else:
                             rendered = str(val)
                         s += f",{arg}={rendered}"
-            s += ")\n"
+            if self.source_file is None:
+                s += ")\n"
+            else:
+                s+= "))\n"
 
             for att in attribs:
                 if hasattr(self, att):
