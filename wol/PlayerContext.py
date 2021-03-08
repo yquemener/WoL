@@ -11,6 +11,7 @@ from wol.Constants import UserActions, MappingTypes
 # Huge potential for becoming a registry anti-pattern. Make sure things added here make sense.
 class PlayerContext:
     def __init__(self):
+        self.indent = " "*4
         self.mouse_position = QVector2D(0, 0)
         self.old_mouse_position = QVector2D()
         self.debug_point = QVector3D()
