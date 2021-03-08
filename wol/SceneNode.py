@@ -6,6 +6,8 @@ import struct
 import inspect
 from threading import Lock
 from wol import utils
+from wol.Behavior import Behavior
+from wol.Constants import UserActions
 
 
 def instanciate_from_project_file(filename, class_name, args):
@@ -406,3 +408,5 @@ class SkyBox(SceneNode):
             program.setUniformValue('matrix', self.proj_matrix * self.face_transforms[i])
             GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
         GL.glPopAttrib(GL.GL_DEPTH_WRITEMASK)
+
+

@@ -21,7 +21,10 @@ Short list
         - Try...except when running user code (update, render, init)
         - Errors displayed in game (HUD or child TextWidget)
             - Reset error messages on code update
-
+- New objects management
+    - Add
+    - Delete
+    - Invoke Editor on 'E'
 - TextEditor   
     - Scroll over page long codes
 - Code GameObjects!

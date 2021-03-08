@@ -1,5 +1,6 @@
 from PyQt5.QtGui import QVector3D
 
+from wol.Behavior import Behavior
 from wol.Constants import Events, UserActions
 from wol.GuiElements import TextLabelNode, CodeSnippetReceiver
 from wol.SceneNode import SceneNode
@@ -94,3 +95,4 @@ class SceneNodeEditor(SceneNode):
             s[2].position.setY(y)
             s[2].position.setX(s[2].wscale)
             y -= s[2].hscale + margin
+

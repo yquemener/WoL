@@ -7,6 +7,7 @@ from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4
 from PyQt5.QtWidgets import QApplication
 
 from wol import Behavior, DevScenes, stdout_helpers, ConsoleNode
+from wol.Constants import UserActions
 from wol.SceneNodeEditor import SceneNodeEditor
 from wol.GuiElements import CodeSnippetReceiver, CodeSnippet
 from wol.SceneNode import CameraNode, SceneNode, SkyBox, instanciate_from_project_file
@@ -20,6 +21,20 @@ class MyCamera(CameraNode):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.logged_in = False
         self.add_behavior(Behavior.MoveAround(0.2))
+        self.add_behavior(EditBehavior())
+
+
+class EditBehavior(Behavior.Behavior):
+    def __init__(self):
+        super().__init__()
+        self.events_handlers[UserActions.Edit].append(self.on_edit)
+
+    def on_edit(self):
+        ctxt = self.obj.context
+        if ctxt.hover_target is not None \
+                and hasattr(ctxt.hover_target, "code") \
+                and hasattr(ctxt.hover_target, "source_file"):
+            SceneNodeEditor(parent=ctxt.scene, target=ctxt.hover_target)
 
 
 def load_scene_ini():
