@@ -34,7 +34,7 @@ class EditBehavior(Behavior.Behavior):
         if ctxt.hover_target is not None \
                 and hasattr(ctxt.hover_target, "code") \
                 and hasattr(ctxt.hover_target, "source_file"):
-            SceneNodeEditor(parent=ctxt.scene, target=ctxt.hover_target)
+            SceneNodeEditor(parent=ctxt.hover_target, target=ctxt.hover_target)
 
 
 def load_scene_ini():
@@ -99,9 +99,9 @@ if __name__ == '__main__':
 
     testobj = instanciate_from_project_file("my_project/TestNode.py", "TestNode", (context.scene,))
 
-    go = SceneNodeEditor(parent=context.scene, target=testobj)
-    go.position = QVector3D(4, 4, -6)
-    go.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
+    # go = SceneNodeEditor(parent=context.scene, target=testobj)
+    # go.position = QVector3D(4, 4, -6)
+    # go.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
 
     #po = PythonIbjectEditor(parent=context.scene)
 

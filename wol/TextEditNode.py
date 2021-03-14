@@ -89,6 +89,17 @@ class TextEditNode(CardNode):
         self.needs_refresh = True
 
 
+class ErrorWindow(TextEditNode):
+    def __init__(self, parent, text):
+        super().__init__(parent=parent, text=text, autosize=True)
+        self.highlight.setDocument(None)
+        self.widget.setStyleSheet("""
+                color: rgba(255,255,255,255);
+                background-color: rgba(0,0,0,100);
+                border: 2px solid rgba(255,0,0,255);;
+            """)
+
+
 def formatter(color, style=''):
     """Return a QTextCharFormat with the given attributes.
     """

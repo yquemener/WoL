@@ -1,31 +1,16 @@
 Short list
 ==========
-- View3D:
-    V remove self.context.abstract_input
-    V remove self.key_map
-    V make a self.key_pressed set
-    V use self.context.mappings to move
-    V use events instead of all the if event.key() ==
 - Code editor
     V Update class code when text is edited (make it live!)
         - Keep copy of compiling code in case new code is failing
-        - Errors displayed in game (HUD or child TextWidget)
-            - Reset error messages on code update
-    V Add a way to save code in the save_scene function
-    - Change the way slots work in the GameObject
-        V Just an arbitrary list of slots, auto split around function defs
-        - Have a last empty slot
-            - create a new one when the empty one is filled
-            - remove one when two empty slots follow each other
-    - Error management
-        - Try...except when running user code (update, render, init)
-        - Errors displayed in game (HUD or child TextWidget)
-            - Reset error messages on code update
+        - import math -> not defined?
+    ~ Handle editing of the first slot correctly
+        -> Not failing but I need to implement class name changes and parent class changes
+
 - New objects management
     - Add
     - Delete
-    - Invoke Editor on 'E'
-- TextEditor   
+- TextEditor
     - Scroll over page long codes
 - Code GameObjects!
     - np arrays viewer
@@ -33,6 +18,9 @@ Short list
     - MNIST trainer with live weights viewer
     - server to share positions/textures (think about local/remote execution models)
     - file system explorer?
+
+- 'E' code editor always visible
+- 'E' code editor facing camera (start as grabed?)
 
 
 
@@ -136,3 +124,21 @@ X Nettoyer Context d'ailleurs (Why? C'est pas trop mal...)
 - UI logic
 - copy-paste from outside
 - Ability to add cells
+- View3D:
+    V remove self.context.abstract_input
+    V remove self.key_map
+    V make a self.key_pressed set
+    V use self.context.mappings to move
+    V use events instead of all the if event.key() ==
+    V Add a way to save code in the save_scene function
+V Change the way slots work in the GameObject
+    V Just an arbitrary list of slots, auto split around function defs
+    V Have a last empty slot
+        V create a new one when the empty one is filled
+        V remove one when two empty slots follow each other
+V Error management
+    V Try...except when running user code (update, render, init)
+    V Errors displayed in game (HUD or child TextWidget)
+        V Reset error messages on code update
+V autosave when quitting
+V Invoke Editor on 'E'

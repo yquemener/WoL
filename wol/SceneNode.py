@@ -6,8 +6,6 @@ import struct
 import inspect
 from threading import Lock
 from wol import utils
-from wol.Behavior import Behavior
-from wol.Constants import UserActions
 
 
 def instanciate_from_project_file(filename, class_name, args):
@@ -59,6 +57,7 @@ class SceneNode:
         self.events_handlers = defaultdict(list)
         self.source_file = None
         self.code = None
+        self.error_window = None
 
     def set_uid(self, uid):
         self.uid = uid
@@ -157,12 +156,35 @@ class SceneNode:
             c.remove()
         self.parent.children.remove(self)
 
+    def show_error(self, e):
+        message = str(e)
+        if self.error_window is None:
+            from wol.TextEditNode import ErrorWindow
+            self.error_window = ErrorWindow(parent=self, text=message)
+        if self.error_window.text != message:
+            self.error_window.set_text(message)
+        self.error_window.visible = True
+
+    def hide_error(self):
+        if self.error_window is not None:
+            self.error_window.visible = False
+
     def update_recurs(self, dt=0.0):
-        self.update(dt)
+        try:
+            self.update(dt)
+        except Exception as e:
+            self.show_error(e)
+        else:
+            self.hide_error()
         self.compute_transform()
         behaviors_to_remove = list()
         for b in self.behaviors:
-            b.on_update(dt)
+            try:
+                b.on_update(dt)
+            except Exception as e:
+                self.show_error(e)
+            else:
+                self.hide_error()
             if b.kill_me:
                 behaviors_to_remove.append(b)
         for b in behaviors_to_remove:
@@ -177,9 +199,14 @@ class SceneNode:
         self.compute_transform(project=(layer != -1))
         if self.visible:
             if self.layer == layer:
-                if not self.gl_initialized:
-                    self.initialize_gl()
-                self.paint(program)
+                try:
+                    if not self.gl_initialized:
+                        self.initialize_gl()
+                    self.paint(program)
+                except Exception as e:
+                    self.show_error(e)
+                else:
+                    self.hide_error()
 
         for c in self.children:
             c.paint_recurs(program, layer)

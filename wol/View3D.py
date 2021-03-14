@@ -296,6 +296,7 @@ class View3D(QOpenGLWidget):
                     stc.grab(target)
 
     def closeEvent(self, evt):
+        self.save_scene()
         self.updateTimer.stop()
 
     def enterEvent(self, evt):
