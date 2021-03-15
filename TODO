@@ -19,6 +19,8 @@ Short list
     - server to share positions/textures (think about local/remote execution models)
     - file system explorer?
 
+Comfort
+=======
 - 'E' code editor always visible
 - 'E' code editor facing camera (start as grabed?)
 
@@ -53,7 +55,6 @@ Architecture
 Graphics Enhancements
 =====================
 - Add meshes
-- Widget borders
 - Fullscreen mode
 - shader for directional light
 - shader with ambient
@@ -68,8 +69,9 @@ UI
 - Add HUD tooltips
 - Find a better code highliter
 - Debug console scrolling (allow clicks and check why the scrollbar renders weirdly)
-- Add smart indentation to the code view
+- Add smarter indentation to the code view
 - Add rlcompleter to TextEdit
+- Add rlcompleter to  Console
 - Transmit clicks and drag to Qt
 - Put cursor on the location we clicked
 - Find a good scrolling implementation for too long pages when snapped in view
@@ -142,3 +144,4 @@ V Error management
         V Reset error messages on code update
 V autosave when quitting
 V Invoke Editor on 'E'
+- Widget borders
