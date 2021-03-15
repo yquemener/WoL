@@ -4,12 +4,11 @@ Short list
     V Update class code when text is edited (make it live!)
         - Keep copy of compiling code in case new code is failing
         - import math -> not defined?
-    ~ Handle editing of the first slot correctly
-        -> Not failing but I need to implement class name changes and parent class changes
 
 - New objects management
     - Add
     - Delete
+    - Way to make game objects selectable even without collision boxes
 - TextEditor
     - Scroll over page long codes
 - Code GameObjects!
@@ -18,12 +17,14 @@ Short list
     - MNIST trainer with live weights viewer
     - server to share positions/textures (think about local/remote execution models)
     - file system explorer?
+    - scenegraph explorer
 
 Comfort
 =======
 - 'E' code editor always visible
 - 'E' code editor facing camera (start as grabed?)
-
+- Find a way to show several errors in different places
+- Find why errors do not show up on class recreation
 
 
 Architecture
@@ -145,3 +146,4 @@ V Error management
 V autosave when quitting
 V Invoke Editor on 'E'
 - Widget borders
+V Handle editing of the first slot correctly

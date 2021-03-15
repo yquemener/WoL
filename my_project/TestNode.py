@@ -1,8 +1,6 @@
 from PyQt5.QtGui import QVector3D
 from wol.GeomNodes import Sphere
-from math import *
-from time import time
-import random
+import time
 
 class TestNode(Sphere):
     def __init__(self, parent):
@@ -11,6 +9,7 @@ class TestNode(Sphere):
 
     def update(self, dt):
         self.position += QVector3D(0, 0, 0)
+        print(time.time())
         return
 
     def new_func(self):

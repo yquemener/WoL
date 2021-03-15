@@ -28,6 +28,7 @@ class SceneNodeEditor(SceneNode):
     def __init__(self, parent, target, name="GameObject"):
         super().__init__(parent=parent, name=name)
 
+        self.last_recreate_failed = False
         self.target = target
         self.title_bar = TextLabelNode(name=self.name + "_titlebar", parent=self, text=str(target.__class__))
         self.title_bar.position = QVector3D(0, 1, 0)
@@ -45,45 +46,88 @@ class SceneNodeEditor(SceneNode):
                 line = line.rstrip('\n')
                 m = method_def_re.match(line)
                 if m is not None:
-                    self.add_slot(last_name, current_code.rstrip(' \t\n'))
-                    current_code = ""
+                    if current_code != "":
+                        self.add_slot(last_name, current_code.rstrip(' \t\n'), "function")
                     indent, last_name, args = m.group(1), m.group(2), m.group(3)
-                current_code += line[len(indent):]+"\n"
-            self.add_slot(name, current_code.rstrip(' \t\n'))
-            self.add_slot("next", " ")
+                    current_code = line[len(indent):] + "\n"
+                elif line.lstrip(' \t\n').startswith("class "):
+                    self.add_slot(last_name, current_code.rstrip(' \t\n'), "imports")
+                    self.add_slot(last_name, line.strip(' \t\n'), "class")
+                    current_code = ""
+                else:
+                    current_code += line[len(indent):]+"\n"
+            self.add_slot(name, current_code.rstrip(' \t\n'), "function")
+            self.add_slot("next", " ", "function")
 
         self.layout()
 
         for c in self.children:
             c.properties["delegateGrabToParent"] = True
+        self.properties["delegateGrabToParent"] = False
 
-    def add_slot(self, name, text="# code"):
+    def add_slot(self, name, text, slot_type):
         slot = CodeSnippetReceiver(parent=self)
         slot.set_text(text)
         slot.events_handlers[Events.LostFocus].append(lambda: self.on_lost_focus(slot))
         slot.events_handlers[Events.AnimationFinished].append(lambda: self.on_lost_focus(slot))
-        slot.events_handlers[UserActions.Unselect].append(lambda: self.on_code_update(slot))
-        # label = TextLabelNode(name=name + "_slot_label", parent=self, text=name)
+        slot.events_handlers[UserActions.Unselect].append(lambda: self.on_code_update(slot, slot_type))
         label = None
-        self.slots.append((name, label, slot))
+        self.slots.append((name, label, slot, slot_type))
 
     def on_lost_focus(self, slot):
         if not slot.focused:
             self.layout()
 
-    def on_code_update(self, slot):
+    def find_class_name(self):
+        for line in self.target.code.split("\n"):
+            if line.strip().startswith("class "):
+                return line.strip()[6:].strip().split(":")[0].split("(")[0]
+        raise SyntaxError("Could not find a class name")
+
+    def recreate_target(self):
+        self.refresh_target_code()
+        classname = self.find_class_name()
         try:
-            if slot.text.startswith("def"):
+            exec(self.target.code, self.context.execution_context)
+            classobj = self.context.execution_context[classname]
+            new_target = classobj(parent=self.target.parent)
+            new_target.code = self.target.code
+            new_target.position = self.target.position
+            new_target.orientation = self.target.orientation
+            new_target.initialize_gl()
+            self.target.hide_error()
+            self.target.remove()
+            self.target = new_target
+        except Exception as e:
+            self.target.show_error(e)
+            self.last_recreate_failed = True
+
+    def refresh_target_code(self):
+        code = self.slots[0][2].text + "\n\n"
+        code += self.slots[1][2].text + "\n"
+        for _, _, slot, slot_type in self.slots[2:]:
+            for line in slot.text.split("\n"):
+                code += self.context.indent + line + "\n"
+            code += "\n"
+        self.target.code = code
+
+    def on_code_update(self, slot, slot_type):
+        try:
+            if slot_type == "function":
                 name, func = compile_function(slot.text)
                 setattr(self.target.__class__, name, func)
-            code = self.slots[0][2].text + "\n"
-            for _, _, slot in self.slots[1:]:
-                for line in slot.text.split("\n"):
-                    code += self.context.indent + line + "\n"
-                code += "\n"
-            self.target.code = code
+                self.refresh_target_code()
+            if slot_type == "class":
+                self.recreate_target()
+            if slot_type == "imports":
+                exec(slot.text, self.context.execution_context)
+                self.refresh_target_code()
         except Exception as e:
-            print(e)
+            self.target.show_error(e)
+        else:
+            self.target.hide_error()
+
+        # Create/remove blank slot at the end
         if slot is self.slots[-1][2]:
             if slot.text != "":
                 self.add_slot(f"slot_{len(self.slots)}", "")

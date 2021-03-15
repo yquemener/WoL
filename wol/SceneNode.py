@@ -174,8 +174,6 @@ class SceneNode:
             self.update(dt)
         except Exception as e:
             self.show_error(e)
-        else:
-            self.hide_error()
         self.compute_transform()
         behaviors_to_remove = list()
         for b in self.behaviors:
@@ -183,8 +181,6 @@ class SceneNode:
                 b.on_update(dt)
             except Exception as e:
                 self.show_error(e)
-            else:
-                self.hide_error()
             if b.kill_me:
                 behaviors_to_remove.append(b)
         for b in behaviors_to_remove:
