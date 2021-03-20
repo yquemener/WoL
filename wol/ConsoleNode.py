@@ -22,6 +22,7 @@ class ConsoleNode(CardNode):
         self.history_cursor = 0
         self.focusable = True
         self.context.execution_context["watch"] = CodeEdit.watch
+        self.context.execution_context["scene"] = self.context.scene
 
     def update(self, dt):
         if self.focused:

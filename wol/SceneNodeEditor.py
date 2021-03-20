@@ -25,7 +25,7 @@ def compile_function(code):
 
 
 class SceneNodeEditor(SceneNode):
-    def __init__(self, parent, target, name="GameObject"):
+    def __init__(self, parent, target, name="SceneNodeEditor"):
         super().__init__(parent=parent, name=name)
 
         self.last_recreate_failed = False

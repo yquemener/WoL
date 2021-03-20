@@ -34,7 +34,13 @@ class EditBehavior(Behavior.Behavior):
         if ctxt.hover_target is not None \
                 and hasattr(ctxt.hover_target, "code") \
                 and hasattr(ctxt.hover_target, "source_file"):
-            SceneNodeEditor(parent=ctxt.hover_target, target=ctxt.hover_target)
+            if not hasattr(ctxt.hover_target, "active_editor") or \
+                    ctxt.hover_target.active_editor is None:
+                ctxt.hover_target.active_editor = SceneNodeEditor(
+                    parent=ctxt.hover_target, target=ctxt.hover_target)
+            else:
+                ctxt.hover_target.active_editor.remove()
+                ctxt.hover_target.active_editor = None
 
 
 def load_scene_ini():
@@ -103,7 +109,7 @@ if __name__ == '__main__':
     # go.position = QVector3D(4, 4, -6)
     # go.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
 
-    #po = PythonIbjectEditor(parent=context.scene)
+    # po = PythonIbjectEditor(parent=context.scene)
 
     load = False
     if load:
@@ -113,7 +119,6 @@ if __name__ == '__main__':
         except FileNotFoundError:
             load = False
     if not load:
-
         DevScenes.scene_base(context)
         # DevScenes.scene_load(context)
         # DevScenes.scene_network(context)

@@ -3,12 +3,12 @@ Short list
 - Code editor
     V Update class code when text is edited (make it live!)
         - Keep copy of compiling code in case new code is failing
-        - import math -> not defined?
+
 
 - New objects management
     - Add
-    - Delete
-    - Way to make game objects selectable even without collision boxes
+    - Delete -> 'rm' is there
+    - Way to make game objects selectable even without collision boxes 'edit'
 - TextEditor
     - Scroll over page long codes
 - Code GameObjects!
@@ -147,3 +147,4 @@ V autosave when quitting
 V Invoke Editor on 'E'
 - Widget borders
 V Handle editing of the first slot correctly
+- import math -> not defined?

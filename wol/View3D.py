@@ -259,7 +259,7 @@ class View3D(QOpenGLWidget):
         fout.close()
 
     def inputMethodEvent(self, evt):
-        if self.context.focused is not None:
+        if self.context.focused is not None and hasattr(self.context.focused, "inputMethodEvent"):
             return self.context.focused.inputMethodEvent(evt)
 
     def mouseMoveEvent(self, evt):

@@ -9,6 +9,9 @@ from wol.Constants import UserActions, MappingTypes
 
 
 # Huge potential for becoming a registry anti-pattern. Make sure things added here make sense.
+from wol.SceneNodeEditor import SceneNodeEditor
+
+
 class PlayerContext:
     def __init__(self):
         self.indent = " "*4
@@ -25,7 +28,8 @@ class PlayerContext:
         self.execution_context = {
             "add": self.add_object,
             "ls": self.list_objects,
-            "rm": self.del_objects
+            "rm": self.del_objects,
+            "edit": self.edit_object
         }
         self.mappings = {
             (MappingTypes.MouseButtonClicked, Qt.LeftButton): [UserActions.Activate],
@@ -58,9 +62,19 @@ class PlayerContext:
 
     def list_objects(self):
         for i, obj in enumerate(self.scene.children):
-            print(f"{i}: {obj.name}")
+            if obj.name is not None:
+                print(f"{i}: {obj.name}")
+            else:
+                print(f"{i}: {obj.__class__}@{id(obj)}")
         return
 
     def del_objects(self, num):
         self.scene.children[num].remove()
         return
+
+    def edit_object(self, num):
+        try:
+            obj = self.scene.children[num]
+            editor = SceneNodeEditor(parent=obj, target=obj, name=f"Editor of {obj.name}")
+        except Exception as e:
+            print("Failed to edit object:", e)
