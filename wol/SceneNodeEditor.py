@@ -120,7 +120,8 @@ class SceneNodeEditor(SceneNode):
             if slot_type == "class":
                 self.recreate_target()
             if slot_type == "imports":
-                exec(slot.text, self.context.execution_context)
+                #exec(slot.text, self.context.execution_context)
+                exec(slot.text, globals(), globals())
                 self.refresh_target_code()
         except Exception as e:
             self.target.show_error(e)

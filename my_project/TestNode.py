@@ -2,6 +2,7 @@ from PyQt5.QtGui import QVector3D
 from wol.GeomNodes import Sphere
 import time
 
+
 class TestNode(Sphere):
     def __init__(self, parent):
         super().__init__(parent=parent)
