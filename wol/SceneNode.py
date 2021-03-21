@@ -9,10 +9,9 @@ from wol import utils
 
 
 def instanciate_from_project_file(filename, class_name, args):
-    local = dict()
     code = open(filename, "r").read()
-    exec(code, globals(), local)
-    cl = local[class_name](*args)
+    exec(code, globals(), globals())
+    cl = globals()[class_name](*args)
     cl.source_file = filename
     cl.code = code
     return cl
