@@ -36,8 +36,15 @@ class EditBehavior(Behavior.Behavior):
                 and hasattr(ctxt.hover_target, "source_file"):
             if not hasattr(ctxt.hover_target, "active_editor") or \
                     ctxt.hover_target.active_editor is None:
-                ctxt.hover_target.active_editor = SceneNodeEditor(
+                ed = SceneNodeEditor(
                     parent=ctxt.hover_target, target=ctxt.hover_target)
+                ctxt.hover_target.active_editor = ed
+                # Make it face the camera
+                orient = ctxt.current_camera.world_orientation()
+                orient *= QQuaternion.fromEulerAngles(0, 180, 0)
+                ed.set_world_orientation(orient)
+
+
             else:
                 ctxt.hover_target.active_editor.remove()
                 ctxt.hover_target.active_editor = None
