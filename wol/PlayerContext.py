@@ -56,8 +56,25 @@ class PlayerContext:
         path = f"my_project/{classname}.py"
         if name is None:
             name = classname
-        # if os.path.exists(path):
-        #     instanciate_from_project_file(path, name, (parent=context.scene))
+        if os.path.exists(path):
+            instanciate_from_project_file(path, classname, {'parent': self.scene})
+        else:
+            s = f"""
+from PyQt5.QtGui import QVector3D
+from wol.GeomNodes import Sphere
+
+class {classname}(Sphere):
+    def __init__(self, parent):
+        super().__init__(parent=parent)
+        self.size=0.15
+
+    def update(self, dt):
+        self.position += QVector3D(0, 0, 0)
+"""
+            f = open(path, "w")
+            f.write(s)
+            f.close()
+            instanciate_from_project_file(path, classname, {'parent': self.scene, 'name': name})
         return
 
     def list_objects(self):
