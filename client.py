@@ -110,7 +110,7 @@ if __name__ == '__main__':
     snip.set_text('print("Hello world")')
     snip.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
 
-    testobj = instanciate_from_project_file("my_project/TestNode.py", "TestNode", (context.scene,))
+
 
     # go = SceneNodeEditor(parent=context.scene, target=testobj)
     # go.position = QVector3D(4, 4, -6)
@@ -118,7 +118,7 @@ if __name__ == '__main__':
 
     # po = PythonIbjectEditor(parent=context.scene)
 
-    load = False
+    load = True
     if load:
         try:
             window.load_scene()
@@ -132,6 +132,7 @@ if __name__ == '__main__':
         DevScenes.scene_ide(context)
         # DevScenes.scene_tests(context)
         # DevScenes.scene_gui_test(context)
+        testobj = instanciate_from_project_file("my_project/TestNode.py", "TestNode", {'parent':context.scene})
 
     # context.scene.context.current_camera.position = QVector3D(5, 5, 0)
     context.scene.context.current_camera.position = QVector3D(5, 5, -10)

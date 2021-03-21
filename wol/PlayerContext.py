@@ -7,11 +7,10 @@ from PyQt5.QtCore import Qt
 from wol.CodeEdit import FileCodeNode
 from wol.Constants import UserActions, MappingTypes
 
-
-# Huge potential for becoming a registry anti-pattern. Make sure things added here make sense.
+from wol.SceneNode import instanciate_from_project_file
 from wol.SceneNodeEditor import SceneNodeEditor
 
-
+# Huge potential for becoming a registry anti-pattern. Make sure things added here make sense.
 class PlayerContext:
     def __init__(self):
         self.indent = " "*4
@@ -53,11 +52,12 @@ class PlayerContext:
             (MappingTypes.KeyDown, Qt.Key_Tab): [UserActions.Change_Cursor_Mode],
         }
 
-    def add_object(self, name=None):
+    def add_object(self, classname, name=None):
+        path = f"my_project/{classname}.py"
         if name is None:
-            nums = [int(fn.split("_")[1].split(".")[0]) for fn in os.listdir(self.project_dir) if fn.startswith("cell_")]
-            name = f"{self.project_dir}/cell_{max(nums)+1}.py"
-        newobj = FileCodeNode(parent=self.scene, filename=name)
+            name = classname
+        # if os.path.exists(path):
+        #     instanciate_from_project_file(path, name, (parent=context.scene))
         return
 
     def list_objects(self):

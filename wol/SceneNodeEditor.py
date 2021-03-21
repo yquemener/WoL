@@ -151,3 +151,7 @@ class SceneNodeEditor(SceneNode):
             s[2].position.setX(s[2].wscale)
             y -= s[2].hscale + margin
 
+    # Just skip these objects while saving
+    def serialize(self, current_obj_num):
+        pass
+

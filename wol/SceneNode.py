@@ -11,7 +11,7 @@ from wol import utils
 def instanciate_from_project_file(filename, class_name, args):
     code = open(filename, "r").read()
     exec(code, globals(), globals())
-    cl = globals()[class_name](*args)
+    cl = globals()[class_name](**args)
     cl.source_file = filename
     cl.code = code
     return cl
@@ -246,9 +246,12 @@ class SceneNode:
             if self.source_file is None:
                 s += f"obj_{current_obj_num} = {self.__class__.__module__}.{self.__class__.__name__}("
             else:
-                s += f"obj_{current_obj_num} = instanciate_from_project_file('{self.source_file}',"
-                s += f"{self.__class__.__name__.split('.')[-1]}, ("
-            s += "parent=context.scene"
+                s += f"obj_{current_obj_num} = wol.SceneNode.instanciate_from_project_file('{self.source_file}',"
+                s += f"'{self.__class__.__name__.split('.')[-1]}', {{"
+            if self.source_file is None:
+                s += "parent=context.scene"
+            else:
+                s += "'parent':context.scene"
             constructor_args = list(inspect.signature(self.__init__).parameters)
             for arg in constructor_args:
                 if arg == "parent":
@@ -260,11 +263,14 @@ class SceneNode:
                             rendered = '"' + val.replace("\n", "\\n") + '"'
                         else:
                             rendered = str(val)
-                        s += f",{arg}={rendered}"
+                        if self.source_file is None:
+                            s += f",{arg}={rendered}"
+                        else:
+                            s += f",'{arg}':{rendered}"
             if self.source_file is None:
                 s += ")\n"
             else:
-                s+= "))\n"
+                s+= "})\n"
 
             for att in attribs:
                 if hasattr(self, att):
