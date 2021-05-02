@@ -205,7 +205,9 @@ class View3D(QOpenGLWidget):
 
         if self.context.focused is not None:
             try:
-                self.context.focused.keyPressEvent(evt)
+                o = self.context.focused
+                o.keyPressEvent(evt)
+
                 if UserActions.Release not in actions:
                     return
             except AttributeError:
@@ -253,7 +255,7 @@ class View3D(QOpenGLWidget):
             o.save_code_file()
             ss, num = o.serialize(num)
             s += ss
-        print(s)
+        # print(s)
         fout = open("init_scene.py", "w")
         fout.write(s)
         fout.close()
@@ -283,10 +285,12 @@ class View3D(QOpenGLWidget):
                 target.on_click(self.context.debug_point, evt)  # Change to on_event
                 for b in target.behaviors:
                     b.on_click(self.context.debug_point, evt) # Change to on_event
+
                 if hasattr(target, 'focusable') and target.focusable:
                     if self.context.focused:
                         self.context.focused.focused = False
                         self.context.focused.on_event(Events.LostFocus)
+
                     self.context.focused = target
                     self.context.focused.on_event(Events.GotFocus)
                     target.focused = True
