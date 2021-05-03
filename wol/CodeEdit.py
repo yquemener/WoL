@@ -64,8 +64,12 @@ class DataViewer(SceneNode):
             self.content_view_text.set_text(str(target_obj))
         elif isinstance(target_obj, numpy.ndarray):
             im = numpy.require(target_obj, numpy.uint8, 'C')
+            if len(im.shape) > 2 and im.shape[2] == 3:
+                fmt = QImage.Format_RGB888
+            else:
+                fmt = QImage.Format_Grayscale8
             self.content_view_image.texture_image = \
-                QImage(im.data, im.shape[1], im.shape[0], im.strides[0], QImage.Format_RGB888).copy()
+                QImage(im.data, im.shape[1], im.shape[0], im.strides[0], fmt).copy()
             self.content_view_image.initialize_gl()
             self.content_view_image.visible = True
             self.content_view_text.set_text(str(target_obj))

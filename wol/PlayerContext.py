@@ -28,7 +28,8 @@ class PlayerContext:
             "add": self.add_object,
             "ls": self.list_objects,
             "rm": self.del_objects,
-            "edit": self.edit_object
+            "edit": self.edit_object,
+            "scene": self.scene,
         }
         self.mappings = {
             (MappingTypes.MouseButtonClicked, Qt.LeftButton): [UserActions.Activate],

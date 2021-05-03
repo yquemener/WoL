@@ -30,6 +30,7 @@ class View3D(QOpenGLWidget):
         self.context = PlayerContext()
         self.scene = RootNode(self.context)
         self.context.scene = self.scene
+        self.context.execution_context["scene"] = self.scene
         self.hud = DotDict()
         self.hud_root = RootNode(self.context)
         # self.hud_root.orientation = QQuaternion.fromAxisAndAngle(0, 1, 0, 180)
