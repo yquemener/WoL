@@ -204,14 +204,12 @@ class View3D(QOpenGLWidget):
         actions = self.context.mappings.get((MappingTypes.KeyDown, evt.key()), [])
 
         if self.context.focused is not None:
-            try:
-                o = self.context.focused
+            o = self.context.focused
+            if hasattr(o, "keyPressEvent"):
                 o.keyPressEvent(evt)
 
                 if UserActions.Release not in actions:
                     return
-            except AttributeError:
-                pass
 
         for a in actions:
             self.context.current_camera.on_event(a)
@@ -283,24 +281,26 @@ class View3D(QOpenGLWidget):
             target = self.context.hover_target
             if target is not None:
                 target.on_click(self.context.debug_point, evt)  # Change to on_event
+                target.on_event(Events.Clicked)
                 for b in target.behaviors:
                     b.on_click(self.context.debug_point, evt) # Change to on_event
+                    b.on_event(Events.Clicked)
 
-                if hasattr(target, 'focusable') and target.focusable:
-                    if self.context.focused:
-                        self.context.focused.focused = False
-                        self.context.focused.on_event(Events.LostFocus)
-
-                    self.context.focused = target
-                    self.context.focused.on_event(Events.GotFocus)
-                    target.focused = True
-                    stc = self.context.current_camera.get_behavior("SnapToCamera")
-                    if stc.grabbed_something:
-                        stc.restore()
-                    stc.grab(target)
+                # if hasattr(target, 'focusable') and target.focusable:
+                #     if self.context.focused:
+                #         self.context.focused.focused = False
+                #         self.context.focused.on_event(Events.LostFocus)
+                #
+                #     self.context.focused = target
+                #     self.context.focused.on_event(Events.GotFocus)
+                #     target.focused = True
+                #     stc = self.context.current_camera.get_behavior("SnapToCamera")
+                #     if stc.grabbed_something:
+                #         stc.restore()
+                #     stc.grab(target)
 
     def closeEvent(self, evt):
-        self.save_scene()
+        self.context.scene.on_event(Events.AppClose)
         self.updateTimer.stop()
 
     def enterEvent(self, evt):

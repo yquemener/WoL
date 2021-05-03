@@ -24,7 +24,6 @@ class Behavior:
         return
 
     def on_event(self, action):
-        print(self, action)
         for h in self.events_handlers[action]:
             h()
         return

@@ -18,6 +18,8 @@ class UserActions(int):
     Cut = 17
     Paste = 18
     Change_Cursor_Mode = 19
+    Execute = 20
+
 
 class Events(int):
     TextChanged = 1001
@@ -25,6 +27,7 @@ class Events(int):
     GotFocus = 1003
     LostFocus = 1004
     AnimationFinished = 1005
+    AppClose = 1006
 
 
 class MappingTypes(int):

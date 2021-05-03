@@ -13,7 +13,7 @@ def test():
 
 
 class TextEditNode(CardNode):
-    def __init__(self, parent, name="GuiNode", text=" ", autosize=False):
+    def __init__(self, parent, name="GuiNode", text="", autosize=False):
         CardNode.__init__(self, name=name, parent=parent)
         self.widget = QTextEdit()
         self.max_geometry = QRect(0, 0, 512, 512)
@@ -22,6 +22,7 @@ class TextEditNode(CardNode):
         self.widget.setText(text)
         self.text = text
         self.autosize = autosize
+        self.min_size = (-1, -1)
         if self.autosize:
             self.do_autosize()
         self.needs_refresh = True
@@ -37,6 +38,10 @@ class TextEditNode(CardNode):
         rect = qfm.boundingRect(self.max_geometry, Qt.TextWordWrap, self.text, 4)
         w = rect.width() + 30
         h = rect.height() + 30
+        if self.min_size[0] > 0:
+            w = max(self.min_size[0], w)
+        if self.min_size[1] > 0:
+            h = max(self.min_size[1], h)
         self.widget.setGeometry(0, 0, w, h)
         self.hscale = h / 512.0
         self.wscale = w / 512.0
@@ -54,10 +59,6 @@ class TextEditNode(CardNode):
                 self.do_autosize()
             self.texture = QOpenGLTexture(QImage(self.widget.grab()))
             self.needs_refresh = False
-
-    def on_click(self, pos, evt):
-        self.focused = True
-        self.context.focused = self
 
     def on_unfocus(self):
         self.focused = False
@@ -85,7 +86,8 @@ class TextEditNode(CardNode):
             return
         self.text = t
         self.widget.setText(t)
-        self.do_autosize()
+        if self.autosize:
+            self.do_autosize()
         self.needs_refresh = True
 
 
