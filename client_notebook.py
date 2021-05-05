@@ -54,7 +54,10 @@ class ExecuteBehavior(Behavior.Behavior):
         self.events_handlers[UserActions.Execute].append(self.on_execute)
 
     def on_execute(self):
-        exec(self.obj.text, self.obj.context.execution_context)
+        try:
+            exec(self.obj.text, self.obj.context.execution_context)
+        except Exception as e:
+            print(f"Cell execution failed with: {e}")
 
 
 class NotebookNode(SceneNode):
@@ -74,10 +77,10 @@ class NotebookNode(SceneNode):
                 cell.set_text(celltext)
                 cell.add_behavior(EditOnClick())
                 cell.add_behavior(ExecuteBehavior())
+                cell.events_handlers[Events.TextChanged].append(self.layout)
                 cell.autosize = True
                 cell.min_size = (200, 30)
-                cell.position = QVector3D(0, last_y, 0)
-                last_y -= 0.2
+                cell.do_autosize()
                 self.add_child(cell)
                 self.cells.append(cell)
         except FileNotFoundError:
@@ -88,6 +91,15 @@ class NotebookNode(SceneNode):
             cell.min_size = (200, 30)
             self.add_child(cell)
             self.cells.append(cell)
+        self.layout()
+
+    def layout(self):
+        y = 0
+        for cell in self.cells:
+            y -= cell.hscale+0.01
+            cell.position = QVector3D(cell.wscale, y, 0)
+            # cell.do_autosize()
+            y -= cell.hscale
 
     def update(self, dt):
         last_cell = self.cells[-1]
@@ -97,11 +109,10 @@ class NotebookNode(SceneNode):
             cell.add_behavior(ExecuteBehavior())
             cell.autosize = True
             cell.min_size = (200, 30)
-            cell.position = QVector3D(last_cell.position)
-            # cell.position.setY(cell.position.y() + last_cell.widget.size().height())
-            cell.position.setY(cell.position.y() - 0.2)
+            cell.do_autosize()
             self.add_child(cell)
             self.cells.append(cell)
+            self.layout()
 
     def save(self):
         # Use notebook formats?
