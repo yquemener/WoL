@@ -33,6 +33,7 @@ V 'E' code editor facing camera
 
 Architecture
 ============
+- Share more code between TextLabelNode et TextEditMode
 - Collpse CodeSnippet and CodeSnippetReceiver? Are they different?
 - keybindings-> nav/tab -> on_key handlers in behaviors
     -> finish the cleanup

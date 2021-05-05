@@ -28,11 +28,16 @@ class TextLabelNode(CardNode):
             border: 0px solid rgba(255,255,255,255);;
             """)
         self.widget.setText(text)
+        self.min_size = (-1, -1)
         qfm = self.widget.fontMetrics()
         rect = qfm.boundingRect(QApplication.desktop().geometry(), Qt.TextWordWrap, text, 4)
         self.margin = 15
         w = rect.width() + self.margin * 2
         h = rect.height() + self.margin * 2
+        if self.min_size[0] > 0:
+            w = max(self.min_size[0], w)
+        if self.min_size[1] > 0:
+            h = max(self.min_size[1], h)
         self.frame.setGeometry(0, 0, w, h)
         self.wscale = w / 512.0
         self.hscale = h / 512.0
@@ -68,6 +73,11 @@ class TextLabelNode(CardNode):
         rect = qfm.boundingRect(QApplication.desktop().geometry(), Qt.TextWordWrap, t, 4)
         w = rect.width() + self.margin * 2
         h = rect.height() + self.margin * 2
+        if self.min_size[0] > 0:
+            w = max(self.min_size[0], w)
+        if self.min_size[1] > 0:
+            h = max(self.min_size[1], h)
+
         self.frame.setFixedSize(w, h)
 
         self.vertices = utils.generate_square_vertices_fan()

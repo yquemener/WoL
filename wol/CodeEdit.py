@@ -51,7 +51,7 @@ class DataViewer(SceneNode):
         self.vertices = list()
         self.program = None
         self.refresh_vertices()
-        self.last_update = 0
+        self.ddddlast_update = 0
         self.refresh_content()
 
     def refresh_content(self):

@@ -1,3 +1,4 @@
+import traceback
 from collections import defaultdict
 
 from OpenGL import GL
@@ -158,13 +159,14 @@ class SceneNode:
         self.parent.children.remove(self)
 
     def show_error(self, e):
-        message = str(e)
-        if self.error_window is None:
-            from wol.TextEditNode import ErrorWindow
-            self.error_window = ErrorWindow(parent=self, text=message)
-        if self.error_window.text != message:
-            self.error_window.set_text(message)
-        self.error_window.visible = True
+        traceback.print_exc()
+        # message = str(e)
+        # if self.error_window is None:
+        #     from wol.TextEditNode import ErrorWindow
+        #     self.error_window = ErrorWindow(parent=self, text=message)
+        # if self.error_window.text != message:
+        #     self.error_window.set_text(message)
+        # self.error_window.visible = True
 
     def hide_error(self):
         if self.error_window is not None:
@@ -380,7 +382,7 @@ class SkyBox(SceneNode):
                                     "resources/cubemaps/bkg/lightblue/bot.png"),
                  name="SkyBox"):
         super(SkyBox, self).__init__(parent=parent, name=name)
-        self.layer = 0
+        self.layer = 3
         self.textures = list()
         self.texture_images = list()
         for fn in texture_filenames:

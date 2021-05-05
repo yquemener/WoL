@@ -77,7 +77,8 @@ class View3D(QOpenGLWidget):
                         self.clearColor.alphaF())
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
-        for layer in (0, 1, 2, 3):
+        for layer in (3, 2, 1, 0):
+            GL.glClear(GL.GL_DEPTH_BUFFER_BIT)
             self.context.scene.paint_recurs(self.program, layer)
 
         # Add HUD/GUI layer here
