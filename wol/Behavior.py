@@ -73,9 +73,8 @@ class MoveAround(Behavior):
     def on_go_right(self):
         self.go_right = self.speed
 
-
     def on_update(self, dt):
-        yaw = self.obj.context.mouse_position.x() * 180.0
+        yaw = 180+self.obj.context.mouse_position.x() * 180.0
         pitch = -self.obj.context.mouse_position.y() * 90.0
 
         xaxis = QVector3D(1, 0, 0)

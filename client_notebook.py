@@ -24,20 +24,24 @@ class HUDEditor(TextEditNode):
     def __init__(self, parent, name):
         TextEditNode.__init__(self, parent=parent, name=name)
         self.target_object = None
-        self.layer=0
+        self.layer = 0
+        self.events_handlers[UserActions.Unselect].append(self.unfocus)
 
     def keyPressEvent(self, evt):
         if evt.key() == QtCore.Qt.Key_Return and \
             QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
-            self.visible = False
-            self.context.focused = None
             self.target_object.set_text(self.text)
             self.target_object.on_event(UserActions.Execute)
+            self.unfocus()
         else:
             super().keyPressEvent(evt)
             self.needs_refresh = True
             self.target_object.keyPressEvent(evt)
             self.target_object.needs_refresh = True
+
+    def unfocus(self):
+        self.visible = False
+        self.context.focused = None
 
 
 class EditOnClick(Behavior.Behavior):
@@ -159,7 +163,7 @@ if __name__ == '__main__':
 
     my_cam = CameraNode(parent=context.scene, name="MainCamera")
     my_cam.speed = 0.2
-    my_cam.position = QVector3D(5, 5, -10)
+    my_cam.position = QVector3D(0, 5, 10)
     my_cam.add_behavior(Behavior.MoveAround(0.2))
     my_cam.add_behavior(Behavior.SnapToCamera())
     context.scene.context.current_camera = my_cam
@@ -176,7 +180,7 @@ if __name__ == '__main__':
     context.hud_editor.visible = False
 
     nb = NotebookNode(parent=context.scene, name="Notebook")
-    nb.orientation = QQuaternion.fromEulerAngles(0.0, 180.0, 0.0)
+    # nb.orientation = QQuaternion.fromEulerAngles(0.0, 180.0, 0.0)
     nb.position = QVector3D(0, 5, 0)
 
     window.show()

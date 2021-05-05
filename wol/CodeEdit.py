@@ -42,7 +42,7 @@ class DataViewer(SceneNode):
         self.content_view_text = TextLabelNode(parent=self, text="")
         self.content_view_text.position += QVector3D(0, -0.2, 0)
         self.content_view_image = CardNode(parent=self)
-        self.content_view_image.position += QVector3D(0, -0.2, 0.5)
+        self.content_view_image.position += QVector3D(0, -0.2, 0)
         self.content_view_image.visible = False
         self.content_view_image.interpolation = GL.GL_NEAREST
         for c in self.children:
@@ -51,7 +51,7 @@ class DataViewer(SceneNode):
         self.vertices = list()
         self.program = None
         self.refresh_vertices()
-        self.ddddlast_update = 0
+        self.last_update = 0
         self.refresh_content()
 
     def refresh_content(self):
@@ -62,6 +62,7 @@ class DataViewer(SceneNode):
             return
         if isinstance(target_obj, str):
             self.content_view_text.set_text(str(target_obj))
+            self.content_view_image.visible = False
         elif isinstance(target_obj, numpy.ndarray):
             im = numpy.require(target_obj, numpy.uint8, 'C')
             if len(im.shape) > 2 and im.shape[2] == 3:
@@ -72,7 +73,8 @@ class DataViewer(SceneNode):
                 QImage(im.data, im.shape[1], im.shape[0], im.strides[0], fmt).copy()
             self.content_view_image.initialize_gl()
             self.content_view_image.visible = True
-            self.content_view_text.set_text(str(target_obj))
+            # self.content_view_text.set_text(str(target_obj))
+            self.content_view_text.visible = False
         self.last_update = time.time()
 
     def update(self, dt):

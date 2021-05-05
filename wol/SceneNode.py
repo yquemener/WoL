@@ -230,7 +230,7 @@ class SceneNode:
         self.scale = QVector3D(p[7], p[8], p[9])
 
     def save_code_file(self):
-        if self.code is not None and len(self.code)>0:
+        if self.code is not None and len(self.code) > 0:
             if self.source_file is not None:
                 f = open(self.source_file, "w")
                 f.write(self.code)
@@ -242,7 +242,7 @@ class SceneNode:
 
         s = "\n"
         if not self.properties.get("skip serialization", False):
-            if self.__class__.__module__=="__main__":
+            if self.__class__.__module__ == "__main__":
                 return "", current_obj_num
             if f"{self.__class__.__module__}.{self.__class__.__name__}" in exclude_types:
                 return "", current_obj_num
@@ -274,7 +274,7 @@ class SceneNode:
             if self.source_file is None:
                 s += ")\n"
             else:
-                s+= "})\n"
+                s += "})\n"
 
             for att in attribs:
                 if hasattr(self, att):
@@ -325,6 +325,7 @@ class SceneNode:
 
     def on_click(self, pos, evt):
         return
+
 
 class RootNode(SceneNode):
     def __init__(self, context, name="root"):
