@@ -8,6 +8,7 @@ import queue
 import sys
 import time
 from multiprocessing.queues import Queue
+from traceback import TracebackException
 
 import numpy
 from OpenGL import GL
@@ -38,11 +39,12 @@ class DataViewer(SceneNode):
         super().__init__(parent=parent)
         self.target = target
         self.period = period
-        self.type_label = TextLabelNode(parent=self, text=str(type(target)))
+        self.type_label = TextLabelNode(parent=self, text=str(target))
+        self.type_label.position = QVector3D(0, self.type_label.hscale,0)
         self.content_view_text = TextLabelNode(parent=self, text="")
-        self.content_view_text.position += QVector3D(0, -0.2, 0)
+        self.content_view_text.position += QVector3D(0, -0.02, 0)
         self.content_view_image = CardNode(parent=self)
-        self.content_view_image.position += QVector3D(0, -0.2, 0)
+        self.content_view_image.position += QVector3D(0, -0.02, 0)
         self.content_view_image.visible = False
         self.content_view_image.interpolation = GL.GL_NEAREST
         for c in self.children:
@@ -53,16 +55,22 @@ class DataViewer(SceneNode):
         self.refresh_vertices()
         self.last_update = 0
         self.refresh_content()
+        self.serialization_atributes.append("target")
+        self.serialization_atributes.append("period")
 
     def refresh_content(self):
         try:
             target_obj = eval(self.target, self.context.execution_context)
         except Exception as e:
-            print(e)
-            return
+            target_obj = ""
+            (_, value, tb) = sys.exc_info()
+            for line in TracebackException(
+                    type(value), value, tb, limit=None).format(chain=True):
+                target_obj += line
         if isinstance(target_obj, str):
             self.content_view_text.set_text(str(target_obj))
             self.content_view_image.visible = False
+            self.content_view_text.position = QVector3D(0,-0.02-self.content_view_text.hscale,0)
         elif isinstance(target_obj, numpy.ndarray):
             im = numpy.require(target_obj, numpy.uint8, 'C')
             if len(im.shape) > 2 and im.shape[2] == 3:
@@ -113,12 +121,10 @@ class DataViewer(SceneNode):
     def paint(self, program):
         self.program.bind()
         self.program.setAttributeArray(0, self.vertices)
-        # identity = QMatrix4x4()
-        # identity.setToIdentity()
-        # self.program.setUniformValue('matrix', self.context.current_camera.projection_matrix)
         self.program.setUniformValue('matrix', self.proj_matrix)
         self.program.setUniformValue('material_color', QVector4D(1.0, 1.0, 1.0, 1.0))
-        GL.glDrawArrays(GL.GL_LINES, 0, int(len(self.vertices)))
+        # TODO: Fix these lines drawing
+        # GL.glDrawArrays(GL.GL_LINES, 0, int(len(self.vertices)))
         program.bind()
         return
 

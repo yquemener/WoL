@@ -163,7 +163,7 @@ class View3D(QOpenGLWidget):
                                  self.context.current_camera.look_at-self.context.current_camera.position)
         else:
             #self.context.debug_sphere.parent = self.context.current_camera
-            fov = 45.0*3.14159/180.0
+            fov = self.context.current_camera.angle*3.14159/180.0
             offx = sin(fov/2.)
             offy = offx/self.context.current_camera.ratio
             target = QVector3D(offx-self.real_mouse_position[0]/self.width()*2.*offx,
@@ -243,8 +243,6 @@ class View3D(QOpenGLWidget):
         d = globals()
         self.context.scene.clear()
         d["context"] = self.context
-        for i, l in enumerate(s.split('\n')):
-            print(i, l)
         exec(s, d, d)
 
     def save_scene(self):

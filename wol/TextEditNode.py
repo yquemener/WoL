@@ -29,6 +29,7 @@ class TextEditNode(CardNode):
         self.highlight = PythonHighlighter(self.widget.document())
         self.widget.setTextColor(QColor(255, 255, 255))
         self.widget.setStyleSheet("QWidget{color: white; background-color: black;}");
+        self.widget.setAcceptRichText(False)
         qfm = self.widget.fontMetrics()
         self.widget.setTabStopDistance(qfm.horizontalAdvance(' ') * 4)
         self.focused = False

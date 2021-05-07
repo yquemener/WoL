@@ -58,6 +58,7 @@ class SceneNode:
         self.source_file = None
         self.code = None
         self.error_window = None
+        self.serialization_atributes = ["position", "orientation", "scale", "properties", "color", "visible"]
 
     def set_uid(self, uid):
         self.uid = uid
@@ -237,8 +238,8 @@ class SceneNode:
                 f.close()
 
     def serialize(self, current_obj_num):
-        attribs = ["position", "orientation", "scale", "properties", "color", "visible"]
-        exclude_types = ["wol.PythonFileEditorNode.InstanciatedObject"]
+        exclude_types = ["wol.PythonFileEditorNode.InstanciatedObject",
+                         "wol.SceneNode.CameraNode"]
 
         s = "\n"
         if not self.properties.get("skip serialization", False):
@@ -276,9 +277,9 @@ class SceneNode:
             else:
                 s += "})\n"
 
-            for att in attribs:
+            for att in self.serialization_atributes:
                 if hasattr(self, att):
-                    s += f"obj_{current_obj_num}.{att} = {str(getattr(self, att))}\n"
+                    s += f"obj_{current_obj_num}.{att} = {repr(getattr(self, att))}\n"
         return s, current_obj_num+1
 
     def initialize_gl(self):
@@ -350,7 +351,7 @@ class RootNode(SceneNode):
 class CameraNode(SceneNode):
     def __init__(self, parent, name):
         super(CameraNode, self).__init__(name="Camera", parent=parent)
-        self.angle = 30.0
+        self.angle = 45.0
         self.ratio = 4.0 / 3.0
         self.projection_matrix = QMatrix4x4()
 
@@ -360,7 +361,7 @@ class CameraNode(SceneNode):
         la = self.position + m.mapVector(QVector3D(0, 0, 1))
 
         m = QMatrix4x4()
-        m.perspective(self.angle, self.ratio, 1.0, 1000.0)
+        m.perspective(self.angle/self.ratio, self.ratio, 1.0, 1000.0)
         m.lookAt(self.position, la, QVector3D(0, 1, 0))
         self.projection_matrix = m
 

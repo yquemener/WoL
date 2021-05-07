@@ -20,6 +20,7 @@ class Grid(SceneNode):
         self.collider = None
         self.program = None
         self.color = QVector4D(0.2, 0.2, 0.6, 1.0)
+        self.layer=2
 
     def initialize_gl(self):
         #self.program = ShadersLibrary.create_program('simple_color_white')

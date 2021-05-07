@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 
+
 class Foo:
     def __init__(self):
         self.na = "batman"
