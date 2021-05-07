@@ -6,7 +6,7 @@ from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor, Q
     QMatrix4x4
 from PyQt5.QtWidgets import QOpenGLWidget, QApplication
 from OpenGL import GL
-from math import sin
+from math import sin, atan2, tan
 
 from wol.Constants import Events, UserActions
 from wol.GuiElements import TextLabelNode
@@ -141,8 +141,7 @@ class View3D(QOpenGLWidget):
         GL.glEnable(GL.GL_DEPTH_TEST)
 
     def resizeGL(self, width, height):
-        side = min(width, height)
-        GL.glViewport((width - side) // 2, (height - side) // 2, side, side)
+        # GL.glViewport(-width // 1, -height // 1, width, height)
         self.context.current_camera.ratio = width / height
 
     def scene_update(self):
@@ -163,13 +162,20 @@ class View3D(QOpenGLWidget):
                                  self.context.current_camera.look_at-self.context.current_camera.position)
         else:
             #self.context.debug_sphere.parent = self.context.current_camera
-            fov = self.context.current_camera.angle*3.14159/180.0
-            offx = sin(fov/2.)
-            offy = offx/self.context.current_camera.ratio
+            fov_v = self.context.current_camera.vertical_fov * 3.14159 / 180.0
+            offy = tan(fov_v/2.)
+            offx = offy*self.context.current_camera.ratio
+
             target = QVector3D(offx-self.real_mouse_position[0]/self.width()*2.*offx,
                                offy-self.real_mouse_position[1]/self.height()*2.*offy,
                                1.0)
             target = self.context.current_camera.orientation.rotatedVector(target)
+            # debug = QVector3D(0.62, 0.41, 1.0)
+            # debug = QVector3D(offx, offy, 1.0)
+            # debug = self.context.current_camera.orientation.rotatedVector(debug)
+
+            self.context.debug_point = self.context.current_camera.position + target
+
             ray = Collisions.Ray(self.context.current_camera.position,
                                  target)
 
@@ -182,11 +188,11 @@ class View3D(QOpenGLWidget):
                                        (point-self.context.current_camera.position).length()))
         colliders_sort.sort(key=lambda s: s[2])
         if len(colliders_sort) > 0:
-            self.context.debug_point = colliders_sort[0][0]
+            # self.context.debug_point = colliders_sort[0][0]
             # self.context.debug_sphere.position = self.context.debug_point
             self.context.hover_target = colliders_sort[0][1]
         else:
-            self.context.debug_point = QVector3D(0, 0, -10)
+            # self.context.debug_point = QVector3D(0, 0, -10)
             self.context.hover_target = None
         self.repaint()
 

@@ -12,7 +12,7 @@ from wol import Behavior
 from wol.Constants import UserActions
 from wol.Notebook import NotebookNode
 from wol.SceneNode import CameraNode, SkyBox
-from wol.GeomNodes import Grid
+from wol.GeomNodes import Grid, Sphere
 from wol.TextEditNode import TextEditNode
 from wol.View3D import View3D
 
@@ -41,6 +41,11 @@ class HUDEditor(TextEditNode):
         self.context.focused = None
 
 
+class DebugBehavior(Behavior.Behavior):
+    def on_update(self, dt):
+        self.obj.position = self.obj.context.debug_point
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = View3D()
@@ -65,7 +70,11 @@ if __name__ == '__main__':
 
     # nb = NotebookNode(parent=context.scene, name="Notebook")
     # nb.position = QVector3D(0, 5, 0)
+
     window.load_scene()
+    # db = Sphere(parent=context.scene)
+    # db.scale = QVector3D(0.01,0.01,0.01)
+    # db.add_behavior(DebugBehavior())
 
     window.show()
     signal.signal(signal.SIGINT, signal.SIG_DFL)

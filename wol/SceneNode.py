@@ -1,5 +1,6 @@
 import traceback
 from collections import defaultdict
+from math import cos
 
 from OpenGL import GL
 from PyQt5.QtGui import QMatrix4x4, QQuaternion, QVector3D, QImage, QOpenGLTexture, QTransform, QMatrix3x3, QVector4D
@@ -351,17 +352,20 @@ class RootNode(SceneNode):
 class CameraNode(SceneNode):
     def __init__(self, parent, name):
         super(CameraNode, self).__init__(name="Camera", parent=parent)
-        self.angle = 45.0
-        self.ratio = 4.0 / 3.0
+        self.vertical_fov = 45.0
+        self.ratio = 1200 / 800
         self.projection_matrix = QMatrix4x4()
+        self.dt = 0
 
     def compute_transform(self, project=True):
+        # self.dt+=0.01
+        # self.vertical_fov = 30. + cos(self.dt)*10
         m = QMatrix4x4()
         m.rotate(self.orientation)
         la = self.position + m.mapVector(QVector3D(0, 0, 1))
 
         m = QMatrix4x4()
-        m.perspective(self.angle/self.ratio, self.ratio, 1.0, 1000.0)
+        m.perspective(self.vertical_fov, self.ratio, 1.0, 1000.0)
         m.lookAt(self.position, la, QVector3D(0, 1, 0))
         self.projection_matrix = m
 

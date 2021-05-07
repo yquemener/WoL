@@ -185,8 +185,8 @@ class Sphere(SceneNode):
 
     def initialize_gl(self):
         self.quadric = GLU.gluNewQuadric()
-        #self.program = ShadersLibrary.create_program('simple_color_white')
-        self.program = ShadersLibrary.create_program('simple_lighting')
+        # self.program = ShadersLibrary.create_program('simple_lighting')
+        self.program = ShadersLibrary.create_program('simple_color')
 
     def paint(self, program):
         self.program.bind()
@@ -194,6 +194,7 @@ class Sphere(SceneNode):
         self.program.setUniformValue('matmodel', self.transform)
         self.program.setUniformValue('material_color', self.color)
         self.program.setUniformValue('mvp', self.proj_matrix)
+        self.program.setUniformValue('matrix', self.proj_matrix)
         GLU.gluSphere(self.quadric, self.size, 20, 20)
         program.bind()
 
