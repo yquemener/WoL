@@ -58,15 +58,14 @@ if __name__ == '__main__':
     g = Grid(parent=context.scene)
     g.orientation = QQuaternion.fromEulerAngles(0.0, 0.0, 90.0)
 
-    # ConsoleNode(parent=context.scene, name="ConsoleNode")
     context.hud_editor = HUDEditor(parent=my_cam, name="NotebookConsole")
     context.hud_editor.position = QVector3D(0, 0, 5)
     context.hud_editor.orientation = QQuaternion.fromEulerAngles(0.0, 180.0, 0.0)
     context.hud_editor.visible = False
 
-    nb = NotebookNode(parent=context.scene, name="Notebook")
-    # nb.orientation = QQuaternion.fromEulerAngles(0.0, 180.0, 0.0)
-    nb.position = QVector3D(0, 5, 0)
+    # nb = NotebookNode(parent=context.scene, name="Notebook")
+    # nb.position = QVector3D(0, 5, 0)
+    window.load_scene()
 
     window.show()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
