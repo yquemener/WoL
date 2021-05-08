@@ -8,10 +8,6 @@ from wol.GeomNodes import CardNode
 import re
 
 
-def test():
-    print("Yo")
-
-
 class TextEditNode(CardNode):
     def __init__(self, parent, name="GuiNode", text="", autosize=False):
         CardNode.__init__(self, name=name, parent=parent)

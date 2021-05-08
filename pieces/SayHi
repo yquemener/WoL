@@ -1,2 +1,0 @@
-p=self.parent
-p.socket.sendto(bytes("Hi! Yves", 'ascii'), (p.host, p.port))

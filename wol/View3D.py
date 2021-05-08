@@ -215,9 +215,9 @@ class View3D(QOpenGLWidget):
             o = self.context.focused
             if hasattr(o, "keyPressEvent"):
                 o.keyPressEvent(evt)
-
-                if UserActions.Release not in actions:
-                    return
+                # if UserActions.Release not in actions:
+                #     return
+                return
 
         for a in actions:
             self.context.current_camera.on_event(a)

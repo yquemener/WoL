@@ -166,7 +166,8 @@ class CubeNode(SceneNode):
         self.program.enableAttributeArray(0)
         self.program.enableAttributeArray(2)
 
-        self.program.setUniformValue('light_position', QVector3D(1.0, 10.0, -10.0))
+        # self.program.setUniformValue('light_position', QVector3D(1.0, 10.0, -10.0))
+        self.program.setUniformValue('light_position', self.context.current_camera.position)
         self.program.setUniformValue('matmodel', self.transform)
         self.program.setUniformValue('material_color', self.color)
         self.program.setUniformValue('mvp', self.proj_matrix)
@@ -190,7 +191,8 @@ class Sphere(SceneNode):
 
     def paint(self, program):
         self.program.bind()
-        self.program.setUniformValue('light_position', QVector3D(1.0, 10.0, -10.0))
+        # self.program.setUniformValue('light_position', QVector3D(1.0, 10.0, -10.0))
+        self.program.setUniformValue('light_position', self.context.current_camera.position)
         self.program.setUniformValue('matmodel', self.transform)
         self.program.setUniformValue('material_color', self.color)
         self.program.setUniformValue('mvp', self.proj_matrix)

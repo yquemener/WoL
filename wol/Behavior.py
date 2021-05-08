@@ -143,12 +143,9 @@ class SnapToCamera(Behavior):
         self.events_handlers[UserActions.Grab].append(self.on_grab)
 
     def on_release(self):
-        if self.obj.context.focused is not None:
-            self.obj.context.focused.focused = False
-            self.obj.context.focused.on_event(Events.LostFocus)
-            self.obj.context.focused = None
-            if self.grabbed_something:
-                self.restore()
+        self.obj.context.focus(None)
+        if self.grabbed_something:
+            self.restore()
 
     def on_grab(self):
         context = self.obj.context

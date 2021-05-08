@@ -38,7 +38,6 @@ class HUDEditor(TextEditNode):
 
     def unfocus(self):
         self.visible = False
-        self.context.focused = None
 
 
 class DebugBehavior(Behavior.Behavior):

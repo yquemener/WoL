@@ -5,7 +5,7 @@ from PyQt5.QtGui import QVector2D, QVector3D, QMatrix4x4
 from PyQt5.QtCore import Qt
 
 from wol.CodeEdit import FileCodeNode
-from wol.Constants import UserActions, MappingTypes
+from wol.Constants import UserActions, MappingTypes, Events
 
 from wol.SceneNode import instanciate_from_project_file
 from wol.SceneNodeEditor import SceneNodeEditor
@@ -35,6 +35,7 @@ class PlayerContext:
             (MappingTypes.MouseButtonClicked, Qt.LeftButton): [UserActions.Activate],
             (MappingTypes.KeyDown, Qt.Key_E): [UserActions.Edit],
             (MappingTypes.KeyDown, Qt.Key_Escape): [UserActions.Unselect, UserActions.Release],
+            (MappingTypes.KeyDown, Qt.Key_Return): [UserActions.Edit],
             (MappingTypes.KeyDown, Qt.Key_Q): [UserActions.Grab],
             (MappingTypes.KeyDown, Qt.Key_QuoteLeft): [UserActions.Invoke_Console],
             (MappingTypes.KeyDown, Qt.Key_1): [UserActions.Snap_To_90],
@@ -52,6 +53,18 @@ class PlayerContext:
             (MappingTypes.KeyDown, Qt.Key_V): [UserActions.Paste],
             (MappingTypes.KeyDown, Qt.Key_Tab): [UserActions.Change_Cursor_Mode],
         }
+
+    def focus(self, target):
+        if target == self.focused:
+            return
+        if self.focused is not None:
+            self.focused.on_event(Events.LostFocus)
+            self.focused.focused = False
+
+        self.focused = target
+        if self.focused is not None:
+            self.focused.on_event(Events.GotFocus)
+            self.focused.focused = True
 
     def add_object(self, classname, name=None):
         path = f"my_project/{classname}.py"

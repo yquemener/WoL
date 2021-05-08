@@ -1,3 +1,0 @@
-p=self.parent
-cam=p.context.current_camera
-p.socket.sendto(bytes(f"pos {cam.position[0]} {cam.position[1]} {cam.position[2]}", "ascii"), (p.host, p.port))

@@ -86,8 +86,8 @@ class SceneNode:
         for b in self.behaviors:
             for h in b.events_handlers[action]:
                 h()
-        for c in self.children:
-            c.on_event(action)
+        # for c in self.children:
+        #     c.on_event(action)
 
     def compute_transform(self, project=True):
         if self.parent:

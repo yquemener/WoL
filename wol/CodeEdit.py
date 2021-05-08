@@ -17,6 +17,7 @@ from io import StringIO
 
 from wol import stdout_helpers
 from wol.Behavior import Behavior, RotateConstantSpeed
+from wol.Constants import UserActions, Events
 from wol.GeomNodes import CubeNode, WireframeCubeNode, CardNode
 from wol.GuiElements import TextLabelNode
 from wol.SceneNode import SceneNode
@@ -49,6 +50,12 @@ class DataViewer(SceneNode):
         self.content_view_image.interpolation = GL.GL_NEAREST
         for c in self.children:
             c.properties["delegateGrabToParent"] = True
+
+        self.button_close = CubeNode(parent=self, color=QVector4D(0.8, 0.2, 0.2, 0.8))
+        self.button_close.position = QVector3D(self.type_label.wscale+0.1, self.type_label.hscale, 0)
+        self.button_close.scale = QVector3D(0.07, 0.07, 0.07)
+        self.button_close.events_handlers[Events.Clicked].append(lambda:  self.remove())
+        self.button_close.tooltip = "Close"
 
         self.vertices = list()
         self.program = None

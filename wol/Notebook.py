@@ -1,6 +1,8 @@
 import threading
 
+from PyQt5 import QtCore
 from PyQt5.QtGui import QVector3D
+from PyQt5.QtWidgets import QApplication
 
 from wol import Behavior, stdout_helpers
 from wol.CodeEdit import DataViewer
@@ -8,20 +10,6 @@ from wol.Constants import Events, UserActions
 from wol.GuiElements import TextLabelNode
 from wol.SceneNode import SceneNode
 from wol.TextEditNode import TextEditNode
-
-
-class EditOnClick(Behavior.Behavior):
-    def __init__(self):
-        super().__init__()
-        self.events_handlers[Events.Clicked].append(self.on_edit)
-        self.focused = None
-
-    def on_edit(self):
-        ctxt = self.obj.context
-        ctxt.hud_editor.visible = True
-        ctxt.hud_editor.target_object = self.obj
-        ctxt.focused = ctxt.hud_editor
-        ctxt.hud_editor.set_text(self.obj.text)
 
 
 class ExecuteBehavior(Behavior.Behavior):
@@ -58,32 +46,94 @@ class ExecuteBehavior(Behavior.Behavior):
 class NotebookNode(SceneNode):
     def __init__(self, parent, name):
         SceneNode.__init__(self, parent=parent, name=name)
-        self.filename = f"my_project/{self.name}.py"
         self.cells = list()
         self.output_text = TextLabelNode(name=self.name + "_output", parent=self, text="")
         self.output_text.min_size = (400, 30)
         self.output_text.visible = False
-        # self.events_handlers[Events.AppClose].append(self.save)
-        # self.events_handlers[UserActions.Save].append(self.save)
         self.watcher_add_list = list()
         self.context.execution_context['watch'] = self.watcher_add_list.append
-
-        # try:
-        #     s = open(self.filename).read()
-        #     sep = "\n" + "#**" * 20 + "\n"
-        #     for i, celltext in enumerate(s.split(sep)):
-        #         cell = self.add_cell(i)
-        #         cell.set_text(celltext)
-        #         cell.do_autosize()
-        # except FileNotFoundError:
-        #     self.add_cell(1)
+        self.events_handlers[UserActions.Unselect].append(lambda: self.select_cell(None))
+        self.events_handlers[UserActions.Edit].append(self.on_start_edit_cell)
+        self.edit_cell_mode = False
+        self.focused = False
         self.layout()
+        self.selected_cell = None
+
+    def select_cell(self, new_cell):
+        if self.selected_cell == new_cell is None:
+            return
+        if self.selected_cell is not None and not self.selected_cell.focused:
+            self.cell_border(self.selected_cell)
+
+        self.selected_cell = new_cell
+        if self.selected_cell is not None:
+            self.cell_border(self.selected_cell, (255,255,0,255))
+
+    def cell_border(self, cell, color=None):
+        if color is None:
+            cell.widget.setStyleSheet("QWidget{color: white; background-color: black;}")
+        else:
+            cell.widget.setStyleSheet(f"""
+                        color: rgba(255,255,255,255);
+                        background-color: rgba(0,0,0,255);
+                        border: 2px solid rgba{color};;
+                        """)
+        cell.needs_refresh = True
+
+    def keyPressEvent(self, evt):
+        if evt.key() == QtCore.Qt.Key_Return:
+            if QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier:
+                if self.selected_cell is not None:
+                    self.selected_cell.on_event(UserActions.Execute)
+                    self.edit_cell_mode = False
+                    ind = self.cells.index(self.selected_cell)
+                    ind = max(0, min(ind, len(self.cells) - 2))
+                    self.select_cell(self.cells[ind + 1])
+            else:
+                self.on_event(UserActions.Edit)
+        elif evt.key() == QtCore.Qt.Key_Escape:
+            if self.edit_cell_mode:
+                self.edit_cell_mode = False
+                self.cell_border(self.selected_cell, (255,255,0,255))
+            else:
+                self.select_cell(None)
+                self.context.focus(None)
+
+        elif evt.key() == QtCore.Qt.Key_Down and not self.edit_cell_mode:
+            ind = self.cells.index(self.selected_cell)
+            ind = max(0, min(ind, len(self.cells)-2))
+            self.select_cell(self.cells[ind+1])
+
+        elif evt.key() == QtCore.Qt.Key_Up and not self.edit_cell_mode:
+            ind = self.cells.index(self.selected_cell)
+            ind = max(1, min(ind, len(self.cells) - 1))
+            self.select_cell(self.cells[ind - 1])
+
+        else:
+            if self.selected_cell is not None and self.edit_cell_mode:
+                self.selected_cell.keyPressEvent(evt)
+                self.selected_cell.needs_refresh = True
+
+    def on_click_cell(self, cell):
+        self.select_cell(cell)
+        self.context.focus(self)
+
+    def on_start_edit_cell(self):
+        if self.selected_cell is not None:
+            self.edit_cell_mode = True
+            self.cell_border(self.selected_cell, (0, 0, 255, 255))
+
+    def on_finish_edit_cell(self, cell):
+        self.select_cell(cell)
+        self.edit_cell_mode = False
 
     def add_cell(self, num):
         cell = TextEditNode(parent=self, name=self.name + "_cell"+str(num))
-        cell.add_behavior(EditOnClick())
         cell.add_behavior(ExecuteBehavior())
         cell.events_handlers[Events.TextChanged].append(self.layout)
+        cell.events_handlers[Events.Clicked].append(
+            lambda: self.on_click_cell(cell))
+        cell.events_handlers[UserActions.Unselect].append(lambda: self.on_finish_edit_cell(cell))
         cell.properties["delegateGrabToParent"] = True
         cell.stdout = ""
         cell.autosize = True
@@ -102,25 +152,26 @@ class NotebookNode(SceneNode):
             y -= cell.hscale
 
     def update(self, dt):
+        # Adds an empty cell at the end
         if len(self.cells) == 0 or self.cells[-1].text != "":
             self.add_cell(len(self.cells)+1)
             self.layout()
+
+        # Gather the stdout executed by the cells' threads
+        cell_focused=False
         for cell in self.cells:
             if cell.stdout != "":
                 self.output_text.visible = True
                 self.output_text.set_text(self.output_text.text + cell.stdout)
                 cell.stdout = ""
                 self.output_text.position = QVector3D(-self.output_text.wscale, -self.output_text.hscale, 0)
+            cell_focused = cell.focused | cell_focused
+
+        # Deferred watcher creation because PyQt refuses that different widgets live in
+        # different threads
         for watch in self.watcher_add_list:
             DataViewer(parent=self.context.scene, target=watch, period=1)
         self.watcher_add_list.clear()
-
-    def save(self):
-        # Use notebook formats?
-        f = open(self.filename, "w")
-        sep = "\n" + "#**"*20 + "\n"
-        f.write(sep.join([c.text for c in self.cells]))
-        f.close()
 
     def serialize(self, current_obj_num):
         s, next_num = super().serialize(current_obj_num)

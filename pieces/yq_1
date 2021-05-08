@@ -1,3 +1,0 @@
-c=CodeBumperNode(parent=self, name=self.name+"child"+str(len(self.children)))
-c.position.setX(c.position.x()+2)
-print(self.children)
