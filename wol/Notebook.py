@@ -1,14 +1,18 @@
 import threading
 
+from OpenGL import GL
 from PyQt5 import QtCore
-from PyQt5.QtGui import QVector3D
+from PyQt5.QtGui import QVector3D, QVector4D
 from PyQt5.QtWidgets import QApplication
 
 from wol import Behavior, stdout_helpers
+from wol.Behavior import RotateConstantSpeed
 from wol.CodeEdit import DataViewer
 from wol.Constants import Events, UserActions
+from wol.GeomNodes import CubeNode
 from wol.GuiElements import TextLabelNode
 from wol.SceneNode import SceneNode
+from wol.ShadersLibrary import ShadersLibrary
 from wol.TextEditNode import TextEditNode
 
 
@@ -23,6 +27,10 @@ class ExecuteBehavior(Behavior.Behavior):
     def on_execute(self):
         self.thread = threading.Thread(target=self.threaded_function)
         self.thread.start()
+        self.obj.run_indicator.visible = True
+        rb = self.obj.run_indicator.get_behavior("RotateConstantSpeed")
+        rb.reset()
+        rb.speed = 100
 
     def threaded_function(self):
         try:
@@ -41,13 +49,24 @@ class ExecuteBehavior(Behavior.Behavior):
                 print(self.last_pos, pos)
                 self.obj.stdout += self.stdout.getvalue()[self.last_pos:pos+1]
                 self.last_pos = pos
+        if self.thread is None or not self.thread.is_alive():
+            self.obj.run_indicator.visible = False
 
 
 class NotebookNode(SceneNode):
     def __init__(self, parent, name):
         SceneNode.__init__(self, parent=parent, name=name)
         self.cells = list()
+        self.title_label = TextLabelNode(parent=self, text=str(self.name))
+        self.title_label.position = QVector3D(self.title_label.wscale, self.title_label.hscale, 0)
         self.output_text = TextLabelNode(name=self.name + "_output", parent=self, text="")
+
+        self.button_close = CubeNode(parent=self, color=QVector4D(0.8, 0.2, 0.2, 0.8))
+        self.button_close.position = QVector3D(self.title_label.wscale*2+0.1, self.title_label.hscale, 0)
+        self.button_close.scale = QVector3D(0.07, 0.07, 0.07)
+        self.button_close.events_handlers[Events.Clicked].append(lambda:  self.remove())
+        self.button_close.tooltip = "Close"
+
         self.output_text.min_size = (400, 30)
         self.output_text.visible = False
         self.watcher_add_list = list()
@@ -56,8 +75,10 @@ class NotebookNode(SceneNode):
         self.events_handlers[UserActions.Edit].append(self.on_start_edit_cell)
         self.edit_cell_mode = False
         self.focused = False
-        self.layout()
         self.selected_cell = None
+        self.vertices = list()
+        self.program = None
+        self.layout()
 
     def select_cell(self, new_cell):
         if self.selected_cell == new_cell is None:
@@ -90,7 +111,10 @@ class NotebookNode(SceneNode):
                     ind = max(0, min(ind, len(self.cells) - 2))
                     self.select_cell(self.cells[ind + 1])
             else:
-                self.on_event(UserActions.Edit)
+                if self.edit_cell_mode:
+                    self.selected_cell.keyPressEvent(evt)
+                else:
+                    self.on_event(UserActions.Edit)
         elif evt.key() == QtCore.Qt.Key_Escape:
             if self.edit_cell_mode:
                 self.edit_cell_mode = False
@@ -139,15 +163,27 @@ class NotebookNode(SceneNode):
         cell.autosize = True
         cell.min_size = (200, 30)
         cell.do_autosize()
+        cell.run_indicator = CubeNode(parent=cell, name=cell.name+"_run_indicator")
+        cell.run_indicator.visible = False
+        cell.run_indicator.add_behavior(RotateConstantSpeed(0))
+        cell.run_indicator.scale = QVector3D(0.1, 0.1, 0.1)
+        cell.add_child(cell.run_indicator)
         self.add_child(cell)
         self.cells.append(cell)
         return cell
 
     def layout(self):
         y = 0
+        self.vertices.clear()
+        self.vertices.append(QVector3D(0, 0, -0.5))
         for cell in self.cells:
             y -= cell.hscale+0.01
             cell.position = QVector3D(cell.wscale, y, 0)
+            self.vertices.append(QVector3D(0, y, -0.5))
+            self.vertices.append(QVector3D(0, y, -0.5))
+            self.vertices.append(QVector3D(cell.wscale, y, 0.0))
+            self.vertices.append(QVector3D(0, y, -0.5))
+            cell.run_indicator.position = QVector3D(cell.wscale+0.15, 0, 0)
             # cell.do_autosize()
             y -= cell.hscale
 
@@ -158,7 +194,7 @@ class NotebookNode(SceneNode):
             self.layout()
 
         # Gather the stdout executed by the cells' threads
-        cell_focused=False
+        cell_focused = False
         for cell in self.cells:
             if cell.stdout != "":
                 self.output_text.visible = True
@@ -180,3 +216,14 @@ class NotebookNode(SceneNode):
             s += f"cell.set_text({repr(cell.text)})\n"
         s += f"cell = obj_{current_obj_num}.layout()\n"
         return s, next_num
+
+    def initialize_gl(self):
+        self.program = ShadersLibrary.create_program('simple_color')
+
+    def paint(self, program):
+        self.program.bind()
+        self.program.setAttributeArray(0, self.vertices)
+        self.program.setUniformValue('matrix', self.proj_matrix)
+        self.program.setUniformValue('material_color', QVector4D(1.0, 1.0, 1.0, 1.0))
+        GL.glDrawArrays(GL.GL_LINES, 0, int(len(self.vertices)))
+        program.bind()

@@ -214,9 +214,15 @@ class RotateConstantSpeed(Behavior):
     def __init__(self, speed=10.):
         super().__init__()
         self.speed = speed
+        self.init_orient = None
 
     def on_update(self, dt):
+        if self.init_orient is None:
+            self.init_orient = self.obj.orientation
         self.obj.orientation *= QQuaternion.fromAxisAndAngle(0, 1, 0, dt*self.speed)
+
+    def reset(self):
+        self.obj.orientation = QQuaternion(self.init_orient)
 
 
 class TransmitClickToParent(Behavior):

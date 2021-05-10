@@ -53,7 +53,6 @@ class TextLabelNode(CardNode):
         widget.setLayout(layout)
         self.frame.setCentralWidget(widget)
         self.frame.setAttribute(Qt.WA_TranslucentBackground, True)
-        self.layer = 2
         self.focusable = True
 
     def update(self, dt):

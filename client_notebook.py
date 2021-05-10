@@ -9,10 +9,10 @@ from PyQt5.QtGui import QVector3D, QQuaternion
 
 from wol import Behavior
 
-from wol.Constants import UserActions
+from wol.Constants import UserActions, Events
 from wol.Notebook import NotebookNode
 from wol.SceneNode import CameraNode, SkyBox
-from wol.GeomNodes import Grid, Sphere
+from wol.GeomNodes import Grid, Sphere, CubeNode
 from wol.TextEditNode import TextEditNode
 from wol.View3D import View3D
 
@@ -45,6 +45,17 @@ class DebugBehavior(Behavior.Behavior):
         self.obj.position = self.obj.context.debug_point
 
 
+def create_new_notebook(ctxt):
+    nb = NotebookNode(parent=ctxt.scene, name="Notebook"+str(len(ctxt.scene.children)))
+    stc = ctxt.current_camera.get_behavior("SnapToCamera")
+    ctxt.hover_target = nb
+    stc.on_grab()
+    nb.position = QVector3D(0, 0, 4)
+    nb.orientation = QQuaternion.fromAxisAndAngle(0, 1, 0, 180)
+    nb.add_cell(1)
+    nb.cells[0].set_text("print('Hi!')")
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = View3D()
@@ -67,10 +78,19 @@ if __name__ == '__main__':
     context.hud_editor.orientation = QQuaternion.fromEulerAngles(0.0, 180.0, 0.0)
     context.hud_editor.visible = False
 
-    # nb = NotebookNode(parent=context.scene, name="Notebook")
-    # nb.position = QVector3D(0, 5, 0)
-
     window.load_scene()
+
+    create_button = CubeNode(parent=context.scene, name="CreateNotebookButton")
+    create_button.tooltip = "Create New Notebook"
+    create_button.events_handlers[Events.Clicked].append(lambda: create_new_notebook(context))
+    create_button.scale = QVector3D(0.2, 0.2, 0.2)
+    create_button.position = QVector3D(-3, 5, 0.2)
+
+    # nb = NotebookNode(parent=context.scene, name="Notebook2")
+    # nb.position = QVector3D(-1, 5, 0)
+    # nb.add_cell(1)
+    # nb.cells[0].set_text("print('Hi!')")
+
     # db = Sphere(parent=context.scene)
     # db.scale = QVector3D(0.01,0.01,0.01)
     # db.add_behavior(DebugBehavior())
@@ -78,3 +98,4 @@ if __name__ == '__main__':
     window.show()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     sys.exit(app.exec_())
+
