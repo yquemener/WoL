@@ -1,25 +1,12 @@
 Short list
 ==========
-- Recover from error during loading
-- Don't create a new console every save
-- Code editor
-    V Update class code when text is edited (make it live!)
-        - Keep copy of compiling code in case new code is failing
-
 - TextEditor
-    - Scroll over page long codes
+    - Scroll over page long codes or scroll movement logic to follow pointer
     - autocompletion. That's a must
-    - Search?
-    - Navigation?
-    - Auto-import
 
-- Code GameObjects!
-    - np arrays viewer
-    - fdir "lens" (HUD?)
-    - MNIST trainer with live weights viewer
-    - server to share positions/textures (think about local/remote execution models)
-    - file system explorer?
-    - scenegraph explorer
+- Clear stdout (make a menu GUI?)
+- ODE collisions and MeshNode
+- Full stack in stdout during exceptions
 
 Comfort
 =======

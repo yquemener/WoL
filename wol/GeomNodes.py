@@ -182,12 +182,12 @@ class Sphere(SceneNode):
         self.size = 1.0
         self.collider = Collisions.Sphere()
         self.program = None
-        self.color = QVector4D(1.0, 0.5, 0.5, 1.0)
+        self.color = QVector4D(0.5, 1.0, 0.5, 1.0)
 
     def initialize_gl(self):
         self.quadric = GLU.gluNewQuadric()
-        # self.program = ShadersLibrary.create_program('simple_lighting')
-        self.program = ShadersLibrary.create_program('simple_color')
+        self.program = ShadersLibrary.create_program('simple_lighting')
+        # self.program = ShadersLibrary.create_program('simple_color')
 
     def paint(self, program):
         self.program.bind()

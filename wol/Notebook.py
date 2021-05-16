@@ -67,6 +67,12 @@ class NotebookNode(SceneNode):
         self.button_close.events_handlers[Events.Clicked].append(lambda:  self.remove())
         self.button_close.tooltip = "Close"
 
+        self.button_close = CubeNode(parent=self, color=QVector4D(0.6, 0.6, 0.6, 0.8))
+        self.button_close.position = QVector3D(self.title_label.wscale*2+0.3, self.title_label.hscale, 0)
+        self.button_close.scale = QVector3D(0.07, 0.07, 0.07)
+        self.button_close.events_handlers[Events.Clicked].append(lambda:  self.output_text.set_text(""))
+        self.button_close.tooltip = "Clear stdout"
+
         self.output_text.min_size = (400, 30)
         self.output_text.visible = False
         self.watcher_add_list = list()

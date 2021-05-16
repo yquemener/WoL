@@ -74,6 +74,7 @@ class TextEditNode(CardNode):
         else:
             self.widget.keyPressEvent(evt)
         self.text = self.widget.toPlainText()
+        self.needs_refresh = True
         self.on_event(Events.TextChanged)
 
     def inputMethodEvent(self, evt):
