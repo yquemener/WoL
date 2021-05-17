@@ -85,6 +85,7 @@ if __name__ == '__main__':
     create_button.events_handlers[Events.Clicked].append(lambda: create_new_notebook(context))
     create_button.scale = QVector3D(0.2, 0.2, 0.2)
     create_button.position = QVector3D(-3, 5, 0.2)
+    create_button.properties["skip serialization"] = True
 
     # nb = NotebookNode(parent=context.scene, name="Notebook2")
     # nb.position = QVector3D(-1, 5, 0)

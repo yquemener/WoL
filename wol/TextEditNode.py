@@ -12,7 +12,7 @@ class TextEditNode(CardNode):
     def __init__(self, parent, name="GuiNode", text="", autosize=False):
         CardNode.__init__(self, name=name, parent=parent)
         self.widget = QTextEdit()
-        self.max_geometry = QRect(0, 0, 512, 512)
+        self.max_geometry = QRect(0, 0, 1024, 512)
         self.widget.setGeometry(self.max_geometry)
         self.focusable = True
         self.widget.setText(text)

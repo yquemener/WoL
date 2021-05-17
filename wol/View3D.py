@@ -31,10 +31,11 @@ class View3D(QOpenGLWidget):
         self.scene = RootNode(self.context)
         self.context.scene = self.scene
         self.context.execution_context["scene"] = self.scene
+        self.context.execution_context["context"] = self.context
         self.hud = DotDict()
         self.hud_root = RootNode(self.context)
         # self.hud_root.orientation = QQuaternion.fromAxisAndAngle(0, 1, 0, 180)
-        self.real_mouse_position = (0, 0)
+        self.context.real_mouse_position = (0, 0)
         self.events_handlers = defaultdict(list)
         self.events_handlers[UserActions.Save].append(self.save_scene)
         self.events_handlers[UserActions.Load].append(self.load_scene)
@@ -166,8 +167,8 @@ class View3D(QOpenGLWidget):
             offy = tan(fov_v/2.)
             offx = offy*self.context.current_camera.ratio
 
-            target = QVector3D(offx-self.real_mouse_position[0]/self.width()*2.*offx,
-                               offy-self.real_mouse_position[1]/self.height()*2.*offy,
+            target = QVector3D(offx-self.context.real_mouse_position[0]/self.width()*2.*offx,
+                               offy-self.context.real_mouse_position[1]/self.height()*2.*offy,
                                1.0)
             target = self.context.current_camera.orientation.rotatedVector(target)
             # debug = QVector3D(0.62, 0.41, 1.0)
@@ -269,7 +270,7 @@ class View3D(QOpenGLWidget):
             return self.context.focused.inputMethodEvent(evt)
 
     def mouseMoveEvent(self, evt):
-        self.real_mouse_position = (evt.x(), evt.y())
+        self.context.real_mouse_position = (evt.x(), evt.y())
         if self.skipNextMouseMove or not self.keepMouseCentered:
             self.skipNextMouseMove = False
             return

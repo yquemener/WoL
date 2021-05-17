@@ -53,6 +53,7 @@ class PlayerContext:
             (MappingTypes.KeyDown, Qt.Key_V): [UserActions.Paste],
             (MappingTypes.KeyDown, Qt.Key_Tab): [UserActions.Change_Cursor_Mode],
         }
+        self.real_mouse_position = (0, 0)
 
     def focus(self, target):
         if target == self.focused:

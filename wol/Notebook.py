@@ -75,8 +75,10 @@ class NotebookNode(SceneNode):
 
         self.output_text.min_size = (400, 30)
         self.output_text.visible = False
+        self.output_text.properties["delegateGrabToParent"] = True
+
         self.watcher_add_list = list()
-        self.context.execution_context['watch'] = self.watcher_add_list.append
+        self.context.execution_context['watch'] = lambda v, dur=1.0: self.watcher_add_list.append((v, dur))
         self.events_handlers[UserActions.Unselect].append(lambda: self.select_cell(None))
         self.events_handlers[UserActions.Edit].append(self.on_start_edit_cell)
         self.edit_cell_mode = False
@@ -211,8 +213,8 @@ class NotebookNode(SceneNode):
 
         # Deferred watcher creation because PyQt refuses that different widgets live in
         # different threads
-        for watch in self.watcher_add_list:
-            DataViewer(parent=self.context.scene, target=watch, period=1)
+        for (watch, duration) in self.watcher_add_list:
+            DataViewer(parent=self.context.scene, target=watch, period=duration)
         self.watcher_add_list.clear()
 
     def serialize(self, current_obj_num):
