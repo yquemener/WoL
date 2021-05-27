@@ -2,6 +2,7 @@
 
 import sys
 import signal
+import pybullet as pb
 
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication
@@ -12,7 +13,7 @@ from wol import Behavior
 from wol.Constants import UserActions, Events
 from wol.Notebook import NotebookNode
 from wol.SceneNode import CameraNode, SkyBox
-from wol.GeomNodes import Grid, Sphere, CubeNode
+from wol.GeomNodes import Grid, Sphere, CubeNode, CardNode
 from wol.TextEditNode import TextEditNode
 from wol.View3D import View3D
 
@@ -73,11 +74,6 @@ if __name__ == '__main__':
     g = Grid(parent=context.scene)
     g.orientation = QQuaternion.fromEulerAngles(0.0, 0.0, 90.0)
 
-    context.hud_editor = HUDEditor(parent=my_cam, name="NotebookConsole")
-    context.hud_editor.position = QVector3D(0, 0, 5)
-    context.hud_editor.orientation = QQuaternion.fromEulerAngles(0.0, 180.0, 0.0)
-    context.hud_editor.visible = False
-
     window.load_scene()
 
     create_button = CubeNode(parent=context.scene, name="CreateNotebookButton")
@@ -86,6 +82,17 @@ if __name__ == '__main__':
     create_button.scale = QVector3D(0.2, 0.2, 0.2)
     create_button.position = QVector3D(-3, 5, 0.2)
     create_button.properties["skip serialization"] = True
+
+    sph = Sphere(name="SpherePointer", parent=context.scene)
+    sph.scale = QVector3D(0.2, 0.2, 0.2)
+    sph.collider = None
+    pb.removeBody(sph.collider_id)
+    sph.collider_id = None
+    context.debug_sphere = sph
+
+    card = CardNode(name="CardTest", parent=context.scene, filename="test.png")
+    card.position = QVector3D(5, 3, 0)
+
 
     # nb = NotebookNode(parent=context.scene, name="Notebook2")
     # nb.position = QVector3D(-1, 5, 0)

@@ -1,3 +1,4 @@
+import pybullet
 from PyQt5.QtCore import QRegExp, Qt, QRect, QObject
 from PyQt5.QtGui import QOpenGLTexture, QImage, QSyntaxHighlighter, QColor, QTextCharFormat, QFont
 from PyQt5.QtWidgets import QTextEdit, QApplication
@@ -47,6 +48,8 @@ class TextEditNode(CardNode):
             v[1] *= self.hscale
             v[0] *= self.wscale
         self.refresh_vertices()
+        if self.collider_id:
+            pybullet.unsupportedChangeScaling(self.collider_id, (self.wscale, self.hscale, 1.0))
 
     def update(self, dt):
         if self.focused:

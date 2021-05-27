@@ -1,4 +1,6 @@
 import time
+
+import pybullet
 from PyQt5.QtGui import QColor, QOpenGLTexture, QImage, QWindow, QPalette
 from PyQt5.QtWidgets import QLabel, QFrame, QMainWindow, QApplication, QWidget, QVBoxLayout
 from PyQt5.QtCore import Qt, QRect
@@ -61,6 +63,8 @@ class TextLabelNode(CardNode):
                 self.texture = QOpenGLTexture(QImage(b'\0\0\0\0', 1, 1, QImage.Format_ARGB32))
             else:
                 self.texture = QOpenGLTexture(QImage(self.frame.grab()))
+            if self.collider_id:
+                pybullet.unsupportedChangeScaling(self.collider_id, (self.wscale, self.hscale, 1.0))
             self.needs_refresh = False
 
     def set_text(self, t):

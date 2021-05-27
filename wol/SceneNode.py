@@ -1,6 +1,7 @@
 import traceback
 from collections import defaultdict
 from math import cos
+import pybullet as pb
 
 from OpenGL import GL
 from PyQt5.QtGui import QMatrix4x4, QQuaternion, QVector3D, QImage, QOpenGLTexture, QTransform, QMatrix3x3, QVector4D
@@ -42,6 +43,7 @@ class SceneNode:
         self.transform = QMatrix4x4()
         self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
         self.collider = None
+        self.collider_id = None
         self.proj_matrix = self.transform
         self.visible = True
         self.properties = dict()
@@ -89,6 +91,7 @@ class SceneNode:
         # for c in self.children:
         #     c.on_event(action)
 
+    # TODO: [optim] only call that when it is actually necessary
     def compute_transform(self, project=True):
         if self.parent:
             m = QMatrix4x4(self.parent.transform)
@@ -105,6 +108,12 @@ class SceneNode:
             self.proj_matrix = self.transform
         if self.collider is not None:
             self.collider.transform = self.transform
+        if self.collider_id is not None:
+            wp = self.world_position()
+            wo = self.world_orientation()
+            pb.resetBasePositionAndOrientation(
+                self.collider_id, (wp.x(), wp.y(), wp.z()),
+                (wo.x(), wo.y(), wo.z(), wo.scalar()))
 
     def world_position(self):
         if self.parent:
@@ -327,6 +336,10 @@ class SceneNode:
 
     def on_click(self, pos, evt):
         return
+
+    def register_collider(self, file):
+        self.collider_id = pb.loadURDF(file, [0, 0, 0])
+        self.context.bullet_ids[self.collider_id] = self
 
 
 class RootNode(SceneNode):

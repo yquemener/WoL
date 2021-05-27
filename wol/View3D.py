@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+import os
+
+import pybullet as pb
 from collections import defaultdict
 
 from PyQt5.QtCore import Qt, QTimer, QPoint
@@ -15,6 +18,10 @@ from wol.ShadersLibrary import ShadersLibrary
 from wol.SceneNode import RootNode, SceneNode
 import wol.Collisions as Collisions
 from wol.utils import DotDict
+
+
+def v(a):
+    return (a.x(), a.y(), a.z())
 
 
 class View3D(QOpenGLWidget):
@@ -52,6 +59,9 @@ class View3D(QOpenGLWidget):
         self.keepMouseCentered = True
         self.setAttribute(Qt.WA_InputMethodEnabled, True)
 
+        pb.connect(pb.DIRECT)
+        pb.setAdditionalSearchPath(os.getcwd() + "/urdf/")
+
         screenRect = QApplication.desktop().screenGeometry(0)
 
         self.setGeometry(10, 10, 1200, 800)
@@ -62,6 +72,9 @@ class View3D(QOpenGLWidget):
         self.hud.hud1.layer = -1
         self.hud.hud1.position.setX(0.5)
         self.hud.hud1.position.setY(0.5)
+        # TODO: use collision filters instead
+        pb.removeBody(self.hud.hud1.collider_id)
+        self.hud.hud1.collider_id = None
 
     def initializeGL(self):
         GL.glEnable(GL.GL_DEPTH_TEST)
@@ -157,12 +170,9 @@ class View3D(QOpenGLWidget):
         self.context.scene.lock.release()
         self.hud_root.update_recurs(0.01)
 
-        # Put the collision detection in a more appropriate place (RootNode? Context?)
-        if self.keepMouseCentered:
-            ray = Collisions.Ray(self.context.current_camera.position,
-                                 self.context.current_camera.look_at-self.context.current_camera.position)
-        else:
-            #self.context.debug_sphere.parent = self.context.current_camera
+        # TODO: Put the collision detection in a more appropriate place (RootNode? Context?)
+        target = self.context.current_camera.look_at-self.context.current_camera.position
+        if not self.keepMouseCentered:
             fov_v = self.context.current_camera.vertical_fov * 3.14159 / 180.0
             offy = tan(fov_v/2.)
             offx = offy*self.context.current_camera.ratio
@@ -171,14 +181,27 @@ class View3D(QOpenGLWidget):
                                offy-self.context.real_mouse_position[1]/self.height()*2.*offy,
                                1.0)
             target = self.context.current_camera.orientation.rotatedVector(target)
-            # debug = QVector3D(0.62, 0.41, 1.0)
-            # debug = QVector3D(offx, offy, 1.0)
-            # debug = self.context.current_camera.orientation.rotatedVector(debug)
-
             self.context.debug_point = self.context.current_camera.position + target
 
-            ray = Collisions.Ray(self.context.current_camera.position,
-                                 target)
+        ray = Collisions.Ray(self.context.current_camera.position, target)
+        cam = self.context.current_camera.position
+        RAY_MAX_SIZE = 1000
+        results = pb.rayTest(v(cam), v(cam+target*RAY_MAX_SIZE))
+        # results = pb.rayTest(v(cam), (0,0,0))
+        if not results[0][0] < 0:
+            try:
+                print()
+                o = self.context.bullet_ids[results[0][0]]
+                print(o.name)
+                print(o.text)
+            except Exception:
+                print("__")
+
+            print(self.context.bullet_ids.get(results[0][0], ""))
+            self.context.debug_sphere.position = cam + RAY_MAX_SIZE*target*results[0][2]
+            self.context.debug_sphere.visible = True
+        else:
+            self.context.debug_sphere.visible = False
 
         colliders = self.context.scene.collide_recurs(ray)
         colliders_sort = list()
@@ -193,7 +216,6 @@ class View3D(QOpenGLWidget):
             # self.context.debug_sphere.position = self.context.debug_point
             self.context.hover_target = colliders_sort[0][1]
         else:
-            # self.context.debug_point = QVector3D(0, 0, -10)
             self.context.hover_target = None
         self.repaint()
 

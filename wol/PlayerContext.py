@@ -54,6 +54,7 @@ class PlayerContext:
             (MappingTypes.KeyDown, Qt.Key_Tab): [UserActions.Change_Cursor_Mode],
         }
         self.real_mouse_position = (0, 0)
+        self.bullet_ids = dict()
 
     def focus(self, target):
         if target == self.focused:

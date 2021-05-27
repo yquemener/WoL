@@ -1,10 +1,11 @@
+import pybullet
 from OpenGL import GL, GLU
 from PyQt5.QtGui import QVector3D, QOpenGLTexture, QImage, QVector4D
 
 from wol import Collisions, utils
 from wol.ShadersLibrary import ShadersLibrary
 from wol.SceneNode import SceneNode
-
+import pybullet as pb
 
 class Grid(SceneNode):
     def __init__(self, name="Grid", parent=None):
@@ -70,9 +71,14 @@ class WireframeCubeNode(SceneNode):
 
         self.color = color
         self.collider = Collisions.Cube()
+        self.register_collider("cube.urdf")
 
     def initialize_gl(self):
         self.program = ShadersLibrary.create_program('wireframe')
+
+    def compute_transform(self, project=True):
+        super().compute_transform(project)
+        pybullet.unsupportedChangeScaling(self.collider_id, (self.scale[0], self.scale[1], self.scale[2]))
 
     def paint(self, program):
         self.program.bind()
@@ -155,9 +161,14 @@ class CubeNode(SceneNode):
 
         self.color = color
         self.collider = Collisions.Cube()
+        self.register_collider("cube.urdf")
 
     def initialize_gl(self):
         self.program = ShadersLibrary.create_program('simple_lighting')
+
+    def compute_transform(self, project=True):
+        super().compute_transform(project)
+        pybullet.unsupportedChangeScaling(self.collider_id, (self.scale[0], self.scale[1], self.scale[2]))
 
     def paint(self, program):
         self.program.bind()
@@ -181,6 +192,7 @@ class Sphere(SceneNode):
         self.quadric = None
         self.size = 1.0
         self.collider = Collisions.Sphere()
+        self.register_collider("sphere.urdf")
         self.program = None
         self.color = QVector4D(0.5, 1.0, 0.5, 1.0)
 
@@ -215,6 +227,7 @@ class CardNode(SceneNode):
         self.texCoords = utils.generate_square_texcoords_fan()
         self.refresh_vertices()
         self.interpolation = GL.GL_LINEAR
+        self.register_collider("plane.urdf")
 
     def refresh_vertices(self):
         p0 = QVector3D(self.vertices[0][0], self.vertices[0][1], self.vertices[0][2])

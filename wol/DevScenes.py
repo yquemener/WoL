@@ -33,7 +33,6 @@ def scene_tests(context):
     sph.collider = None
     context.debug_sphere = sph
 
-
 def scene_base(context):
     SkyBox(parent=context.scene.context.current_camera)
     g = Grid(parent=context.scene)
