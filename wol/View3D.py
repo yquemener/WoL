@@ -16,7 +16,6 @@ from wol.GuiElements import TextLabelNode
 from wol.PlayerContext import PlayerContext, MappingTypes
 from wol.ShadersLibrary import ShadersLibrary
 from wol.SceneNode import RootNode, SceneNode
-import wol.Collisions as Collisions
 from wol.utils import DotDict
 
 
@@ -183,40 +182,18 @@ class View3D(QOpenGLWidget):
             target = self.context.current_camera.orientation.rotatedVector(target)
             self.context.debug_point = self.context.current_camera.position + target
 
-        ray = Collisions.Ray(self.context.current_camera.position, target)
         cam = self.context.current_camera.position
         RAY_MAX_SIZE = 1000
         results = pb.rayTest(v(cam), v(cam+target*RAY_MAX_SIZE))
         # results = pb.rayTest(v(cam), (0,0,0))
-        if not results[0][0] < 0:
-            try:
-                print()
-                o = self.context.bullet_ids[results[0][0]]
-                print(o.name)
-                print(o.text)
-            except Exception:
-                print("__")
-
-            print(self.context.bullet_ids.get(results[0][0], ""))
+        if results[0][0] > -1:
+            self.context.hover_target = self.context.bullet_ids.get(results[0][0], None)
             self.context.debug_sphere.position = cam + RAY_MAX_SIZE*target*results[0][2]
             self.context.debug_sphere.visible = True
         else:
+            self.context.hover_target = None
             self.context.debug_sphere.visible = False
 
-        colliders = self.context.scene.collide_recurs(ray)
-        colliders_sort = list()
-        for obj, point in colliders:
-            if obj is not self.context.grabbed:
-                colliders_sort.append((point,
-                                       obj,
-                                       (point-self.context.current_camera.position).length()))
-        colliders_sort.sort(key=lambda s: s[2])
-        if len(colliders_sort) > 0:
-            # self.context.debug_point = colliders_sort[0][0]
-            # self.context.debug_sphere.position = self.context.debug_point
-            self.context.hover_target = colliders_sort[0][1]
-        else:
-            self.context.hover_target = None
         self.repaint()
 
     def keyReleaseEvent(self, evt):

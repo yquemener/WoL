@@ -11,6 +11,7 @@ from multiprocessing.queues import Queue
 from traceback import TracebackException
 
 import numpy
+import pybullet
 from OpenGL import GL
 from PyQt5.QtGui import QVector3D, QVector4D, QQuaternion, QMatrix4x4, QImage
 from io import StringIO
@@ -91,6 +92,15 @@ class DataViewer(SceneNode):
             # self.content_view_text.set_text(str(target_obj))
             self.content_view_text.visible = False
         self.last_update = time.time()
+        if self.content_view_text.visible:
+            pybullet.setCollisionFilterGroupMask(self.content_view_text.collider_id, -1, 1, 1)
+        else:
+            pybullet.setCollisionFilterGroupMask(self.content_view_text.collider_id, -1, 0, 0)
+        if self.content_view_image.visible:
+            pybullet.setCollisionFilterGroupMask(self.content_view_image.collider_id, -1, 1, 1)
+        else:
+            pybullet.setCollisionFilterGroupMask(self.content_view_image.collider_id, -1, 0, 0)
+
 
     def update(self, dt):
         if self.period > 0:

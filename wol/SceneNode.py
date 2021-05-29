@@ -42,7 +42,6 @@ class SceneNode:
         self.orientation = QQuaternion()
         self.transform = QMatrix4x4()
         self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
-        self.collider = None
         self.collider_id = None
         self.proj_matrix = self.transform
         self.visible = True
@@ -106,8 +105,6 @@ class SceneNode:
             self.proj_matrix = self.context.current_camera.projection_matrix * self.transform
         else:
             self.proj_matrix = self.transform
-        if self.collider is not None:
-            self.collider.transform = self.transform
         if self.collider_id is not None:
             wp = self.world_position()
             wo = self.world_orientation()
@@ -301,16 +298,6 @@ class SceneNode:
         for c in self.children:
             c.initialize_gl_recurs()
 
-    def collide_recurs(self, ray):
-        collisions = list()
-        if self.collider is not None and self.visible:
-            r, cc = self.collider.collide_with_ray(ray)
-            if r:
-                collisions.append((self, cc))
-        for c in self.children:
-            collisions += c.collide_recurs(ray)
-        return collisions
-
     def add_child(self, child):
         self.children.append(child)
         child.parent = self
@@ -443,8 +430,6 @@ class SkyBox(SceneNode):
         self.transform = m
         self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
         self.proj_matrix = self.context.current_camera.projection_matrix * self.transform
-        if self.collider is not None:
-            self.collider.transform = self.transform
 
     def paint(self, program):
         program.bind()

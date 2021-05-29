@@ -85,7 +85,6 @@ if __name__ == '__main__':
 
     sph = Sphere(name="SpherePointer", parent=context.scene)
     sph.scale = QVector3D(0.2, 0.2, 0.2)
-    sph.collider = None
     pb.removeBody(sph.collider_id)
     sph.collider_id = None
     context.debug_sphere = sph

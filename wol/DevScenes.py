@@ -30,7 +30,6 @@ def scene_tests(context):
 
     sph = Sphere(name="SpherePointer", parent=context.scene)
     sph.scale = QVector3D(0.2, 0.2, 0.2)
-    sph.collider = None
     context.debug_sphere = sph
 
 def scene_base(context):
