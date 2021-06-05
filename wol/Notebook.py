@@ -121,6 +121,9 @@ class NotebookNode(SceneNode):
             else:
                 if self.edit_cell_mode:
                     self.selected_cell.keyPressEvent(evt)
+                    self.selected_cell.needs_refresh = True
+                    self.selected_cell.do_autosize()
+                    self.layout()
                 else:
                     self.on_event(UserActions.Edit)
         elif evt.key() == QtCore.Qt.Key_Escape:
@@ -145,6 +148,8 @@ class NotebookNode(SceneNode):
             if self.selected_cell is not None and self.edit_cell_mode:
                 self.selected_cell.keyPressEvent(evt)
                 self.selected_cell.needs_refresh = True
+                self.selected_cell.do_autosize()
+                self.layout()
 
     def on_click_cell(self, cell):
         self.select_cell(cell)

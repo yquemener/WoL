@@ -16,7 +16,7 @@ V 'E' code editor facing camera
 - Make "tracer" lines linking the code editor to the target object (may be harder than it sounds)
 - Find a way to show several errors in different places
 - Find why errors do not show up on class recreation
-- Update texture and layout after keypress, please...
+V Update texture and layout after keypress, please...
 - Blink cursor
 - Insert cell above
 
