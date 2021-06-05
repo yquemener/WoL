@@ -188,11 +188,11 @@ class View3D(QOpenGLWidget):
         # results = pb.rayTest(v(cam), (0,0,0))
         if results[0][0] > -1:
             self.context.hover_target = self.context.bullet_ids.get(results[0][0], None)
-            self.context.debug_sphere.position = cam + RAY_MAX_SIZE*target*results[0][2]
-            self.context.debug_sphere.visible = True
+            # self.context.debug_sphere.position = cam + RAY_MAX_SIZE*target*results[0][2]
+            # self.context.debug_sphere.visible = True
         else:
             self.context.hover_target = None
-            self.context.debug_sphere.visible = False
+            # self.context.debug_sphere.visible = False
 
         self.repaint()
 

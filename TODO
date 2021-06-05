@@ -1,12 +1,12 @@
 Short list
 ==========
+- Put imports into execution_context
 - TextEditor
     - Scroll over page long codes or scroll movement logic to follow pointer
-    - autocompletion. That's a must
-
-- Clear stdout (make a menu GUI?)
-- ODE collisions and MeshNode
+    - autocompletion.
 - Full stack in stdout during exceptions
+- MeshNode
+
 
 Comfort
 =======

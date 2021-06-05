@@ -87,10 +87,11 @@ if __name__ == '__main__':
     sph.scale = QVector3D(0.2, 0.2, 0.2)
     pb.removeBody(sph.collider_id)
     sph.collider_id = None
+    sph.visible = False
     context.debug_sphere = sph
 
-    card = CardNode(name="CardTest", parent=context.scene, filename="test.png")
-    card.position = QVector3D(5, 3, 0)
+    # card = CardNode(name="CardTest", parent=context.scene, filename="test.png")
+    # card.position = QVector3D(5, 3, 0)
 
 
     # nb = NotebookNode(parent=context.scene, name="Notebook2")
