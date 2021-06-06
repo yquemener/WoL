@@ -17,7 +17,7 @@ V 'E' code editor facing camera
 - Find a way to show several errors in different places
 - Find why errors do not show up on class recreation
 V Update texture and layout after keypress, please...
-- Blink cursor
+- Blink cursor -> C'est un peu dur, on ne peut avoir de blink cursor que sur un widget focus et visible. Il faudrait surement subclass QTextEdit et c'est chaud en python...
 - Insert cell above
 
 Architecture

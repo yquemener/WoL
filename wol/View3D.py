@@ -4,7 +4,7 @@ import os
 import pybullet as pb
 from collections import defaultdict
 
-from PyQt5.QtCore import Qt, QTimer, QPoint
+from PyQt5.QtCore import Qt, QTimer, QPoint, QSize
 from PyQt5.QtGui import QColor, QSurfaceFormat, QVector2D, QVector3D, QCursor, QVector4D, QMatrix3x3, QQuaternion, \
     QMatrix4x4
 from PyQt5.QtWidgets import QOpenGLWidget, QApplication
@@ -20,7 +20,7 @@ from wol.utils import DotDict
 
 
 def v(a):
-    return (a.x(), a.y(), a.z())
+    return a.x(), a.y(), a.z()
 
 
 class View3D(QOpenGLWidget):
@@ -36,6 +36,7 @@ class View3D(QOpenGLWidget):
         self.context = PlayerContext()
         self.scene = RootNode(self.context)
         self.context.scene = self.scene
+        self.context.view = parent
         self.context.execution_context["scene"] = self.scene
         self.context.execution_context["context"] = self.context
         self.hud = DotDict()
@@ -213,22 +214,22 @@ class View3D(QOpenGLWidget):
 
         if self.context.focused is not None:
             o = self.context.focused
+            if o.parent is not None and o.parent is not self.context.scene:
+                o = o.parent
             if hasattr(o, "keyPressEvent"):
                 o.keyPressEvent(evt)
-                # if UserActions.Release not in actions:
-                #     return
-                return
+                if UserActions.Release not in actions:
+                    return
 
         for a in actions:
             self.context.current_camera.on_event(a)
             self.on_event(a)
-            if self.context.focused is not None:
-                self.context.focused.on_event(a)
+            if o is not None:
+                o.on_event(a)
             elif self.context.grabbed is not None:
                 self.context.grabbed.on_event(a)
             elif self.context.hover_target is not None:
                 self.context.hover_target.on_event(a)
-
 
         if evt.isAutoRepeat():
             return
@@ -318,3 +319,6 @@ class View3D(QOpenGLWidget):
 
     def leaveEvent(self, evt):
         self.setCursor(Qt.ArrowCursor)
+
+    def minimumSizeHint(self) -> QSize:
+        return QSize(500, 500)

@@ -56,13 +56,19 @@ class PlayerContext:
         self.real_mouse_position = (0, 0)
         self.bullet_ids = dict()
 
-    def focus(self, target):
-        if target == self.focused:
-            return
+    def unfocus(self):
+        print("unfocusing", self.focused)
         if self.focused is not None:
             self.focused.on_event(Events.LostFocus)
             self.focused.focused = False
+        self.focused = None
 
+    def focus(self, target):
+        if target == self.focused:
+            return
+        self.unfocus()
+
+        print("focusing", target)
         self.focused = target
         if self.focused is not None:
             self.focused.on_event(Events.GotFocus)

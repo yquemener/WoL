@@ -91,12 +91,14 @@ class NotebookNode(SceneNode):
     def select_cell(self, new_cell):
         if self.selected_cell == new_cell is None:
             return
-        if self.selected_cell is not None and not self.selected_cell.focused:
+        if self.selected_cell is not None:
             self.cell_border(self.selected_cell)
+            self.selected_cell.focused = False
 
         self.selected_cell = new_cell
         if self.selected_cell is not None:
             self.cell_border(self.selected_cell, (255,255,0,255))
+            self.selected_cell.focused = True
 
     def cell_border(self, cell, color=None):
         if color is None:

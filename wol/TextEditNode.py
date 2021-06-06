@@ -1,9 +1,12 @@
+import time
+
 import pybullet
 from PyQt5.QtCore import QRegExp, Qt, QRect, QObject
 from PyQt5.QtGui import QOpenGLTexture, QImage, QSyntaxHighlighter, QColor, QTextCharFormat, QFont
 from PyQt5.QtWidgets import QTextEdit, QApplication
 
 from wol import utils
+from wol.Behavior import Focusable
 from wol.Constants import Events
 from wol.GeomNodes import CardNode
 import re
@@ -15,7 +18,6 @@ class TextEditNode(CardNode):
         self.widget = QTextEdit()
         self.max_geometry = QRect(0, 0, 1024, 512)
         self.widget.setGeometry(self.max_geometry)
-        self.focusable = True
         self.widget.setText(text)
         self.text = text
         self.autosize = autosize
@@ -30,6 +32,7 @@ class TextEditNode(CardNode):
         qfm = self.widget.fontMetrics()
         self.widget.setTabStopDistance(qfm.horizontalAdvance(' ') * 4)
         self.focused = False
+        self.add_behavior(Focusable())
 
     def do_autosize(self):
         qfm = self.widget.fontMetrics()
@@ -57,11 +60,11 @@ class TextEditNode(CardNode):
         if self.needs_refresh:
             if self.autosize:
                 self.do_autosize()
+            self.widget.update()
             self.texture = QOpenGLTexture(QImage(self.widget.grab()))
-            self.needs_refresh = False
 
-    def on_unfocus(self):
-        self.focused = False
+            # print(time.time(), "updated", self.focused)
+            self.needs_refresh = False
 
     def keyPressEvent(self, evt):
         if evt.key() == Qt.Key_Return:

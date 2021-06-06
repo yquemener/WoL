@@ -241,4 +241,21 @@ class TransmitClickTo(Behavior):
     def on_click(self, evt, pos):
         self.target.on_click(evt, pos)
         for b in self.target.behaviors:
-            b.on_click(evt,pos)
+            b.on_click(evt, pos)
+
+
+class Focusable(Behavior):
+    def __init__(self):
+        super().__init__()
+        self.events_handlers[UserActions.Unselect].append(self.unfocus)
+
+    def on_click(self, evt, pos):
+        print("clic")
+        self.obj.context.focus(self.obj)
+        self.obj.widget.setFocus()
+
+    def unfocus(self):
+        self.obj.context.unfocus()
+
+
+

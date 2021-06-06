@@ -1,14 +1,19 @@
 #!/usr/bin/env python
-
+import re
 import sys
 import signal
+import time
+
+import pybullet
 import pybullet as pb
 
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QVector3D, QQuaternion
+from PyQt5.QtCore import QRect, Qt
+from PyQt5.QtWidgets import QApplication, QTextEdit, QMainWindow, QVBoxLayout, QHBoxLayout, QDialog
+from PyQt5.QtGui import QVector3D, QQuaternion, QOpenGLTexture, QImage
 
-from wol import Behavior
+from wol import Behavior, utils
+from wol.Behavior import Focusable
 
 from wol.Constants import UserActions, Events
 from wol.Notebook import NotebookNode
@@ -103,7 +108,16 @@ if __name__ == '__main__':
     # db.scale = QVector3D(0.01,0.01,0.01)
     # db.add_behavior(DebugBehavior())
 
+    # window2 = QDialog()
+    # layout = QHBoxLayout()
+    # layout.addWidget(window)
+    # layout.addWidget(QTextEdit())
+    # window2.setLayout(layout)
+    # window2.show()
+
+
     window.show()
+    window.setFocus()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     sys.exit(app.exec_())
 
