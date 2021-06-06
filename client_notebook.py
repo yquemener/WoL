@@ -18,7 +18,7 @@ from wol.Behavior import Focusable
 from wol.Constants import UserActions, Events
 from wol.Notebook import NotebookNode
 from wol.SceneNode import CameraNode, SkyBox
-from wol.GeomNodes import Grid, Sphere, CubeNode, CardNode
+from wol.GeomNodes import Grid, Sphere, CubeNode, CardNode, MeshNode
 from wol.TextEditNode import TextEditNode
 from wol.View3D import View3D
 
@@ -94,6 +94,8 @@ if __name__ == '__main__':
     sph.collider_id = None
     sph.visible = False
     context.debug_sphere = sph
+
+    mesh = MeshNode(filename="urdf/bunny.obj", parent=context.scene)
 
     # card = CardNode(name="CardTest", parent=context.scene, filename="test.png")
     # card.position = QVector3D(5, 3, 0)

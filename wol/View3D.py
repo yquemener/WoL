@@ -212,8 +212,8 @@ class View3D(QOpenGLWidget):
     def keyPressEvent(self, evt):
         actions = self.context.mappings.get((MappingTypes.KeyDown, evt.key()), [])
 
-        if self.context.focused is not None:
-            o = self.context.focused
+        o = self.context.focused
+        if o is not None:
             if o.parent is not None and o.parent is not self.context.scene:
                 o = o.parent
             if hasattr(o, "keyPressEvent"):

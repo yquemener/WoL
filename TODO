@@ -10,6 +10,7 @@ Short list
 
 Comfort
 =======
+- Max width for stdout (+wordwrap)
 - 'E' code editor always visible
 V 'E' code editor facing camera
 - Errors facing camera

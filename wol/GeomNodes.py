@@ -1,5 +1,8 @@
+import numpy
 import pybullet
+import pywavefront
 from OpenGL import GL, GLU
+from OpenGL.arrays import vbo
 from PyQt5.QtGui import QVector3D, QOpenGLTexture, QImage, QVector4D
 
 from wol import utils
@@ -248,4 +251,36 @@ class CardNode(SceneNode):
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
         GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
+
+
+class MeshNode(SceneNode):
+    def __init__(self, filename, name="Mesh", parent=None):
+        SceneNode.__init__(self, name, parent)
+        self.filename = filename
+        self.mesh = pywavefront.Wavefront(filename, create_materials=True, collect_faces=True)
+        vertices = list()
+        for v in self.mesh.vertices:
+            vertices += v
+        vertices = numpy.array(vertices, dtype='f')
+        self.vertices = vbo.VBO(vertices)
+
+        indices = list()
+        for ind in self.mesh.mesh_list[0].faces:
+            indices += ind
+        indices = numpy.array(indices, dtype=numpy.int32)
+
+        self.indices = vbo.VBO(indices, target=GL.GL_ELEMENT_ARRAY_BUFFER)
+        self.texture = None
+
+    def paint(self, program):
+        program.bind()
+        program.setUniformValue('matrix', self.proj_matrix)
+        self.indices.bind()
+        self.vertices.bind()
+        GL.glEnableVertexAttribArray(0)
+        GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, False, 0, None)
+
+        GL.glDrawElements(GL.GL_TRIANGLES, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
+        self.indices.unbind()
+        self.vertices.unbind()
 
