@@ -95,7 +95,9 @@ if __name__ == '__main__':
     sph.visible = False
     context.debug_sphere = sph
 
-    mesh = MeshNode(filename="urdf/bunny.obj", parent=context.scene)
+    mesh = MeshNode(filename="urdf/duck.obj", parent=context.scene)
+    sph = Sphere(parent=context.scene)
+    sph.position = QVector3D(1,0,0)
 
     # card = CardNode(name="CardTest", parent=context.scene, filename="test.png")
     # card.position = QVector3D(5, 3, 0)

@@ -263,24 +263,54 @@ class MeshNode(SceneNode):
             vertices += v
         vertices = numpy.array(vertices, dtype='f')
         self.vertices = vbo.VBO(vertices)
+        # self.vertices = vertices
+
+        normals = list()
+        for n in self.mesh.parser.normals:
+            normals += n
+        normals = numpy.array(normals, dtype='f')
+        self.normals = vbo.VBO(normals)
+        # self.normals = normals
 
         indices = list()
         for ind in self.mesh.mesh_list[0].faces:
             indices += ind
         indices = numpy.array(indices, dtype=numpy.int32)
-
         self.indices = vbo.VBO(indices, target=GL.GL_ELEMENT_ARRAY_BUFFER)
+        # self.indices = indices
+
         self.texture = None
 
+        self.color = QVector4D(0.0, 0.0, 1.0, 1.0)
+
+    def initialize_gl(self):
+        self.program = ShadersLibrary.create_program('simple_lighting')
+        # self.program = ShadersLibrary.create_program('simple_texture')
+
     def paint(self, program):
-        program.bind()
-        program.setUniformValue('matrix', self.proj_matrix)
+        self.program.bind()
+        self.program.setUniformValue('light_position', self.context.current_camera.position)
+        self.program.setUniformValue('matmodel', self.transform)
+        self.program.setUniformValue('material_color', self.color)
+        self.program.setUniformValue('mvp', self.proj_matrix)
+        self.program.setUniformValue('matrix', self.proj_matrix)
         self.indices.bind()
-        self.vertices.bind()
         GL.glEnableVertexAttribArray(0)
+        self.vertices.bind()
         GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, False, 0, None)
+
+        GL.glEnableVertexAttribArray(2)
+        # GL.glVertexAttribPointer(1, 3, GL.GL_FLOAT, False, 0, None)
+        self.normals.bind()
+        GL.glVertexAttribPointer(2, 3, GL.GL_FLOAT, False, 0, None)
+
+
+        # program.setAttributeArray(0, self.mesh.vertices)
+        # program.setAttributeArray(1, self.mesh.vertices)
+        # program.setAttributeArray(2, self.mesh.parser.normals)
 
         GL.glDrawElements(GL.GL_TRIANGLES, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
         self.indices.unbind()
         self.vertices.unbind()
+        self.normals.unbind()
 

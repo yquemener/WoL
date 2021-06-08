@@ -28,7 +28,7 @@ class ShadersLibrary:
     cached_shaders = {}
 
     @staticmethod
-    def create_program(name):
+    def     create_program(name):
         if name not in ShadersLibrary.codes.keys():
             raise KeyError("GL program named " + str(name) + " not found in ShadersLibrary")
         program = ShadersLibrary.cached_shaders.get(name, None)
@@ -47,8 +47,11 @@ class ShadersLibrary:
         program.bindAttributeLocation('vertex', 0)
         if name == 'simple_texture':
             program.bindAttributeLocation('texCoord', 1)
+        if name == "simple_lighting":
+            program.bindAttributeLocation('normal', 1)
 
         if not program.link():
+            print(program.log())
             raise RuntimeError("Could not compile shader:" + str(name) + "\n" + program.log())
 
         program.enableAttributeArray(0)
