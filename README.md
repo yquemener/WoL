@@ -34,4 +34,4 @@ one thing led to the other I am currently trying to put pybullet in it.
 
 It is a tool to do mostly exploratory programming.
 
-![](pics/Screenshot from 2021-01-13 14-59-20.jpg)
+![](pics/Screenshot%20from%202021-01-13%2014-59-20.jpg)
