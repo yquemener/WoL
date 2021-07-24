@@ -92,7 +92,7 @@ class SceneNode:
 
     # TODO: [optim] only call that when it is actually necessary
     def compute_transform(self, project=True):
-        if self.parent:
+        if self.parent is not None:
             m = QMatrix4x4(self.parent.transform)
         else:
             m = QMatrix4x4()
@@ -113,7 +113,7 @@ class SceneNode:
                 (wo.x(), wo.y(), wo.z(), wo.scalar()))
 
     def world_position(self):
-        if self.parent:
+        if self.parent is not None:
             return QVector3D(self.transform.map(QVector4D(0, 0, 0, 1)))
         else:
             return self.position
@@ -325,7 +325,7 @@ class SceneNode:
         return
 
     def register_collider(self, file):
-        self.collider_id = pb.loadURDF(file, [0, 0, 0])
+        self.collider_id = pb.loadURDF(file, [0, 0, 0], useFixedBase=1)
         self.context.bullet_ids[self.collider_id] = self
 
 

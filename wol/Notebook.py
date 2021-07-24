@@ -46,7 +46,6 @@ class ExecuteBehavior(Behavior.Behavior):
         if self.stdout is not None:
             pos = self.stdout.tell()
             if pos != self.last_pos:
-                print(self.last_pos, pos)
                 self.obj.stdout += self.stdout.getvalue()[self.last_pos:pos+1]
                 self.last_pos = pos
         if self.thread is None or not self.thread.is_alive():

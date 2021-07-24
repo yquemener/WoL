@@ -18,7 +18,7 @@ from wol.Behavior import Focusable
 from wol.Constants import UserActions, Events
 from wol.Notebook import NotebookNode
 from wol.SceneNode import CameraNode, SkyBox
-from wol.GeomNodes import Grid, Sphere, CubeNode, CardNode, MeshNode
+from wol.GeomNodes import Grid, Sphere, CubeNode, CardNode, MeshNode, UrdfNode
 from wol.TextEditNode import TextEditNode
 from wol.View3D import View3D
 
@@ -94,10 +94,28 @@ if __name__ == '__main__':
     sph.collider_id = None
     sph.visible = False
     context.debug_sphere = sph
+    sph.properties["skip serialization"] = True
 
-    mesh = MeshNode(filename="urdf/duck.obj", parent=context.scene)
-    sph = Sphere(parent=context.scene)
-    sph.position = QVector3D(1,0,0)
+    # mesh = MeshNode(filename="urdf/duck.obj", parent=context.scene)
+    # mesh.position = QVector3D(-2,0,0)
+    # sph = Sphere(parent=context.scene)
+    # sph.position = QVector3D(2,0,0)
+
+    # urdf2 = UrdfNode(filename="urdf/Base_1.urdf", parent=context.scene, static=True)
+    # urdf2.properties["skip serialization"] = True
+    # urdf2.position = QVector3D(2.15, 0, .75)
+    # urdf2.sim.set_simulation(True)
+
+    urdf3 = UrdfNode(filename="urdf/Base_2.urdf", parent=context.scene, static=True)
+    urdf3.properties["skip serialization"] = True
+    urdf3.position = QVector3D(-2.15, 0, .75)
+    urdf3.sim.set_simulation(True)
+
+    # urdf1 = UrdfNode(filename="urdf/Pendulum_Tendon_1_Cart_Rail.urdf", parent=context.scene)
+    # urdf1.properties["skip serialization"] = True
+    # urdf1.position = QVector3D(0, 0, 1.4)
+    # urdf1.sim.set_simulation(True)
+
 
     # card = CardNode(name="CardTest", parent=context.scene, filename="test.png")
     # card.position = QVector3D(5, 3, 0)

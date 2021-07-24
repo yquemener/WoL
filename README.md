@@ -13,7 +13,11 @@ felt missing from Jupyter:
 How?
 ====
 
-This uses Python, OpenGL and Qt. 
+`python client_notebook.py`
+
+This uses Python, OpenGL and Qt. (and pybullet, soon)
+
+![](pics/Screenshot%20from%202019-12-21%2013-26-52.jpg)
 
 Why?
 ====
@@ -25,4 +29,9 @@ we design together.
 I started it because I wanted to make a 3D game that would allow in-game programming collaboratively.
 
 Along the way I realized it would be interesting to use it for exploring and visualizing what
-happens in a machine learning model. It is a tool to do mostly exploratory programming.
+happens in a machine learning model. And as I was looking into reinforcement learning for robotics, 
+one thing led to the other I am currently trying to put pybullet in it.
+
+It is a tool to do mostly exploratory programming.
+
+![](pics/Screenshot from 2021-01-13 14-59-20.jpg)

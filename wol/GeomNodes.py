@@ -3,9 +3,10 @@ import pybullet
 import pywavefront
 from OpenGL import GL, GLU
 from OpenGL.arrays import vbo
-from PyQt5.QtGui import QVector3D, QOpenGLTexture, QImage, QVector4D
+from PyQt5.QtGui import QVector3D, QOpenGLTexture, QImage, QVector4D, QQuaternion
 
 from wol import utils
+from wol.Behavior import Behavior
 from wol.ShadersLibrary import ShadersLibrary
 from wol.SceneNode import SceneNode
 import pybullet as pb
@@ -23,7 +24,7 @@ class Grid(SceneNode):
 
         self.program = None
         self.color = QVector4D(0.2, 0.2, 0.6, 1.0)
-        self.layer=2
+        # self.layer=2
 
     def initialize_gl(self):
         #self.program = ShadersLibrary.create_program('simple_color_white')
@@ -39,7 +40,7 @@ class Grid(SceneNode):
 
 
 class WireframeCubeNode(SceneNode):
-    def __init__(self, name="WireCube", parent=None, color=QVector4D(0.2, 0.2, 0.6, 1.0)):
+    def __init__(self, name="WireCube", parent=None, color=QVector4D(0.2, 0.2, 0.6, 1.0), init_collider=True):
         super().__init__(name, parent)
         self.program = None
         self.vertices = list()
@@ -72,7 +73,8 @@ class WireframeCubeNode(SceneNode):
         self.vertices.append(QVector3D(1, 1, -1))
 
         self.color = color
-        self.register_collider("cube.urdf")
+        if init_collider:
+            self.register_collider("cube.urdf")
 
     def initialize_gl(self):
         self.program = ShadersLibrary.create_program('wireframe')
@@ -91,7 +93,7 @@ class WireframeCubeNode(SceneNode):
 
 
 class CubeNode(SceneNode):
-    def __init__(self, name="Cube", parent=None, color=QVector4D(0.2, 0.2, 0.6, 1.0)):
+    def __init__(self, name="Cube", parent=None, color=QVector4D(0.2, 0.2, 0.6, 1.0), init_collider=True):
         super().__init__(name, parent)
         self.program = None
         self.vertices = list()
@@ -161,14 +163,16 @@ class CubeNode(SceneNode):
         self.normals += [nright, nright, nright]
 
         self.color = color
-        self.register_collider("cube.urdf")
+        if init_collider:
+            self.register_collider("cube.urdf")
 
     def initialize_gl(self):
         self.program = ShadersLibrary.create_program('simple_lighting')
 
     def compute_transform(self, project=True):
         super().compute_transform(project)
-        pybullet.unsupportedChangeScaling(self.collider_id, (self.scale[0], self.scale[1], self.scale[2]))
+        if self.collider_id is not None:
+            pybullet.unsupportedChangeScaling(self.collider_id, (self.scale[0], self.scale[1], self.scale[2]))
 
     def paint(self, program):
         self.program.bind()
@@ -187,11 +191,12 @@ class CubeNode(SceneNode):
 
 
 class Sphere(SceneNode):
-    def __init__(self, name=None, parent=None):
+    def __init__(self, name=None, parent=None, init_collider=True):
         SceneNode.__init__(self, name, parent)
         self.quadric = None
         self.size = 1.0
-        self.register_collider("sphere.urdf")
+        if init_collider:
+            self.register_collider("sphere.urdf")
         self.program = None
         self.color = QVector4D(0.5, 1.0, 0.5, 1.0)
 
@@ -213,7 +218,7 @@ class Sphere(SceneNode):
 
 
 class CardNode(SceneNode):
-    def __init__(self, filename=None, name="Card", parent=None):
+    def __init__(self, filename=None, name="Card", parent=None, init_collider=True):
         SceneNode.__init__(self, name, parent)
         self.filename = filename
         if filename:
@@ -226,7 +231,8 @@ class CardNode(SceneNode):
         self.texCoords = utils.generate_square_texcoords_fan()
         self.refresh_vertices()
         self.interpolation = GL.GL_LINEAR
-        self.register_collider("plane.urdf")
+        if init_collider:
+            self.register_collider("plane.urdf")
 
     def refresh_vertices(self):
         p0 = QVector3D(self.vertices[0][0], self.vertices[0][1], self.vertices[0][2])
@@ -314,3 +320,124 @@ class MeshNode(SceneNode):
         self.vertices.unbind()
         self.normals.unbind()
 
+
+class UrdfBehavior(Behavior):
+    def __init__(self, urdf_id, link_id):
+        super().__init__()
+        self.urdf_id = urdf_id
+        self.link_id = link_id
+        self.simulation_enabled = False
+        self.enable_at_next_update = False
+
+    def on_update(self, dt):
+        if self.enable_at_next_update:
+            self.enable_at_next_update = False
+            pb.unsupportedChangeScaling(self.urdf_id, (self.obj.scale[0], self.obj.scale[1], self.obj.scale[2]))
+            self.obj.compute_transform()
+            wp = self.obj.world_position()
+            wo = self.obj.world_orientation()
+            # wp = self.obj.position
+            # wo = self.obj.orientation
+            pb.resetBasePositionAndOrientation(
+                self.urdf_id,
+                (wp.x(), wp.y(), wp.z()),
+                (wo.x(), wo.y(), wo.z(), wo.scalar()))
+            self.simulation_enabled = True
+            for child in self.obj.children:
+                child.sim.simulation_enabled = True
+
+        if self.simulation_enabled:
+            if self.link_id == -1:
+                pos, orient = pb.getBasePositionAndOrientation(self.urdf_id)
+            else:
+                pos, orient, *_ = pb.getLinkState(self.urdf_id, self.link_id)
+
+            self.obj.position = QVector3D(pos[0], pos[1], pos[2])
+            self.obj.orientation = QQuaternion(orient[3], orient[0], orient[1], orient[2])
+
+    def set_simulation(self, enabled):
+        if enabled:
+            self.enable_at_next_update = True
+
+
+class UrdfSingleNode(SceneNode):
+    def __init__(self, filename, name="urdf", parent=None, static=False):
+        SceneNode.__init__(self, name, parent)
+        if static:
+            fixed_base = 1
+        else:
+            fixed_base = 0
+
+        self.urdf_id = pb.loadURDF(filename, useFixedBase=fixed_base)
+        self.properties["skip serialization"] = True
+        self.add_behavior(UrdfBehavior(self.urdf_id, -1))
+
+
+class UrdfNode(SceneNode):
+    def __init__(self, filename, name="urdf", parent=None, static=False):
+        SceneNode.__init__(self, name, parent)
+        if static:
+            fixed_base = 1
+        else:
+            fixed_base = 0
+
+        self.urdf_id = pb.loadURDF(filename, useFixedBase=fixed_base)
+        self.initialized_children = False
+        self.sim = UrdfBehavior(self.urdf_id, -1)
+        self.add_behavior(self.sim)
+        self.properties["skip serialization"] = True
+
+    def update(self, dt):
+        if not self.initialized_children:
+            self.initialized_children = True
+
+            visual_data = pb.getVisualShapeData(self.urdf_id)
+            nJoints = pb.getNumJoints(self.urdf_id)
+            for i in range(nJoints):
+                # info = pb.getJointInfo(self.collider_id, i)
+                # print(info)
+                obj_id, link_id, shape, scale, _, _, _, _ = visual_data[i]
+                name = f"{self.name}_element_{i}"
+                if shape == 4:
+                    child = Sphere(name, init_collider=False)
+                elif shape == 3:
+                    child = CubeNode(name, color=QVector4D(0.2,0.7, .2, 1.0), init_collider=False)
+                else:
+                    print(f"Unknown shape: {shape}")
+                child.simulation_enabled = False
+                child.scale = QVector3D(scale[0], scale[1], scale[2])
+                # print(obj_id, link_id)
+                if link_id == -1:
+                    pos, orient = pb.getBasePositionAndOrientation(obj_id)
+                else:
+                    pos, orient, *_ = pb.getLinkState(obj_id, link_id)
+                    print(link_id)
+                # print(obj_id, link_id, pos)
+                child.position = QVector3D(pos[0], pos[1], pos[2])
+                child.orientation = QQuaternion(orient[0], orient[1], orient[2], orient[3])
+                behav = UrdfBehavior(obj_id, link_id)
+                child.add_behavior(behav)
+                child.sim = behav
+                self.add_child(child)
+
+    #         # pb.getVisualShapeData(self.collider_id)
+    #         # objectUniqueId
+    #         # linkIndex
+    #         # visualGeometryType : 3=cylinder, 4=box ...
+    #         # dimensions
+    #         # meshAssetFileName
+    #         # localVisualFrame position
+    #         # localVisualFrame orientation
+    #         # rgbaColor
+    #         # textureUniqueId
+    #
+    #         shapeData = pb.getVisualShapeData(self.collider_id)
+    #         for i in range(nJoints):
+    #             info = pb.getJointInfo(self.collider_id, i)
+    #             print(info)
+    #             print(pb.getBasePositionAndOrientation(info[0]))
+    #
+    #         pb.unsupportedChangeScaling(self.collider_id, (self.wscale, self.hscale, 1.0))
+    #         pb.resetBasePositionAndOrientation(
+    #             self.collider_id, (wp.x(), wp.y(), wp.z()),
+    #             (wo.x(), wo.y(), wo.z(), wo.scalar()))
