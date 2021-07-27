@@ -28,6 +28,7 @@ class Events(int):
     LostFocus = 1004
     AnimationFinished = 1005
     AppClose = 1006
+    Ungrabbed = 1007
 
 
 class MappingTypes(int):

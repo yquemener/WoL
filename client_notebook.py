@@ -12,7 +12,7 @@ from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtWidgets import QApplication, QTextEdit, QMainWindow, QVBoxLayout, QHBoxLayout, QDialog
 from PyQt5.QtGui import QVector3D, QQuaternion, QOpenGLTexture, QImage
 
-from wol import Behavior, utils
+from wol import Behavior, utils, GeomNodes
 from wol.Behavior import Focusable
 
 from wol.Constants import UserActions, Events
@@ -72,6 +72,9 @@ if __name__ == '__main__':
     my_cam.position = QVector3D(0, 5, 10)
     my_cam.add_behavior(Behavior.MoveAround(0.2))
     my_cam.add_behavior(Behavior.SnapToCamera())
+    my_cam.ray = GeomNodes.OdeRayBehavior(obj=my_cam)
+    my_cam.add_behavior(my_cam.ray)
+
     context.scene.context.current_camera = my_cam
 
     SkyBox(parent=context.current_camera)

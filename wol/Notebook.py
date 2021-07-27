@@ -1,4 +1,5 @@
 import threading
+import traceback
 
 from OpenGL import GL
 from PyQt5 import QtCore
@@ -40,7 +41,8 @@ class ExecuteBehavior(Behavior.Behavior):
             self.last_pos = 0
             exec(self.obj.text, self.obj.context.execution_context)
         except Exception as e:
-            print(f"Cell execution failed with: {e}")
+            print(f"Cell execution failed with: {traceback.format_exc()}")
+
 
     def on_update(self, dt):
         if self.stdout is not None:

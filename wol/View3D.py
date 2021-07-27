@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 import os
+import time
+from ctypes import byref, sizeof
 
+import odepy
 import pybullet as pb
 from collections import defaultdict
 
@@ -163,6 +166,9 @@ class View3D(QOpenGLWidget):
             actions = self.context.mappings.get((MappingTypes.KeyPressed, k), [])
             for action in actions:
                 self.context.current_camera.on_event(action)
+                if self.context.grabbed is not None:
+                    self.context.grabbed.on_event(action)
+
                 if self.context.hover_target is not None:
                     self.context.hover_target.on_event(action)
         self.context.scene.lock.acquire()
@@ -184,12 +190,26 @@ class View3D(QOpenGLWidget):
             self.context.debug_point = self.context.current_camera.position + target
 
         cam = self.context.current_camera.position
+
         RAY_MAX_SIZE = 1000
         results = pb.rayTest(v(cam), v(cam+target*RAY_MAX_SIZE))
+        self.context.current_camera.ray.set_ray(cam, target.normalized())
+
+        def NearCallback(_, o1, o2):
+            N = 10
+            contacts = (odepy.dContact * N)()
+            n = odepy.dCollide(o1, o2, N, byref(contacts[0].geom), sizeof(odepy.dContact))
+            if n > 0:
+                print(time.time(), "BING")
+
+        odepy.dWorldStep(self.context.ode_world, 0.1)
+        odepy.dSpaceCollide(self.context.ode_space, 0, odepy.dNearCallback(NearCallback))
+        odepy.dJointGroupEmpty(self.context.ode_contactgroup)
+
         # results = pb.rayTest(v(cam), (0,0,0))
         if results[0][0] > -1:
             self.context.hover_target = self.context.bullet_ids.get(results[0][0], None)
-            # self.context.debug_sphere.position = cam + RAY_MAX_SIZE*target*results[0][2]
+            self.context.debug_sphere.position = cam + RAY_MAX_SIZE*target*results[0][2]
             # self.context.debug_sphere.visible = True
         else:
             self.context.hover_target = None

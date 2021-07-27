@@ -1,6 +1,7 @@
 import os
 from enum import auto
 
+import odepy
 from PyQt5.QtGui import QVector2D, QVector3D, QMatrix4x4
 from PyQt5.QtCore import Qt
 
@@ -55,6 +56,13 @@ class PlayerContext:
         }
         self.real_mouse_position = (0, 0)
         self.bullet_ids = dict()
+
+        odepy.dInitODE()
+        self.ode_world = odepy.dWorldCreate()
+        odepy.dWorldSetGravity(self.ode_world, 0, -9.8, 0)
+        self.ode_space = odepy.dHashSpaceCreate(0)
+        self.ode_contactgroup = odepy.dJointGroupCreate(0)
+        # ground = odepy.dCreatePlane(space, 0, 0, 1, 0)
 
     def unfocus(self):
         print("unfocusing", self.focused)

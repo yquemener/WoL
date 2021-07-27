@@ -78,8 +78,9 @@ class SceneNode:
                 self.parent.children.remove(self)
             except:
                 pass
-            self.parent = new_parent
-            self.parent.children.append(self)
+        self.parent = new_parent
+        self.parent.children.append(self)
+        self.context = self.parent.context
 
     def on_event(self, action):
         for h in self.events_handlers[action]:

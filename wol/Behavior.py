@@ -8,8 +8,8 @@ from wol.Constants import Events, UserActions
 
 
 class Behavior:
-    def __init__(self):
-        self.obj = None
+    def __init__(self, obj=None):
+        self.obj = obj
         self.kill_me = False
         self.events_handlers = defaultdict(list)
         self.init_handlers()
@@ -25,6 +25,7 @@ class Behavior:
 
     def on_event(self, action):
         for h in self.events_handlers[action]:
+            print(action, self)
             h()
         return
 
@@ -162,6 +163,7 @@ class SnapToCamera(Behavior):
                 context.grabbed.reparent(context.current_camera)
         else:
             context.grabbed.reparent(context.grabbed_former_parent)
+            context.grabbed.on_event(Events.Ungrabbed)
             context.grabbed = None
 
     def grab(self, target):

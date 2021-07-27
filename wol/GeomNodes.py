@@ -1,4 +1,7 @@
+import ctypes
+
 import numpy
+import odepy
 import pybullet
 import pywavefront
 from OpenGL import GL, GLU
@@ -7,6 +10,7 @@ from PyQt5.QtGui import QVector3D, QOpenGLTexture, QImage, QVector4D, QQuaternio
 
 from wol import utils
 from wol.Behavior import Behavior
+from wol.Constants import UserActions, Events
 from wol.ShadersLibrary import ShadersLibrary
 from wol.SceneNode import SceneNode
 import pybullet as pb
@@ -328,6 +332,7 @@ class UrdfBehavior(Behavior):
         self.link_id = link_id
         self.simulation_enabled = False
         self.enable_at_next_update = False
+        self.events_handlers[Events.Ungrabbed].append(self.on_force_position)
 
     def on_update(self, dt):
         if self.enable_at_next_update:
@@ -359,6 +364,15 @@ class UrdfBehavior(Behavior):
         if enabled:
             self.enable_at_next_update = True
 
+    def on_force_position(self):
+        print("t")
+        wp = self.obj.world_position()
+        wo = self.obj.world_orientation()
+        print(wp)
+        pb.resetBasePositionAndOrientation(
+            self.urdf_id, (wp.x(), wp.y(), wp.z()),
+            (wo.x(), wo.y(), wo.z(), wo.scalar()))
+
 
 class UrdfSingleNode(SceneNode):
     def __init__(self, filename, name="urdf", parent=None, static=False):
@@ -382,6 +396,7 @@ class UrdfNode(SceneNode):
             fixed_base = 0
 
         self.urdf_id = pb.loadURDF(filename, useFixedBase=fixed_base)
+        self.context.bullet_ids[self.urdf_id] = self
         self.initialized_children = False
         self.sim = UrdfBehavior(self.urdf_id, -1)
         self.add_behavior(self.sim)
@@ -418,7 +433,9 @@ class UrdfNode(SceneNode):
                 behav = UrdfBehavior(obj_id, link_id)
                 child.add_behavior(behav)
                 child.sim = behav
-                self.add_child(child)
+                child.reparent(self)
+                # self.add_child(child)
+                self.context.bullet_ids[obj_id] = self
 
     #         # pb.getVisualShapeData(self.collider_id)
     #         # objectUniqueId
@@ -441,3 +458,45 @@ class UrdfNode(SceneNode):
     #         pb.resetBasePositionAndOrientation(
     #             self.collider_id, (wp.x(), wp.y(), wp.z()),
     #             (wo.x(), wo.y(), wo.z(), wo.scalar()))
+
+
+class OdeBehavior(Behavior):
+    def __init__(self, body, geom, obj=None):
+        super(OdeBehavior, self).__init__(obj=obj)
+        self.body = body
+        self.geom = geom
+        odepy.dGeomSetBody(self.geom, self.body)
+        odepy.dBodySetPosition(self.body, self.obj.position[0], self.obj.position[1], self.obj.position[2])
+
+    def on_update(self, dt):
+        self.obj.position = QVector3D(*odepy.dBodyGetPosition(self.body)[:3])
+
+
+class OdeSphereBehavior(OdeBehavior):
+    def __init__(self, weight,  obj):
+        self.weight = weight
+        self.radius = obj.size
+        mass = odepy.dMass()
+        odepy.dMassSetZero(ctypes.byref(mass))
+        odepy.dMassSetSphereTotal(ctypes.byref(mass), weight, self.radius)
+        body = odepy.dBodyCreate(obj.context.ode_world)
+        odepy.dBodySetMass(body, ctypes.byref(mass))
+        geom = odepy.dCreateSphere(obj.context.ode_space, self.radius)
+        odepy.dGeomSetBody(geom, body)
+        odepy.dBodySetPosition(body, obj.position[0], obj.position[1], obj.position[2])
+        super(OdeSphereBehavior, self).__init__(body, geom, obj=obj)
+
+
+class OdeRayBehavior(Behavior):
+    def __init__(self, obj, length=1000):
+        super(OdeRayBehavior, self).__init__(obj=obj)
+        self.length=length
+        geom = odepy.dCreateRay(obj.context.ode_space, length)
+        self.geom = geom
+
+    def set_ray(self, pos, dirv):
+        odepy.dGeomRaySet(self.geom, pos[0], pos[1], pos[2], dirv[0], dirv[1], dirv[2])
+        odepy.dGeomRaySetLength(self.geom, self.length)
+
+    def on_update(self, dt):
+        return
