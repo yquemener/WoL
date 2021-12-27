@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QTextEdit, QApplication
 from wol import utils
 from wol.Behavior import Focusable
 from wol.Constants import Events
-from wol.GeomNodes import CardNode, OdeBoxBehavior
+from wol.GeomNodes import CardNode, OdeBoxBehavior, OdeTextBehavior
 import re
 
 
@@ -23,6 +23,9 @@ class TextEditNode(CardNode):
         self.text = text
         self.autosize = autosize
         self.min_size = (-1, -1)
+        self.ode = OdeBoxBehavior(obj=self, kinematic=True)
+        self.add_behavior(self.ode)
+
         if self.autosize:
             self.do_autosize()
         self.needs_refresh = True
@@ -34,8 +37,6 @@ class TextEditNode(CardNode):
         self.widget.setTabStopDistance(qfm.horizontalAdvance(' ') * 4)
         self.focused = False
         self.add_behavior(Focusable())
-        self.ode = OdeBoxBehavior(obj=self, kinematic=True)
-        self.add_behavior(self.ode)
 
     def do_autosize(self):
         qfm = self.widget.fontMetrics()
@@ -58,11 +59,10 @@ class TextEditNode(CardNode):
         #     v[1] *= self.hscale
         #     v[0] *= self.wscale
         # self.refresh_vertices()
-        if self.collider_id:
-            pybullet.unsupportedChangeScaling(self.collider_id, (self.scale.x(), self.scale.y(), 1.0))
         # self.del_behavior(self.ode)
         # self.ode = OdeBoxBehavior(obj=self, kinematic=True)
         # self.add_behavior(self.ode)
+        self.on_event(Events.GeometryChanged)
 
 
     def update(self, dt):

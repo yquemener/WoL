@@ -1,7 +1,6 @@
 import traceback
 from collections import defaultdict
 from math import cos
-import pybullet as pb
 
 from OpenGL import GL
 from PyQt5.QtGui import QMatrix4x4, QQuaternion, QVector3D, QImage, QOpenGLTexture, QTransform, QMatrix3x3, QVector4D
@@ -41,6 +40,7 @@ class SceneNode:
         self.scale = QVector3D(1, 1, 1)
         self.orientation = QQuaternion()
         self.transform = QMatrix4x4()
+        self.rot_transform = QMatrix4x4()
         self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
         self.collider_id = None
         self.proj_matrix = self.transform
@@ -95,23 +95,21 @@ class SceneNode:
     def compute_transform(self, project=True):
         if self.parent is not None:
             m = QMatrix4x4(self.parent.transform)
+            mr = QMatrix4x4(self.parent.rot_transform)
         else:
             m = QMatrix4x4()
+            mr = QMatrix4x4()
         m.translate(self.position)
         m.rotate(self.orientation)
+        mr.rotate(self.orientation)
         m.scale(self.scale)
         self.transform = m
+        self.rot_transform = mr
         self.look_at = self.orientation.rotatedVector((QVector3D(1, 0, 0))) + self.position
         if project:
             self.proj_matrix = self.context.current_camera.projection_matrix * self.transform
         else:
             self.proj_matrix = self.transform
-        if self.collider_id is not None:
-            wp = self.world_position()
-            wo = self.world_orientation()
-            pb.resetBasePositionAndOrientation(
-                self.collider_id, (wp.x(), wp.y(), wp.z()),
-                (wo.x(), wo.y(), wo.z(), wo.scalar()))
 
     def world_position(self):
         if self.parent is not None:
@@ -121,7 +119,7 @@ class SceneNode:
 
     def world_orientation(self):
         if self.parent:
-            melements = self.transform.data()
+            melements = self.rot_transform.data()
             m3 = QMatrix3x3((melements[0], melements[1], melements[2],
                              melements[4], melements[5], melements[6],
                              melements[8], melements[9], melements[10])).transposed()
@@ -327,10 +325,6 @@ class SceneNode:
 
     def on_click(self, pos, evt):
         return
-
-    def register_collider(self, file):
-        self.collider_id = pb.loadURDF(file, [0, 0, 0], useFixedBase=1)
-        self.context.bullet_ids[self.collider_id] = self
 
 
 class RootNode(SceneNode):

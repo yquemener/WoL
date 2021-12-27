@@ -1,4 +1,5 @@
 import os
+import ctypes
 from enum import auto
 
 import odepy
@@ -62,8 +63,8 @@ class PlayerContext:
         odepy.dWorldSetGravity(self.ode_world, 0, -9.8, 0)
         self.ode_space = odepy.dHashSpaceCreate(0)
         self.ode_contactgroup = odepy.dJointGroupCreate(0)
-        self.ode_geomdirectory = dict()
-        # ground = odepy.dCreatePlane(space, 0, 0, 1, 0)
+
+        self.colliders = dict()
 
     def unfocus(self):
         print("unfocusing", self.focused)
@@ -126,3 +127,9 @@ class {classname}(Sphere):
             editor = SceneNodeEditor(parent=obj, target=obj, name=f"Editor of {obj.name}")
         except Exception as e:
             print("Failed to edit object:", e)
+
+    def register_collider(self, collider_ptr, obj):
+        self.colliders[ctypes.addressof(collider_ptr.contents)] = obj
+
+    def get_collider(self, collider_ptr):
+        return self.colliders.get(ctypes.addressof(collider_ptr.contents), None)

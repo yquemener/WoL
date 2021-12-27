@@ -29,6 +29,7 @@ class Events(int):
     AnimationFinished = 1005
     AppClose = 1006
     Ungrabbed = 1007
+    GeometryChanged = 1008
 
 
 class MappingTypes(int):

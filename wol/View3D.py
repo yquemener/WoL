@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 import os
 import time
-from ctypes import byref, sizeof
+from ctypes import byref, sizeof, addressof
 
 import odepy
-import pybullet as pb
 from collections import defaultdict
 
 from PyQt5.QtCore import Qt, QTimer, QPoint, QSize
@@ -62,9 +61,6 @@ class View3D(QOpenGLWidget):
         self.keepMouseCentered = True
         self.setAttribute(Qt.WA_InputMethodEnabled, True)
 
-        pb.connect(pb.DIRECT)
-        pb.setAdditionalSearchPath(os.getcwd() + "/urdf/")
-
         screenRect = QApplication.desktop().screenGeometry(0)
 
         self.setGeometry(10, 10, 1200, 800)
@@ -75,9 +71,6 @@ class View3D(QOpenGLWidget):
         self.hud.hud1.layer = -1
         self.hud.hud1.position.setX(0.5)
         self.hud.hud1.position.setY(0.5)
-        # TODO: use collision filters instead
-        pb.removeBody(self.hud.hud1.collider_id)
-        self.hud.hud1.collider_id = None
 
     def initializeGL(self):
         GL.glEnable(GL.GL_DEPTH_TEST)
@@ -191,8 +184,6 @@ class View3D(QOpenGLWidget):
 
         cam = self.context.current_camera.position
 
-        RAY_MAX_SIZE = 1000
-        results = pb.rayTest(v(cam), v(cam+target*RAY_MAX_SIZE))
         self.context.current_camera.ray.set_ray(cam, target.normalized())
 
         def NearCallback(_, o1, o2):
@@ -203,31 +194,29 @@ class View3D(QOpenGLWidget):
                 # print(self.context.ode_geomdirectory)
                 # if self.context.current_camera.ray.geom == contacts[0].geom.g1 or \
                 #         self.context.current_camera.ray.geom == contacts[0].geom.g2:
+                dist = 1e9
                 for i in range(n):
                     con = contacts[i]
                     if odepy.dGeomGetClass(con.geom.g1) != odepy.dGeomGetClass(con.geom.g2):
-                        print(time.time(), "BING",
-                              odepy.dGeomGetClass(con.geom.g1),
-                              odepy.dGeomGetClass(con.geom.g2))
-                        self.context.debug_sphere.position = QVector3D(con.geom.pos[0],con.geom.pos[1],con.geom.pos[2])
-                        self.context.debug_sphere.visible = True
+                        d = (QVector3D(con.geom.pos[0], con.geom.pos[1], con.geom.pos[2]) - cam).length()
+                        # print(time.time(), "BING",
+                        #       self.context.get_collider(con.geom.g1),
+                        #       self.context.get_collider(con.geom.g2), d)
+
+                        if d < dist:
+                            dist = d
+                            self.context.debug_sphere.position = QVector3D(con.geom.pos[0], con.geom.pos[1], con.geom.pos[2])
+                            self.context.debug_sphere.visible = True
+
 
                       # self.context.ode_geomdirectory[str(contacts[0].geom.g1)],
                       # self.context.ode_geomdirectory[str(contacts[0].geom.g2)],
                       # self.context.current_camera.ray.geom)
 
         odepy.dWorldStep(self.context.ode_world, 0.1)
+        self.context.debug_sphere.visible = False
         odepy.dSpaceCollide(self.context.ode_space, 0, odepy.dNearCallback(NearCallback))
         odepy.dJointGroupEmpty(self.context.ode_contactgroup)
-
-        # results = pb.rayTest(v(cam), (0,0,0))
-        if results[0][0] > -1:
-            self.context.hover_target = self.context.bullet_ids.get(results[0][0], None)
-            self.context.debug_sphere.position = cam + RAY_MAX_SIZE*target*results[0][2]
-            # self.context.debug_sphere.visible = True
-        else:
-            self.context.hover_target = None
-            # self.context.debug_sphere.visible = False
 
         self.repaint()
 

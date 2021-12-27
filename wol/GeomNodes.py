@@ -2,7 +2,6 @@ import ctypes
 
 import numpy
 import odepy
-import pybullet
 import pywavefront
 from OpenGL import GL, GLU
 from OpenGL.arrays import vbo
@@ -13,7 +12,7 @@ from wol.Behavior import Behavior
 from wol.Constants import UserActions, Events
 from wol.ShadersLibrary import ShadersLibrary
 from wol.SceneNode import SceneNode
-import pybullet as pb
+
 
 class Grid(SceneNode):
     def __init__(self, name="Grid", parent=None):
@@ -77,15 +76,12 @@ class WireframeCubeNode(SceneNode):
         self.vertices.append(QVector3D(1, 1, -1))
 
         self.color = color
-        if init_collider:
-            self.register_collider("cube.urdf")
 
     def initialize_gl(self):
         self.program = ShadersLibrary.create_program('wireframe')
 
     def compute_transform(self, project=True):
         super().compute_transform(project)
-        pybullet.unsupportedChangeScaling(self.collider_id, (self.scale[0], self.scale[1], self.scale[2]))
 
     def paint(self, program):
         self.program.bind()
@@ -167,16 +163,14 @@ class CubeNode(SceneNode):
         self.normals += [nright, nright, nright]
 
         self.color = color
-        if init_collider:
-            self.register_collider("cube.urdf")
+        self.ode = OdeBoxBehavior(obj=self, kinematic=True)
+        self.add_behavior(self.ode)
 
     def initialize_gl(self):
         self.program = ShadersLibrary.create_program('simple_lighting')
 
     def compute_transform(self, project=True):
         super().compute_transform(project)
-        if self.collider_id is not None:
-            pybullet.unsupportedChangeScaling(self.collider_id, (self.scale[0], self.scale[1], self.scale[2]))
 
     def paint(self, program):
         self.program.bind()
@@ -199,8 +193,6 @@ class Sphere(SceneNode):
         SceneNode.__init__(self, name, parent)
         self.quadric = None
         self.size = 1.0
-        if init_collider:
-            self.register_collider("sphere.urdf")
         self.program = None
         self.color = QVector4D(0.5, 1.0, 0.5, 1.0)
 
@@ -235,8 +227,6 @@ class CardNode(SceneNode):
         self.texCoords = utils.generate_square_texcoords_fan()
         self.refresh_vertices()
         self.interpolation = GL.GL_LINEAR
-        if init_collider:
-            self.register_collider("plane.urdf")
 
     def refresh_vertices(self):
         p0 = QVector3D(self.vertices[0][0], self.vertices[0][1], self.vertices[0][2])
@@ -325,150 +315,24 @@ class MeshNode(SceneNode):
         self.normals.unbind()
 
 
-class UrdfBehavior(Behavior):
-    def __init__(self, urdf_id, link_id):
-        super().__init__()
-        self.urdf_id = urdf_id
-        self.link_id = link_id
-        self.simulation_enabled = False
-        self.enable_at_next_update = False
-        self.events_handlers[Events.Ungrabbed].append(self.on_force_position)
-
-    def on_update(self, dt):
-        if self.enable_at_next_update:
-            self.enable_at_next_update = False
-            pb.unsupportedChangeScaling(self.urdf_id, (self.obj.scale[0], self.obj.scale[1], self.obj.scale[2]))
-            self.obj.compute_transform()
-            wp = self.obj.world_position()
-            wo = self.obj.world_orientation()
-            # wp = self.obj.position
-            # wo = self.obj.orientation
-            pb.resetBasePositionAndOrientation(
-                self.urdf_id,
-                (wp.x(), wp.y(), wp.z()),
-                (wo.x(), wo.y(), wo.z(), wo.scalar()))
-            self.simulation_enabled = True
-            for child in self.obj.children:
-                child.sim.simulation_enabled = True
-
-        if self.simulation_enabled:
-            if self.link_id == -1:
-                pos, orient = pb.getBasePositionAndOrientation(self.urdf_id)
-            else:
-                pos, orient, *_ = pb.getLinkState(self.urdf_id, self.link_id)
-
-            self.obj.position = QVector3D(pos[0], pos[1], pos[2])
-            self.obj.orientation = QQuaternion(orient[3], orient[0], orient[1], orient[2])
-
-    def set_simulation(self, enabled):
-        if enabled:
-            self.enable_at_next_update = True
-
-    def on_force_position(self):
-        print("t")
-        wp = self.obj.world_position()
-        wo = self.obj.world_orientation()
-        print(wp)
-        pb.resetBasePositionAndOrientation(
-            self.urdf_id, (wp.x(), wp.y(), wp.z()),
-            (wo.x(), wo.y(), wo.z(), wo.scalar()))
-
-
-class UrdfSingleNode(SceneNode):
-    def __init__(self, filename, name="urdf", parent=None, static=False):
-        SceneNode.__init__(self, name, parent)
-        if static:
-            fixed_base = 1
-        else:
-            fixed_base = 0
-
-        self.urdf_id = pb.loadURDF(filename, useFixedBase=fixed_base)
-        self.properties["skip serialization"] = True
-        self.add_behavior(UrdfBehavior(self.urdf_id, -1))
-
-
-class UrdfNode(SceneNode):
-    def __init__(self, filename, name="urdf", parent=None, static=False):
-        SceneNode.__init__(self, name, parent)
-        if static:
-            fixed_base = 1
-        else:
-            fixed_base = 0
-
-        self.urdf_id = pb.loadURDF(filename, useFixedBase=fixed_base)
-        self.context.bullet_ids[self.urdf_id] = self
-        self.initialized_children = False
-        self.sim = UrdfBehavior(self.urdf_id, -1)
-        self.add_behavior(self.sim)
-        self.properties["skip serialization"] = True
-
-    def update(self, dt):
-        if not self.initialized_children:
-            self.initialized_children = True
-
-            visual_data = pb.getVisualShapeData(self.urdf_id)
-            nJoints = pb.getNumJoints(self.urdf_id)
-            for i in range(nJoints):
-                # info = pb.getJointInfo(self.collider_id, i)
-                # print(info)
-                obj_id, link_id, shape, scale, _, _, _, _ = visual_data[i]
-                name = f"{self.name}_element_{i}"
-                if shape == 4:
-                    child = Sphere(name, init_collider=False)
-                elif shape == 3:
-                    child = CubeNode(name, color=QVector4D(0.2,0.7, .2, 1.0), init_collider=False)
-                else:
-                    print(f"Unknown shape: {shape}")
-                child.simulation_enabled = False
-                child.scale = QVector3D(scale[0], scale[1], scale[2])
-                # print(obj_id, link_id)
-                if link_id == -1:
-                    pos, orient = pb.getBasePositionAndOrientation(obj_id)
-                else:
-                    pos, orient, *_ = pb.getLinkState(obj_id, link_id)
-                    print(link_id)
-                # print(obj_id, link_id, pos)
-                child.position = QVector3D(pos[0], pos[1], pos[2])
-                child.orientation = QQuaternion(orient[0], orient[1], orient[2], orient[3])
-                behav = UrdfBehavior(obj_id, link_id)
-                child.add_behavior(behav)
-                child.sim = behav
-                child.reparent(self)
-                # self.add_child(child)
-                self.context.bullet_ids[obj_id] = self
-
-    #         # pb.getVisualShapeData(self.collider_id)
-    #         # objectUniqueId
-    #         # linkIndex
-    #         # visualGeometryType : 3=cylinder, 4=box ...
-    #         # dimensions
-    #         # meshAssetFileName
-    #         # localVisualFrame position
-    #         # localVisualFrame orientation
-    #         # rgbaColor
-    #         # textureUniqueId
-    #
-    #         shapeData = pb.getVisualShapeData(self.collider_id)
-    #         for i in range(nJoints):
-    #             info = pb.getJointInfo(self.collider_id, i)
-    #             print(info)
-    #             print(pb.getBasePositionAndOrientation(info[0]))
-    #
-    #         pb.unsupportedChangeScaling(self.collider_id, (self.wscale, self.hscale, 1.0))
-    #         pb.resetBasePositionAndOrientation(
-    #             self.collider_id, (wp.x(), wp.y(), wp.z()),
-    #             (wo.x(), wo.y(), wo.z(), wo.scalar()))
-
-
 class OdeBehavior(Behavior):
     def __init__(self, body, geom, obj=None, kinematic=False):
         super(OdeBehavior, self).__init__(obj=obj)
         self.body = body
         self.geom = geom
-        obj.context.ode_geomdirectory[str(self.geom)] = self.obj.name
+        self.offset = QVector3D(0., 0., 0.)
+        obj.context.register_collider(self.geom, self.obj)
         odepy.dGeomSetBody(self.geom, self.body)
         wp = self.obj.world_position()
         odepy.dBodySetPosition(self.body, wp[0], wp[1], wp[2])
+        wo = self.obj.world_orientation()
+        q = odepy.dQuaternion()
+        q[0] = wo.x()
+        q[1] = wo.y()
+        q[2] = wo.z()
+        q[3] = wo.scalar()
+        odepy.dBodySetQuaternion(self.body, q)
+        odepy.dGeomSetQuaternion(self.geom, q)
         if kinematic:
             odepy.dBodySetKinematic(self.body)
 
@@ -480,15 +344,18 @@ class OdeBehavior(Behavior):
 
     def on_update(self, dt):
         if odepy.dBodyIsKinematic(self.body):
-            wp = self.obj.world_position()
+            wp = self.obj.world_position() + self.offset
             odepy.dBodySetPosition(self.body, wp[0], wp[1], wp[2])
+            odepy.dGeomSetPosition(self.geom, wp[0], wp[1], wp[2])
             wo = self.obj.world_orientation()
+            # wo = self.obj.parent.orientation
             q = odepy.dQuaternion()
             q[0] = wo.scalar()
             q[1] = wo.x()
             q[2] = wo.y()
             q[3] = wo.z()
             odepy.dBodySetQuaternion(self.body, q)
+            odepy.dGeomSetQuaternion(self.geom, q)
         else:
             self.obj.position = QVector3D(*odepy.dBodyGetPosition(self.body)[:3])
 
@@ -514,7 +381,6 @@ class OdeRayBehavior(Behavior):
         self.length=length
         geom = odepy.dCreateRay(obj.context.ode_space, length)
         self.geom = geom
-        obj.context.ode_geomdirectory[str(self.geom)] = self.obj.name
 
     def set_ray(self, pos, dirv):
         odepy.dGeomRaySet(self.geom, pos[0], pos[1], pos[2], dirv[0], dirv[1], dirv[2])
@@ -527,10 +393,42 @@ class OdeRayBehavior(Behavior):
 class OdeBoxBehavior(OdeBehavior):
     def __init__(self, obj, weight=1, kinematic=False):
         self.weight = weight
-        geom = odepy.dCreateBox(obj.context.ode_space, obj.scale.x(), obj.scale.y(), 0.0001)
+        geom = odepy.dCreateBox(obj.context.ode_space, obj.scale.x()*2, obj.scale.y()*2, obj.scale.z()*2)
         body = odepy.dBodyCreate(obj.context.ode_world)
-        mass = odepy.dMass()
+        self.mass = mass = odepy.dMass()
         odepy.dMassSetZero(ctypes.byref(mass))
-        odepy.dMassSetBox(ctypes.byref(mass), weight, obj.scale.x(), obj.scale.y(), 0.0001)
+        odepy.dMassSetBox(ctypes.byref(mass), weight, obj.scale.x()*2, obj.scale.y()*2, obj.scale.z()*2)
         odepy.dBodySetMass(body, ctypes.byref(mass))
         super(OdeBoxBehavior, self).__init__(body, geom, obj=obj, kinematic=kinematic)
+        self.obj.events_handlers[Events.GeometryChanged].append(self.on_geometry_changed)
+        # print(f"C {self.obj.scale.x()}")
+
+    def on_geometry_changed(self):
+        odepy.dMassSetBox(ctypes.byref(self.mass), self.weight, self.obj.scale.x()*2, self.obj.scale.y()*2, self.obj.scale.z()*2)
+        wp = self.obj.world_position()
+        odepy.dGeomBoxSetLengths(self.geom, self.obj.scale.x()*2, self.obj.scale.y()*2, self.obj.scale.z()*2)
+        # print(f"CG {self.obj.scale.x()}")
+
+
+class OdeTextBehavior(OdeBehavior):
+    def __init__(self, obj, weight=1, kinematic=False):
+        self.weight = weight
+        mult = 2.
+        geom = odepy.dCreateBox(obj.context.ode_space, obj.scale.x() * mult, obj.scale.y() * mult, obj.scale.z() * mult)
+        # geom = odepy.dCreateBox(obj.context.ode_space, 0.01, 0.01, 0.01)
+        body = odepy.dBodyCreate(obj.context.ode_world)
+        self.mass = mass = odepy.dMass()
+        odepy.dMassSetZero(ctypes.byref(mass))
+        odepy.dMassSetBox(ctypes.byref(mass), weight, obj.scale.x() * mult, obj.scale.y() * mult, obj.scale.z() * mult)
+        # odepy.dMassSetBox(ctypes.byref(mass), weight, 0.001, 0.001, 0.001)
+        odepy.dBodySetMass(body, ctypes.byref(mass))
+        super(OdeTextBehavior, self).__init__(body, geom, obj=obj, kinematic=kinematic)
+        self.obj.events_handlers[Events.GeometryChanged].append(self.on_geometry_changed)
+        print(f"C {self.obj.scale.x()} {self.obj.scale.y()}")
+
+    def on_geometry_changed(self):
+        mult = 2.
+        odepy.dMassSetBox(ctypes.byref(self.mass), self.weight, self.obj.scale.x()*mult, self.obj.scale.y()*mult, self.obj.scale.z()*mult)
+        wp = self.obj.world_position()
+        odepy.dGeomBoxSetLengths(self.geom, self.obj.scale.x()*mult, self.obj.scale.y()*mult, self.obj.scale.z()*mult)
+        print(f"CG4 {self.obj.scale.x()} {self.obj.scale.y()}")

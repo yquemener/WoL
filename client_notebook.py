@@ -4,21 +4,20 @@ import sys
 import signal
 import time
 
-import pybullet
-import pybullet as pb
-
+import PyQt5
 from PyQt5 import QtCore
 from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtWidgets import QApplication, QTextEdit, QMainWindow, QVBoxLayout, QHBoxLayout, QDialog
 from PyQt5.QtGui import QVector3D, QQuaternion, QOpenGLTexture, QImage
 
+import wol
 from wol import Behavior, utils, GeomNodes
-from wol.Behavior import Focusable
+from wol.Behavior import Focusable, RotateConstantSpeed
 
 from wol.Constants import UserActions, Events
 from wol.Notebook import NotebookNode
-from wol.SceneNode import CameraNode, SkyBox
-from wol.GeomNodes import Grid, Sphere, CubeNode, CardNode, MeshNode, UrdfNode
+from wol.SceneNode import CameraNode, SkyBox, SceneNode
+from wol.GeomNodes import Grid, Sphere, CubeNode, CardNode, MeshNode
 from wol.TextEditNode import TextEditNode
 from wol.View3D import View3D
 
@@ -49,6 +48,15 @@ class HUDEditor(TextEditNode):
 class DebugBehavior(Behavior.Behavior):
     def on_update(self, dt):
         self.obj.position = self.obj.context.debug_point
+
+
+class ShowOrient(Behavior.Behavior):
+    def on_update(self, dt):
+        print(self.obj.orientation)
+        print(self.obj.world_orientation())
+        print(self.obj.parent.orientation)
+        print(self.obj.parent.world_orientation())
+        print()
 
 
 def create_new_notebook(ctxt):
@@ -84,62 +92,45 @@ if __name__ == '__main__':
 
     window.load_scene()
 
+    # obj_4 = wol.Notebook.NotebookNode(parent=context.scene, name="Notebook8")
+    # obj_4.position = PyQt5.QtGui.QVector3D(4.493555068969727, 4.248137474060059, 3.0554356575012207)
+    # obj_4.orientation = PyQt5.QtGui.QQuaternion(0.9537873268127441, -0.061887599527835846, -0.29342329502105713,
+    #                                             -0.019039127975702286)
+    # obj_4.scale = PyQt5.QtGui.QVector3D(1.0, 1.0, 1.0)
+    # obj_4.properties = {}
+    # obj_4.visible = True
+    # cell = obj_4.add_cell(0)
+    # cell.set_text('import pybullet as pb\nimport time')
+    #
+    # obj_4.add_behavior(RotateConstantSpeed())
+    # # obj_4.cells[0].add_behavior(ShowOrient())
+    # print("Scale = ", obj_4.scale)
+
     create_button = CubeNode(parent=context.scene, name="CreateNotebookButton")
     create_button.tooltip = "Create New Notebook"
     create_button.events_handlers[Events.Clicked].append(lambda: create_new_notebook(context))
-    create_button.scale = QVector3D(0.2, 0.2, 0.2)
+    create_button.scale = QVector3D(0.7, 0.2, 0.2)
     create_button.position = QVector3D(-3, 5, 0.2)
+    create_button.on_event(Events.GeometryChanged)
     create_button.properties["skip serialization"] = True
 
+
+    # p1 = SceneNode(parent=context.scene, name="p1")
+    # p1.orientation = PyQt5.QtGui.QQuaternion(0.9537873268127441, -0.061887599527835846, -0.29342329502105713,
+    #                                             -0.019039127975702286)
+    # p2 = SceneNode(parent=p1, name="p2")
+    # p2.scale = QVector3D(0.5,0.5,0.5)
+    # p1.add_behavior(RotateConstantSpeed())
+    # # p1.add_behavior(ShowOrient())
+    # p2.add_behavior(ShowOrient())
+
     sph = Sphere(name="SpherePointer", parent=context.scene)
-    sph.scale = QVector3D(0.2, 0.2, 0.2)
-    pb.removeBody(sph.collider_id)
+    sph.scale = QVector3D(0.05, 0.05, 0.05)
+    # sph.scale = QVector3D(0.2, 0.2, 0.2)
     sph.collider_id = None
     sph.visible = False
     context.debug_sphere = sph
     sph.properties["skip serialization"] = True
-
-    # mesh = MeshNode(filename="urdf/duck.obj", parent=context.scene)
-    # mesh.position = QVector3D(-2,0,0)
-    # sph = Sphere(parent=context.scene)
-    # sph.position = QVector3D(2,0,0)
-
-    # urdf2 = UrdfNode(filename="urdf/Base_1.urdf", parent=context.scene, static=True)
-    # urdf2.properties["skip serialization"] = True
-    # urdf2.position = QVector3D(2.15, 0, .75)
-    # urdf2.sim.set_simulation(True)
-
-    urdf3 = UrdfNode(filename="urdf/Base_2.urdf", parent=context.scene, static=True)
-    urdf3.properties["skip serialization"] = True
-    urdf3.position = QVector3D(-2.15, 0, .75)
-    urdf3.sim.set_simulation(True)
-
-    # urdf1 = UrdfNode(filename="urdf/Pendulum_Tendon_1_Cart_Rail.urdf", parent=context.scene)
-    # urdf1.properties["skip serialization"] = True
-    # urdf1.position = QVector3D(0, 0, 1.4)
-    # urdf1.sim.set_simulation(True)
-
-
-    # card = CardNode(name="CardTest", parent=context.scene, filename="test.png")
-    # card.position = QVector3D(5, 3, 0)
-
-
-    # nb = NotebookNode(parent=context.scene, name="Notebook2")
-    # nb.position = QVector3D(-1, 5, 0)
-    # nb.add_cell(1)
-    # nb.cells[0].set_text("print('Hi!')")
-
-    # db = Sphere(parent=context.scene)
-    # db.scale = QVector3D(0.01,0.01,0.01)
-    # db.add_behavior(DebugBehavior())
-
-    # window2 = QDialog()
-    # layout = QHBoxLayout()
-    # layout.addWidget(window)
-    # layout.addWidget(QTextEdit())
-    # window2.setLayout(layout)
-    # window2.show()
-
 
     window.show()
     window.setFocus()
