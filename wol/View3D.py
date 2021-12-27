@@ -199,9 +199,9 @@ class View3D(QOpenGLWidget):
                     con = contacts[i]
                     if odepy.dGeomGetClass(con.geom.g1) != odepy.dGeomGetClass(con.geom.g2):
                         d = (QVector3D(con.geom.pos[0], con.geom.pos[1], con.geom.pos[2]) - cam).length()
-                        # print(time.time(), "BING",
-                        #       self.context.get_collider(con.geom.g1),
-                        #       self.context.get_collider(con.geom.g2), d)
+                        print(time.time(), "BING",
+                              self.context.get_collider(con.geom.g1).name,
+                              self.context.get_collider(con.geom.g2), d)
 
                         if d < dist:
                             dist = d
@@ -215,6 +215,7 @@ class View3D(QOpenGLWidget):
 
         odepy.dWorldStep(self.context.ode_world, 0.1)
         self.context.debug_sphere.visible = False
+        print()
         odepy.dSpaceCollide(self.context.ode_space, 0, odepy.dNearCallback(NearCallback))
         odepy.dJointGroupEmpty(self.context.ode_contactgroup)
 

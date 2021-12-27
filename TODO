@@ -1,5 +1,7 @@
 Short list
 ==========
+- Reestablish the click behavior (lost it in the pybullet to ode transition)
+
 - Put imports into execution_context
 - TextEditor
     - Scroll over page long codes or scroll movement logic to follow pointer

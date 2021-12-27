@@ -163,8 +163,9 @@ class CubeNode(SceneNode):
         self.normals += [nright, nright, nright]
 
         self.color = color
-        self.ode = OdeBoxBehavior(obj=self, kinematic=True)
-        self.add_behavior(self.ode)
+        if init_collider:
+            self.ode = OdeBoxBehavior(obj=self, kinematic=True)
+            self.add_behavior(self.ode)
 
     def initialize_gl(self):
         self.program = ShadersLibrary.create_program('simple_lighting')

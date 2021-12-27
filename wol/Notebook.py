@@ -181,7 +181,7 @@ class NotebookNode(SceneNode):
         cell.autosize = True
         cell.min_size = (200, 30)
         cell.do_autosize()
-        cell.run_indicator = CubeNode(parent=cell, name=cell.name+"_run_indicator")
+        cell.run_indicator = CubeNode(parent=cell, name=cell.name+"_run_indicator", init_collider=False)
         cell.run_indicator.visible = False
         cell.run_indicator.add_behavior(RotateConstantSpeed(0))
         cell.run_indicator.scale = QVector3D(0.1, 0.1, 0.1)
