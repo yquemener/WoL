@@ -193,15 +193,15 @@ class NotebookNode(SceneNode):
         self.vertices.clear()
         self.vertices.append(QVector3D(0, 0, -0.5))
         for cell in self.cells:
-            y -= cell.hscale+0.01
-            cell.position = QVector3D(cell.wscale, y, 0)
+            y -= cell.scale.y()+0.01
+            cell.position = QVector3D(cell.scale.x(), y, 0)
             self.vertices.append(QVector3D(0, y, -0.5))
             self.vertices.append(QVector3D(0, y, -0.5))
-            self.vertices.append(QVector3D(cell.wscale, y, 0.0))
+            self.vertices.append(QVector3D(cell.scale.x(), y, 0.0))
             self.vertices.append(QVector3D(0, y, -0.5))
-            cell.run_indicator.position = QVector3D(cell.wscale+0.15, 0, 0)
+            cell.run_indicator.position = QVector3D(cell.scale.x()+0.15, 0, 0)
             # cell.do_autosize()
-            y -= cell.hscale
+            y -= cell.scale.y()
 
     def update(self, dt):
         # Adds an empty cell at the end

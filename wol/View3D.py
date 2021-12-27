@@ -200,7 +200,21 @@ class View3D(QOpenGLWidget):
             contacts = (odepy.dContact * N)()
             n = odepy.dCollide(o1, o2, N, byref(contacts[0].geom), sizeof(odepy.dContact))
             if n > 0:
-                print(time.time(), "BING")
+                # print(self.context.ode_geomdirectory)
+                # if self.context.current_camera.ray.geom == contacts[0].geom.g1 or \
+                #         self.context.current_camera.ray.geom == contacts[0].geom.g2:
+                for i in range(n):
+                    con = contacts[i]
+                    if odepy.dGeomGetClass(con.geom.g1) != odepy.dGeomGetClass(con.geom.g2):
+                        print(time.time(), "BING",
+                              odepy.dGeomGetClass(con.geom.g1),
+                              odepy.dGeomGetClass(con.geom.g2))
+                        self.context.debug_sphere.position = QVector3D(con.geom.pos[0],con.geom.pos[1],con.geom.pos[2])
+                        self.context.debug_sphere.visible = True
+
+                      # self.context.ode_geomdirectory[str(contacts[0].geom.g1)],
+                      # self.context.ode_geomdirectory[str(contacts[0].geom.g2)],
+                      # self.context.current_camera.ray.geom)
 
         odepy.dWorldStep(self.context.ode_world, 0.1)
         odepy.dSpaceCollide(self.context.ode_space, 0, odepy.dNearCallback(NearCallback))

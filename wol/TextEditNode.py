@@ -1,5 +1,6 @@
 import time
 
+import odepy
 import pybullet
 from PyQt5.QtCore import QRegExp, Qt, QRect, QObject
 from PyQt5.QtGui import QOpenGLTexture, QImage, QSyntaxHighlighter, QColor, QTextCharFormat, QFont
@@ -8,7 +9,7 @@ from PyQt5.QtWidgets import QTextEdit, QApplication
 from wol import utils
 from wol.Behavior import Focusable
 from wol.Constants import Events
-from wol.GeomNodes import CardNode
+from wol.GeomNodes import CardNode, OdeBoxBehavior
 import re
 
 
@@ -33,6 +34,8 @@ class TextEditNode(CardNode):
         self.widget.setTabStopDistance(qfm.horizontalAdvance(' ') * 4)
         self.focused = False
         self.add_behavior(Focusable())
+        self.ode = OdeBoxBehavior(obj=self, kinematic=True)
+        self.add_behavior(self.ode)
 
     def do_autosize(self):
         qfm = self.widget.fontMetrics()
@@ -44,15 +47,23 @@ class TextEditNode(CardNode):
         if self.min_size[1] > 0:
             h = max(self.min_size[1], h)
         self.widget.setGeometry(0, 0, w, h)
-        self.hscale = h / 512.0
-        self.wscale = w / 512.0
+        self.scale.setY(h / 512.0)
+        self.scale.setX(w / 512.0)
+        self.scale.setZ(1 / 512.0)
+
+        # self.hscale = h / 512.0
+        # self.wscale = w / 512.0
         self.vertices = utils.generate_square_vertices_fan()
-        for v in self.vertices:
-            v[1] *= self.hscale
-            v[0] *= self.wscale
-        self.refresh_vertices()
+        # for v in self.vertices:
+        #     v[1] *= self.hscale
+        #     v[0] *= self.wscale
+        # self.refresh_vertices()
         if self.collider_id:
-            pybullet.unsupportedChangeScaling(self.collider_id, (self.wscale, self.hscale, 1.0))
+            pybullet.unsupportedChangeScaling(self.collider_id, (self.scale.x(), self.scale.y(), 1.0))
+        # self.del_behavior(self.ode)
+        # self.ode = OdeBoxBehavior(obj=self, kinematic=True)
+        # self.add_behavior(self.ode)
+
 
     def update(self, dt):
         if self.focused:

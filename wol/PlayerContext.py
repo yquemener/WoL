@@ -62,6 +62,7 @@ class PlayerContext:
         odepy.dWorldSetGravity(self.ode_world, 0, -9.8, 0)
         self.ode_space = odepy.dHashSpaceCreate(0)
         self.ode_contactgroup = odepy.dJointGroupCreate(0)
+        self.ode_geomdirectory = dict()
         # ground = odepy.dCreatePlane(space, 0, 0, 1, 0)
 
     def unfocus(self):

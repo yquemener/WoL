@@ -461,15 +461,36 @@ class UrdfNode(SceneNode):
 
 
 class OdeBehavior(Behavior):
-    def __init__(self, body, geom, obj=None):
+    def __init__(self, body, geom, obj=None, kinematic=False):
         super(OdeBehavior, self).__init__(obj=obj)
         self.body = body
         self.geom = geom
+        obj.context.ode_geomdirectory[str(self.geom)] = self.obj.name
         odepy.dGeomSetBody(self.geom, self.body)
-        odepy.dBodySetPosition(self.body, self.obj.position[0], self.obj.position[1], self.obj.position[2])
+        wp = self.obj.world_position()
+        odepy.dBodySetPosition(self.body, wp[0], wp[1], wp[2])
+        if kinematic:
+            odepy.dBodySetKinematic(self.body)
+
+    def set_kinematic(self, val):
+        if val:
+            odepy.dBodySetKinematic(self.body)
+        else:
+            odepy.dBodySetDynamic(self.body)
 
     def on_update(self, dt):
-        self.obj.position = QVector3D(*odepy.dBodyGetPosition(self.body)[:3])
+        if odepy.dBodyIsKinematic(self.body):
+            wp = self.obj.world_position()
+            odepy.dBodySetPosition(self.body, wp[0], wp[1], wp[2])
+            wo = self.obj.world_orientation()
+            q = odepy.dQuaternion()
+            q[0] = wo.scalar()
+            q[1] = wo.x()
+            q[2] = wo.y()
+            q[3] = wo.z()
+            odepy.dBodySetQuaternion(self.body, q)
+        else:
+            self.obj.position = QVector3D(*odepy.dBodyGetPosition(self.body)[:3])
 
 
 class OdeSphereBehavior(OdeBehavior):
@@ -493,6 +514,7 @@ class OdeRayBehavior(Behavior):
         self.length=length
         geom = odepy.dCreateRay(obj.context.ode_space, length)
         self.geom = geom
+        obj.context.ode_geomdirectory[str(self.geom)] = self.obj.name
 
     def set_ray(self, pos, dirv):
         odepy.dGeomRaySet(self.geom, pos[0], pos[1], pos[2], dirv[0], dirv[1], dirv[2])
@@ -500,3 +522,15 @@ class OdeRayBehavior(Behavior):
 
     def on_update(self, dt):
         return
+
+
+class OdeBoxBehavior(OdeBehavior):
+    def __init__(self, obj, weight=1, kinematic=False):
+        self.weight = weight
+        geom = odepy.dCreateBox(obj.context.ode_space, obj.scale.x(), obj.scale.y(), 0.0001)
+        body = odepy.dBodyCreate(obj.context.ode_world)
+        mass = odepy.dMass()
+        odepy.dMassSetZero(ctypes.byref(mass))
+        odepy.dMassSetBox(ctypes.byref(mass), weight, obj.scale.x(), obj.scale.y(), 0.0001)
+        odepy.dBodySetMass(body, ctypes.byref(mass))
+        super(OdeBoxBehavior, self).__init__(body, geom, obj=obj, kinematic=kinematic)

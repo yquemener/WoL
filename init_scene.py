@@ -183,7 +183,7 @@ obj_11.visible = True
 cell = obj_11.add_cell(0)
 cell.set_text('from wol.GeomNodes import *\nfrom PyQt5.QtGui import QVector3D, QQuaternion, QOpenGLTexture, QImage')
 cell = obj_11.add_cell(1)
-cell.set_text('s=Sphere(parent=scene)')
+cell.set_text('#s=Sphere(parent=scene)\nc=TextEditNode(parent=scene)\nc.add_behavior(OdeBoxBehavior(obj=c, kinematic=True))')
 cell = obj_11.add_cell(2)
 cell.set_text('s.add_behavior(OdeSphereBehavior(0.5,obj=s))\nodepy.dWorldSetGravity(scene.context.ode_world, 0, 0, 0)')
 cell = obj_11.add_cell(3)
@@ -193,7 +193,6 @@ cell.set_text('')
 cell = obj_11.add_cell(5)
 cell.set_text('')
 cell = obj_11.layout()
-
 
 
 

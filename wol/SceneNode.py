@@ -309,6 +309,9 @@ class SceneNode:
         self.behaviors.append(behavior)
         return behavior
 
+    def del_behavior(self, behavior):
+        self.behaviors.remove(behavior)
+
     def get_behavior(self, class_name):
         for b in self.behaviors:
             if b.__class__.__name__ == class_name:

@@ -151,3 +151,9 @@ Personne ne souhaite ouvrir un SSH chez soi, même pour des amis. Idée simple: 
 container docker. À plus long terme: avoir un serveur qui soit une sorte d'hyperviseur lançant des
 container à la demande.
 
+2021-12-27
+----------
+Pas de notes depuis un an? Comment je fais moi pour savoir où j'en étais sur les moteurs physiques? Rhalala
+
+Je crois que j'étais décu de pybullet et repassais à ODE. Je vire tout pybullet maintenant.
+
