@@ -207,6 +207,7 @@ class View3D(QOpenGLWidget):
                             dist = d
                             self.context.debug_sphere.position = QVector3D(con.geom.pos[0], con.geom.pos[1], con.geom.pos[2])
                             self.context.debug_sphere.visible = True
+                            self.context.hover_target = self.context.get_collider(con.geom.g1)
 
 
                       # self.context.ode_geomdirectory[str(contacts[0].geom.g1)],
@@ -215,7 +216,9 @@ class View3D(QOpenGLWidget):
 
         odepy.dWorldStep(self.context.ode_world, 0.1)
         self.context.debug_sphere.visible = False
+        self.context.hover_target = None
         print()
+
         odepy.dSpaceCollide(self.context.ode_space, 0, odepy.dNearCallback(NearCallback))
         odepy.dJointGroupEmpty(self.context.ode_contactgroup)
 
