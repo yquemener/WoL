@@ -1,8 +1,9 @@
 Short list
 ==========
-- Reestablish the click behavior (lost it in the pybullet to ode transition)
+- implement server
 
-- Put imports into execution_context
+- Serialize behaviors
+- Allow to remove any objects from the scene
 - TextEditor
     - Scroll over page long codes or scroll movement logic to follow pointer
     - autocompletion.
@@ -99,6 +100,8 @@ Features
 
 Done
 ====
+- Put imports into execution_context
+- Reestablish the click behavior (lost it in the pybullet to ode transition)
 - Have a shader for basic lighting object
 - Have a shader for colored object
 - Make code widgets adapt to the file size

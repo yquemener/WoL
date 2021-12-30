@@ -1,10 +1,29 @@
+"""
+Implementation steps for the server:
+
+- Show each players' position & orientation
+- Keep a small list of objs in sync, sync with a Behavior
+- Seed with a init_scene dump
+- Sync whole scenes
+- Sync behaviors
+- Secure connections
+
+
+"""
+
 import socketserver
 import threading
-from time import sleep
+from time import sleep, time
 
 users = dict()
 connections = dict()
 connections_reverse = dict()
+
+
+class SyncedObj:
+    def __init__(self):
+        self.pose = None
+        self.last_sent_pose = None
 
 
 class ThreadedUDPRequestHandler(socketserver.DatagramRequestHandler):
@@ -19,11 +38,11 @@ class ThreadedUDPRequestHandler(socketserver.DatagramRequestHandler):
         if args[0] == "Hi!":
             name = args[1]
             connections[self.client_address] = name
-            connections_reverse[name] = self.client_address
-            users[name] = (0, 0, 0)
+            connections_reverse[name] = (self.request[1], self.client_address)
+            users[name] = SyncedObj()
         elif args[0] == "pos":
             if self.client_address in connections:
-                users[connections[self.client_address]] = [float(x) for x in args[1:]]
+                users[connections[self.client_address]].pose = [float(x) for x in args[1:]]
 
 
 class ThreadedUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
@@ -31,11 +50,20 @@ class ThreadedUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
 
 
 def display_positions():
-    global users
+    global users, connections, connections_reverse
+    last_log = time()
     while True:
+        if time() - last_log > 1.0:
+            for k, v in users.items():
+                print(f"{k}:{v.pose}")
+            last_log = time()
         for k, v in users.items():
-            print(f"{k}:{v}")
-        sleep(1)
+            if v.last_sent_pose != v.pose:
+                for s, addr in connections_reverse.values():
+                    s.sendto(bytes(f"update {k} {v.pose[0]} {v.pose[1]} {v.pose[2]}", 'ascii'), addr)
+                    v.last_sent_pose = v.pose
+                    print(f"Sent {v.pose} to {addr}")
+
 
 
 t = threading.Thread(target=display_positions)

@@ -15,6 +15,7 @@ from wol import Behavior, utils, GeomNodes
 from wol.Behavior import Focusable, RotateConstantSpeed
 
 from wol.Constants import UserActions, Events
+from wol.NetworkSync import NetworkSyncToBehavior
 from wol.Notebook import NotebookNode
 from wol.SceneNode import CameraNode, SkyBox, SceneNode
 from wol.GeomNodes import Grid, Sphere, CubeNode, CardNode, MeshNode
@@ -75,6 +76,10 @@ if __name__ == '__main__':
     window = View3D()
     context = window.context
 
+    if len(sys.argv)>1:
+        context.network_syncer.player_name = sys.argv[1]
+    print(sys.argv)
+
     my_cam = CameraNode(parent=context.scene, name="MainCamera")
     my_cam.speed = 0.2
     my_cam.position = QVector3D(0, 5, 10)
@@ -82,6 +87,7 @@ if __name__ == '__main__':
     my_cam.add_behavior(Behavior.SnapToCamera())
     my_cam.ray = GeomNodes.OdeRayBehavior(obj=my_cam)
     my_cam.add_behavior(my_cam.ray)
+    my_cam.add_behavior(NetworkSyncToBehavior(my_cam))
 
     context.scene.context.current_camera = my_cam
 
@@ -92,20 +98,6 @@ if __name__ == '__main__':
 
     window.load_scene()
 
-    # obj_4 = wol.Notebook.NotebookNode(parent=context.scene, name="Notebook8")
-    # obj_4.position = PyQt5.QtGui.QVector3D(4.493555068969727, 4.248137474060059, 3.0554356575012207)
-    # obj_4.orientation = PyQt5.QtGui.QQuaternion(0.9537873268127441, -0.061887599527835846, -0.29342329502105713,
-    #                                             -0.019039127975702286)
-    # obj_4.scale = PyQt5.QtGui.QVector3D(1.0, 1.0, 1.0)
-    # obj_4.properties = {}
-    # obj_4.visible = True
-    # cell = obj_4.add_cell(0)
-    # cell.set_text('import pybullet as pb\nimport time')
-    #
-    # obj_4.add_behavior(RotateConstantSpeed())
-    # # obj_4.cells[0].add_behavior(ShowOrient())
-    # print("Scale = ", obj_4.scale)
-
     create_button = CubeNode(parent=context.scene, name="CreateNotebookButton")
     create_button.tooltip = "Create New Notebook"
     create_button.events_handlers[Events.Clicked].append(lambda: create_new_notebook(context))
@@ -114,19 +106,8 @@ if __name__ == '__main__':
     create_button.on_event(Events.GeometryChanged)
     create_button.properties["skip serialization"] = True
 
-
-    # p1 = SceneNode(parent=context.scene, name="p1")
-    # p1.orientation = PyQt5.QtGui.QQuaternion(0.9537873268127441, -0.061887599527835846, -0.29342329502105713,
-    #                                             -0.019039127975702286)
-    # p2 = SceneNode(parent=p1, name="p2")
-    # p2.scale = QVector3D(0.5,0.5,0.5)
-    # p1.add_behavior(RotateConstantSpeed())
-    # # p1.add_behavior(ShowOrient())
-    # p2.add_behavior(ShowOrient())
-
     sph = Sphere(name="SpherePointer", parent=context.scene)
     sph.scale = QVector3D(0.05, 0.05, 0.05)
-    # sph.scale = QVector3D(0.2, 0.2, 0.2)
     sph.collider_id = None
     sph.visible = False
     context.debug_sphere = sph
@@ -134,6 +115,9 @@ if __name__ == '__main__':
 
     window.show()
     window.setFocus()
+
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    sys.exit(app.exec_())
+    ret = app.exec_()
+    window.save_scene()
+    sys.exit(ret)
 

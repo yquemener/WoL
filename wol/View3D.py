@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import threading
 import time
 from ctypes import byref, sizeof, addressof
 
@@ -15,8 +16,9 @@ from math import sin, atan2, tan
 
 from wol.Constants import Events, UserActions
 from wol.GuiElements import TextLabelNode
-from wol.PlayerContext import PlayerContext, MappingTypes
+from wol.NetworkSync import NetworkSyncer
 from wol.ShadersLibrary import ShadersLibrary
+from wol.PlayerContext import PlayerContext, MappingTypes
 from wol.SceneNode import RootNode, SceneNode
 from wol.utils import DotDict
 
@@ -38,6 +40,7 @@ class View3D(QOpenGLWidget):
         self.context = PlayerContext()
         self.scene = RootNode(self.context)
         self.context.scene = self.scene
+        self.context.network_syncer = NetworkSyncer(self.scene)
         self.context.view = parent
         self.context.execution_context["scene"] = self.scene
         self.context.execution_context["context"] = self.context
@@ -199,9 +202,6 @@ class View3D(QOpenGLWidget):
                     con = contacts[i]
                     if odepy.dGeomGetClass(con.geom.g1) != odepy.dGeomGetClass(con.geom.g2):
                         d = (QVector3D(con.geom.pos[0], con.geom.pos[1], con.geom.pos[2]) - cam).length()
-                        print(time.time(), "BING",
-                              self.context.get_collider(con.geom.g1).name,
-                              self.context.get_collider(con.geom.g2), d)
 
                         if d < dist:
                             dist = d
@@ -217,7 +217,6 @@ class View3D(QOpenGLWidget):
         odepy.dWorldStep(self.context.ode_world, 0.1)
         self.context.debug_sphere.visible = False
         self.context.hover_target = None
-        print()
 
         odepy.dSpaceCollide(self.context.ode_space, 0, odepy.dNearCallback(NearCallback))
         odepy.dJointGroupEmpty(self.context.ode_contactgroup)
@@ -292,6 +291,7 @@ class View3D(QOpenGLWidget):
         fout.write(s)
         fout.close()
 
+
     def inputMethodEvent(self, evt):
         if self.context.focused is not None and hasattr(self.context.focused, "inputMethodEvent"):
             return self.context.focused.inputMethodEvent(evt)
@@ -336,6 +336,8 @@ class View3D(QOpenGLWidget):
     def closeEvent(self, evt):
         self.context.scene.on_event(Events.AppClose)
         self.updateTimer.stop()
+        self.context.running = False
+        self.context.network_syncer.running = False
 
     def enterEvent(self, evt):
         mid = QPoint(self.pos().x() + self.width() / 2, self.pos().y() + self.height() / 2)

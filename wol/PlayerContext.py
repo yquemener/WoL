@@ -1,5 +1,6 @@
 import os
 import ctypes
+import socket
 from enum import auto
 
 import odepy
@@ -8,6 +9,7 @@ from PyQt5.QtCore import Qt
 
 from wol.CodeEdit import FileCodeNode
 from wol.Constants import UserActions, MappingTypes, Events
+from wol.NetworkSync import NetworkSyncer
 
 from wol.SceneNode import instanciate_from_project_file
 from wol.SceneNodeEditor import SceneNodeEditor
@@ -15,6 +17,7 @@ from wol.SceneNodeEditor import SceneNodeEditor
 # Huge potential for becoming a registry anti-pattern. Make sure things added here make sense.
 class PlayerContext:
     def __init__(self):
+        self.running = True
         self.indent = " "*4
         self.mouse_position = QVector2D(0, 0)
         self.old_mouse_position = QVector2D()
@@ -33,6 +36,7 @@ class PlayerContext:
             "edit": self.edit_object,
             "scene": self.scene,
         }
+        exec(open('wol/basic_imports.py').read(), self.execution_context)
         self.mappings = {
             (MappingTypes.MouseButtonClicked, Qt.LeftButton): [UserActions.Activate],
             (MappingTypes.KeyDown, Qt.Key_E): [UserActions.Edit],
@@ -65,6 +69,7 @@ class PlayerContext:
         self.ode_contactgroup = odepy.dJointGroupCreate(0)
 
         self.colliders = dict()
+        self.network_syncer = None
 
     def unfocus(self):
         print("unfocusing", self.focused)
