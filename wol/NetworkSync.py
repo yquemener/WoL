@@ -3,7 +3,7 @@ import threading
 from PyQt5.QtGui import QVector3D
 
 from wol.Behavior import Behavior
-from wol.GeomNodes import Sphere
+from wol.GeomNodes import Sphere, Avatar
 import socket
 
 
@@ -25,7 +25,11 @@ class NetworkSyncToBehavior(Behavior):
 def read_server_socket(syncer):
     while syncer.running:
         s = syncer.server_socket
-        received = s.recv(1024).decode('ascii')
+        s.settimeout(1.0)
+        try:
+            received = s.recv(1024).decode('ascii')
+        except socket.timeout:
+            continue
         print(received)
         arr = received.split(" ")
         print(arr)
@@ -36,7 +40,7 @@ def read_server_socket(syncer):
                 if name == syncer.player_name:
                     continue
                 if name not in syncer.players_avatars:
-                    o = Sphere(name=f"avatar_{name}", parent=syncer.scene)
+                    o = Avatar(name=f"avatar_{name}", parent=syncer.scene)
                     print(f"Created avatar_{name}")
                     syncer.players_avatars[name] = o
                 syncer.players_avatars[name].position = QVector3D(float(x)+1, float(y), float(z))

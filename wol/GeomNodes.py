@@ -213,6 +213,15 @@ class Sphere(SceneNode):
         GLU.gluSphere(self.quadric, self.size, 20, 20)
         program.bind()
 
+class Avatar(SceneNode):
+    def __init__(self, name=None, parent=None, init_collider=True):
+        SceneNode.__init__(self, name, parent)
+        big_sphere = Sphere(name=name+"_bs", parent=self)
+        small_sphere = Sphere(name=name + "_ss", parent=self)
+        small_sphere.position = QVector3D(1,0,0)
+        small_sphere.scale = QVector3D(0.2,0.2,0.2)
+        # self.add_child()
+
 
 class CardNode(SceneNode):
     def __init__(self, filename=None, name="Card", parent=None, init_collider=True):

@@ -117,6 +117,7 @@ if __name__ == '__main__':
     window.setFocus()
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+    app.setQuitOnLastWindowClosed(True)
     ret = app.exec_()
     window.save_scene()
     sys.exit(ret)
