@@ -1,0 +1,52 @@
+// protoc --python_out=. message.proto
+
+syntax = "proto2";
+
+package wol;
+
+message Auth {
+    optional string name = 1 [default = "Etaoin"];
+}
+
+message PleaseSendAllStates {}
+
+message CreateObj {}
+
+message UserAction {
+    optional int32 type = 1;
+    optional int64 object_id = 2;
+}
+
+message NewObjectCreated {
+    optional int64 object_id = 1;
+}
+
+
+message ObjectStateUpdate{
+    optional int64 object_id = 1;
+
+    message FieldUpdate {
+        optional string field_name = 2;
+        repeated string string_value = 3;
+        repeated int64 int_value = 4;
+        repeated float float_value = 5;
+    }
+
+    repeated FieldUpdate field = 2;
+}
+
+message RemoveObject {
+    optional int64 target_object_id = 1;
+    optional int64 remover_id = 2;
+}
+
+message Message {
+    oneof content {
+        Auth auth = 1;
+        PleaseSendAllStates please_send_all_states = 2;
+        CreateObj create_obj = 3;
+        UserAction user_actions = 4;
+        NewObjectCreated new_object_create= 5;
+        ObjectStateUpdate object_atate_update = 6;
+    }
+}

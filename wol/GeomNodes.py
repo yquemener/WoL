@@ -218,7 +218,7 @@ class Avatar(SceneNode):
         SceneNode.__init__(self, name, parent)
         big_sphere = Sphere(name=name+"_bs", parent=self)
         small_sphere = Sphere(name=name + "_ss", parent=self)
-        small_sphere.position = QVector3D(1,0,0)
+        small_sphere.position = QVector3D(0,0,1)
         small_sphere.scale = QVector3D(0.2,0.2,0.2)
         # self.add_child()
 

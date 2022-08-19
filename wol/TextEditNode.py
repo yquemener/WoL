@@ -1,7 +1,3 @@
-import time
-
-import odepy
-import pybullet
 from PyQt5.QtCore import QRegExp, Qt, QRect, QObject
 from PyQt5.QtGui import QOpenGLTexture, QImage, QSyntaxHighlighter, QColor, QTextCharFormat, QFont
 from PyQt5.QtWidgets import QTextEdit, QApplication

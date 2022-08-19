@@ -35,37 +35,49 @@ We end up doing a git commit
 
 Networking
 ==========
-Keep it simple:
-We connect to a server.
+I wanted to keep it simple, but arbitrary execution makes it hard, we will need a level of isolation and 2 levels of
+networking:
 
-- Submit objects to synchronization
-- Receive an id for the object
-- Do changes locally
-- Push them
-- Receive them
+unsafe link:  Remote server <-> local nsjail
+safe link:    Local nsjail <-> GUI client
 
-- Could it simply be a Behavior?
+The safe link only transmits:
+- pose information
+- texture information
+- creation of SceneNodes from a fixed vocabulary
+- updates of fields from a fixed list and with a fixed list of possible types
+- deletion of SceneNodes
+
+All in-game code execution happens in the nsjail.
 
 
-Simple protocol
+Simple protocol (will do for now but needs extending)
 ---------------
+Outdated: look at the message.proto definition
+
 client -> Server:
-- Knockknock: "Hi! I would like to see your scene" (placeholder for auth)
+- knockknock: "Hi! I would like to see your scene" (placeholder for auth)
 - sendall: "Send me initial states of the objects in the scene"
-- sendmenewid: "Create a new object and send my its ID"
-Server <- Client
+- sendmenewid: "Create a new object and send me its ID"
+- action <id> <UserAction>: "The user did this action on this object"
+Server -> Client
 - newobjid <id>
-both:
+Server <-> Client
 - state <id> <state>: "Here is the full state of obj <id>"
-- pose <id> <pos/orient/scale>: "Here is the pose of obj <id>"
 - update <id> <field> <value>: "Update field's value on obj <id>"
+- remove <id>: "Obj got deleted"
+
+
 
 Persistence
 -----------
-- Is the state saved on the server?
-- On the clients?
+Every player runs a local server and a local client. The local server is a nsjail where the arbitrary code is executed.
+It is possible to subsribe to the events of a remote server for the local client, that will then merge both states in
+the scenegraph.
 
-I like the idea of servers being empty "rooms" you populate with states and that you can also manipulate locally.
+Servers decide which clients are allowed to spectate (receive updates) and act (emit updates).
+
+Clients can decide to "copy" remote objects locally by cloning them into their local scenegraph.
 
 Root
 |
@@ -79,19 +91,14 @@ Root
     +--LocalCamera
     +--LocalNodeTree
 
-- Should info between user1 and user2 be relayed by the server or directly exchanged between clients?
-    - Making it a server thing would allow discussing with clients without TURN
-    - Yeah, let's make it a pure client/server there.
-    - We should be able to push info to the server then
-- Security model:
-    - Users are considered to trust each other to work on the same code and execute it
-    - Only users choose which piece of code they are going to run at a given time
-    - Code is run locally. The results of the code running can be seen remotely.
-
 Security
 --------
-We will need some containerization at one point. For now, run servers inside a docker container.
-Later on, have a "hypervisor" that starts containers as needed.
+Remote server <-> local nsjail
+Local nsjail <-> GUI client
+
+Security model: we only run "in-game" python code inside the nsjail. The current scenegraph is all that is at risk.
+The GUI client/nsjail host is in charge of backuping, managing the disk sync.
+
 
 GUI
 ===

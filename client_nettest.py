@@ -18,13 +18,15 @@ if __name__ == '__main__':
     window = View3D()
     context = window.context
 
-    if len(sys.argv)>1:
+    if len(sys.argv) > 1:
         print(sys.argv)
         window.setGeometry(int(sys.argv[1]), 10, 800, 600)
 
-    if len(sys.argv)>1:
-        context.network_syncer.player_name = sys.argv[1]
+    if len(sys.argv) > 2:
+        context.network_syncer.player_name = sys.argv[2]
     print(sys.argv)
+
+    context.network_syncer.connect()
 
     my_cam = CameraNode(parent=context.scene, name="MainCamera")
     my_cam.speed = 0.2

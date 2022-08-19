@@ -157,3 +157,9 @@ Pas de notes depuis un an? Comment je fais moi pour savoir où j'en étais sur l
 
 Je crois que j'étais décu de pybullet et repassais à ODE. Je vire tout pybullet maintenant.
 
+2022-04-02
+----------
+Yep, pybullet enlevé, c'est ODE qui a l'air de gérer les collisions
+
+J'ai créé un client tout simple, client_nettest.py, pour tester la comm réseau, et un script, go.sh, pour lancer un
+serveur et deux clients. Ils transmettes pos/orient de X joueurs. TODO list dans server.py

@@ -18,8 +18,8 @@ from time import sleep, time
 
 class SyncedObj:
     def __init__(self):
-        self.pose = None
-        self.last_sent_pose = None
+        self.pose = [None, None]
+        self.last_sent_pose = [None, None]
 
 
 class DataStore:
@@ -49,12 +49,17 @@ class ThreadedUDPRequestHandler(socketserver.DatagramRequestHandler):
             print("Killed")
         # print("_"+data+"_", len(data))
         args = data.rstrip().split(" ")
-        if args[0] == "Hi!":
+        if args[0] == "knockknock":
             datastore.add_user(args[1], self.client_address,self.request[1])
         elif args[0] == "pos":
             if self.client_address in datastore.connections:
                 datastore.lock.acquire()
-                datastore.users[datastore.connections[self.client_address]].pose = [float(x) for x in args[1:]]
+                datastore.users[datastore.connections[self.client_address]].pose[0] = [float(x) for x in args[1:]]
+                datastore.lock.release()
+        elif args[0] == "orient":
+            if self.client_address in datastore.connections:
+                datastore.lock.acquire()
+                datastore.users[datastore.connections[self.client_address]].pose[1] = [float(x) for x in args[1:]]
                 datastore.lock.release()
 
 
@@ -74,11 +79,13 @@ def display_positions():
             last_log = time()
         datastore.lock.acquire()
         for k, v in datastore.users.items():
-            if v.last_sent_pose != v.pose:
-                for s, addr in datastore.connections_reverse.values():
-                    s.sendto(bytes(f"update {k} {v.pose[0]} {v.pose[1]} {v.pose[2]}", 'ascii'), addr)
-                    v.last_sent_pose = v.pose
-                    print(f"Sent {v.pose} to {addr}")
+            for i in [0, 1]:
+                if v.last_sent_pose[i] != v.pose[i]:
+                    for s, addr in datastore.connections_reverse.values():
+                        s.sendto(bytes(f"update {['pos', 'orient'][i]} {k} {' '.join([str(p) for p in v.pose[i]])}",
+                                       'ascii'), addr)
+                        v.last_sent_pose[i] = v.pose[i]
+                        print(f"Sent {v.pose[i]} to {addr}")
         datastore.lock.release()
 
 
