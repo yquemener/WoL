@@ -8,17 +8,27 @@ message Auth {
     optional string name = 1 [default = "Etaoin"];
 }
 
-message PleaseSendAllStates {}
+message AuthResponse {
+    optional bool success = 1 [default = false];
+    optional string error = 2 [default = "Uknown error"];
+    optional int64 your_id = 3 [default = -1];
+}
+
+message PleaseSendAllIDs {}
+
+message PleaseSendState {
+    optional int64 target_id = 1;
+}
 
 message CreateObj {}
 
-message UserAction {
-    optional int32 type = 1;
-    optional int64 object_id = 2;
-}
-
 message NewObjectCreated {
     optional int64 object_id = 1;
+}
+
+message UserAction {
+    optional int32 type = 1;
+    optional int64 target_id = 2;
 }
 
 
@@ -43,10 +53,12 @@ message RemoveObject {
 message Message {
     oneof content {
         Auth auth = 1;
-        PleaseSendAllStates please_send_all_states = 2;
-        CreateObj create_obj = 3;
-        UserAction user_actions = 4;
-        NewObjectCreated new_object_create= 5;
-        ObjectStateUpdate object_atate_update = 6;
+        AuthResponse auth_response = 2;
+        PleaseSendAllIDs please_send_all_ids = 3;
+        PleaseSendState please_send_state = 4;
+        CreateObj create_obj = 5;
+        UserAction user_actions = 6;
+        NewObjectCreated new_object_create= 7;
+        ObjectStateUpdate object_state_update = 8;
     }
 }

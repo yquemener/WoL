@@ -40,7 +40,7 @@ class View3D(QOpenGLWidget):
         self.context = PlayerContext()
         self.scene = RootNode(self.context)
         self.context.scene = self.scene
-        self.context.network_syncer = NetworkSyncer(self.scene)
+        # self.context.network_syncer = NetworkSyncer(self.scene)
         self.context.view = parent
         self.context.execution_context["scene"] = self.scene
         self.context.execution_context["context"] = self.context
