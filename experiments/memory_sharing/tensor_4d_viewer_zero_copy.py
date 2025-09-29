@@ -41,10 +41,18 @@ class ZeroCopyTensor4DViewer:
         self.create_gpu_resources()
         
     def create_tensor(self):
-        """Create 4D tensor with sphere and gradient"""
-        print("Creating 4D tensor...")
-        self.tensor = torch.zeros(100, 100, 100, 100, dtype=torch.float32)
+        """Create 4D tensor with sphere and gradient using shared buffer (zero-copy)"""
+        print("Creating shared 4D tensor buffer...")
         
+        # Create shared buffer first (numpy array)
+        self.shared_buffer = np.zeros((100, 100, 100, 100), dtype=np.float32)
+        
+        # Create PyTorch tensor from shared buffer (no copy)
+        self.tensor = torch.from_numpy(self.shared_buffer)
+        
+        print(f"Shared buffer: {self.shared_buffer.shape}, memory: {self.shared_buffer.nbytes / 1024 / 1024:.1f} MB (zero-copy)")
+        
+        # Fill tensor with sphere and gradient data
         x, y, z = torch.meshgrid(torch.arange(100), torch.arange(100), torch.arange(100), indexing='ij')
         center = 50
         radius = 30
@@ -53,8 +61,6 @@ class ZeroCopyTensor4DViewer:
         for t in range(100):
             gradient_value = t / 99.0
             self.tensor[:, :, :, t] = sphere_mask.float() * gradient_value
-            
-        print(f"Tensor shape: {self.tensor.shape}, memory: {self.tensor.numel() * 4 / 1024 / 1024:.1f} MB")
         
     def setup_opengl(self):
         """Setup OpenGL state"""
@@ -64,14 +70,18 @@ class ZeroCopyTensor4DViewer:
         
     def create_gpu_resources(self):
         """Upload tensor to GPU and create shaders"""
-        # Upload 4D tensor to SSBO
-        print("Uploading tensor to GPU SSBO...")
-        tensor_data = self.tensor.numpy().flatten().astype(np.float32)
+        # Upload shared buffer to GPU SSBO (zero-copy)
+        print("Uploading shared buffer to GPU SSBO...")
+        
+        # Use ravel() to create flattened view without copying (guaranteed for C-contiguous arrays)
+        flattened_buffer = self.shared_buffer.ravel()
         
         self.tensor_ssbo = glGenBuffers(1)
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, self.tensor_ssbo)
-        glBufferData(GL_SHADER_STORAGE_BUFFER, tensor_data.nbytes, tensor_data, GL_STATIC_DRAW)
+        glBufferData(GL_SHADER_STORAGE_BUFFER, flattened_buffer.nbytes, flattened_buffer, GL_STATIC_DRAW)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, self.tensor_ssbo)
+        
+        print(f"Uploaded {flattened_buffer.nbytes / 1024 / 1024:.1f} MB to GPU SSBO (zero-copy)")
         
         # Create shaders for each slice type
         self.create_slice_shaders()
@@ -290,7 +300,6 @@ class ZeroCopyTensor4DViewer:
             
             pygame.display.flip()
             clock.tick(60)
-            print(f"Coordinates: {self.slice_z}, {self.slice_y}, {self.slice_t}")
             
         self.cleanup()
         pygame.quit()
