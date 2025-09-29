@@ -42,7 +42,7 @@ class ZeroCopyTensor4DViewer:
         print("Creating shared 4D tensor buffer...")
         
         # Define tensor dimensions (now fully parametrizable!)
-        self.tensor_dims = (150, 100, 100, 100)
+        self.tensor_dims = (150, 80, 100, 10)
         
         # Initialize slice indices based on tensor dimensions
         self.slice_z = self.tensor_dims[2] // 2
@@ -221,21 +221,24 @@ class ZeroCopyTensor4DViewer:
         }
         return configs[slice_type]
         
-    def draw_slice(self, slice_type, viewport):
+    def draw_slice(self, slice_type, coords):
         """Render a slice using universal shader with specified configuration"""
         glUseProgram(self.universal_program)
-        
+        # glViewport(0, 0, self.width, self.height)
+
         # Set viewport
-        glViewport(viewport[0], viewport[1], viewport[2], viewport[3])
+        # glViewport(-100,-100,200,200)
         
         # Convert viewport to OpenGL coordinates
-        x = (viewport[0] / self.width) * 2 - 1
-        y = 1 - ((viewport[1] + viewport[3]) / self.height) * 2
-        w = (viewport[2] / self.width) * 2 
-        h = (viewport[3] / self.height) * 2
+        (x,y,w,h) = coords
+        # x = (viewport[0] / self.width) * 2 - 1
+        # y = 1 - ((viewport[1] + viewport[3]) / self.height) * 2
+        # w = (viewport[2] / self.width) * 2 
+        # h = (viewport[3] / self.height) * 2
         
-        glUniform2f(glGetUniformLocation(self.universal_program, "offset"), x + w/2, y + h/2)
-        glUniform2f(glGetUniformLocation(self.universal_program, "scale"), w/2, h/2)
+
+        glUniform2f(glGetUniformLocation(self.universal_program, "offset"), x/self.width,y/self.height)
+        glUniform2f(glGetUniformLocation(self.universal_program, "scale"), w/self.width/2,h/self.height/2)
         
         # Get slice configuration and set uniforms
         config = self.get_slice_config(slice_type)
@@ -279,20 +282,20 @@ class ZeroCopyTensor4DViewer:
                         
             self.handle_mouse()
             
+            glClearColor(0.0, 0.0, 0.2, 1.0)
             glClear(GL_COLOR_BUFFER_BIT)
             
             # Calculate slice dimensions
-            slice_width = self.width // 3 - 20
-            slice_height = slice_width
-            
+            mult=2
+
             # Draw XY slice
-            self.draw_slice('XY', (10, 100, slice_width, slice_height))
+            self.draw_slice('XY', (10, 100, self.tensor_dims[0]*mult, self.tensor_dims[1]*mult))
             
             # Draw XT slice
-            self.draw_slice('XT', (slice_width + 30, 100, slice_width, slice_height))
+            self.draw_slice('XT', (self.tensor_dims[0]*mult + 30, 100, self.tensor_dims[0]*mult, self.tensor_dims[3]*mult))
             
             # Draw XZ slice
-            self.draw_slice('XZ', (2 * slice_width + 50, 100, slice_width, slice_height))
+            self.draw_slice('XZ', (self.tensor_dims[0]*mult + self.tensor_dims[0]*mult + 50, 100, self.tensor_dims[0]*mult, self.tensor_dims[2]*mult))
             
             # Reset viewport for text rendering
             glViewport(0, 0, self.width, self.height)
