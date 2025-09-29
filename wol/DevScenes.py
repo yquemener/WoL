@@ -57,8 +57,8 @@ def scene_ide(context):
     obj1 = ObjectEditorNode(parent=context.scene, target_object=o)
     obj1.position = QVector3D(0, 2, 5)
 
-    # objed = PythonFileEditorNode(parent=context.scene, target_file_name="my_project/main.py")
-    # objed.position = QVector3D(0, 2, 5)
+    objed = PythonFileEditorNode(parent=context.scene, target_file_name="my_project/main.py")
+    objed.position = QVector3D(0, 2, 5)
     #
     # objed = FileCodeNode(parent=context.scene, filename="my_project/test.py")
     # objed.position = QVector3D(3, 4, -5)

@@ -118,7 +118,7 @@ if __name__ == '__main__':
 
     # po = PythonIbjectEditor(parent=context.scene)
 
-    load = True
+    load = False
     if load:
         try:
             window.load_scene()

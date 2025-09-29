@@ -87,7 +87,7 @@ if __name__ == '__main__':
     my_cam.add_behavior(Behavior.SnapToCamera())
     my_cam.ray = GeomNodes.OdeRayBehavior(obj=my_cam)
     my_cam.add_behavior(my_cam.ray)
-    my_cam.add_behavior(NetworkSyncToBehavior(my_cam))
+    # my_cam.add_behavior(NetworkSyncToBehavior(my_cam))
 
     context.scene.context.current_camera = my_cam
 

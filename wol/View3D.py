@@ -187,7 +187,8 @@ class View3D(QOpenGLWidget):
 
         cam = self.context.current_camera.position
 
-        self.context.current_camera.ray.set_ray(cam, target.normalized())
+        if hasattr(self.context.current_camera, "ray"):
+            self.context.current_camera.ray.set_ray(cam, target.normalized())
 
         def NearCallback(_, o1, o2):
             N = 10
@@ -205,9 +206,10 @@ class View3D(QOpenGLWidget):
 
                         if d < dist:
                             dist = d
-                            self.context.debug_sphere.position = QVector3D(con.geom.pos[0], con.geom.pos[1], con.geom.pos[2])
-                            self.context.debug_sphere.visible = True
-                            self.context.hover_target = self.context.get_collider(con.geom.g1)
+                            if hasattr(self.context, "debug_sphere"):
+                                self.context.debug_sphere.position = QVector3D(con.geom.pos[0], con.geom.pos[1], con.geom.pos[2])
+                                self.context.debug_sphere.visible = True
+                                self.context.hover_target = self.context.get_collider(con.geom.g1)
 
 
                       # self.context.ode_geomdirectory[str(contacts[0].geom.g1)],
@@ -340,7 +342,7 @@ class View3D(QOpenGLWidget):
         self.context.network_syncer.running = False
 
     def enterEvent(self, evt):
-        mid = QPoint(self.pos().x() + self.width() / 2, self.pos().y() + self.height() / 2)
+        mid = QPoint(int(self.pos().x() + self.width() / 2), int(self.pos().y() + self.height() / 2))
         c = QCursor()
         self.skipNextMouseMove = True
         c.setPos(mid)
