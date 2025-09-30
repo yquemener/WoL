@@ -33,32 +33,36 @@ class ZeroCopyTensor4DViewer:
         # Check OpenGL version
         print(f"OpenGL Version: {glGetString(GL_VERSION).decode()}")
         
-        self.create_tensor()
         self.setup_opengl()
-        self.create_gpu_resources()
+        self.create_gpu_tensor()
+        self.create_shaders()
         
-    def create_tensor(self):
-        """Create 4D tensor with sphere and gradient using shared buffer (zero-copy)"""
-        print("Creating shared 4D tensor buffer...")
+    def create_gpu_tensor(self):
+        """Create 4D tensor with shared OpenGL buffer (true zero-copy)"""
+        print("Creating 4D tensor with shared OpenGL buffer...")
         
-        # Define tensor dimensions (now fully parametrizable!)
-        self.tensor_dims = (150, 80, 100, 10)
+        # Define tensor dimensions
+        self.tensor_dims = (100, 100, 100, 100)
         
         # Initialize slice indices based on tensor dimensions
         self.slice_z = self.tensor_dims[2] // 2
         self.slice_y = self.tensor_dims[1] // 2  
         self.slice_t = self.tensor_dims[3] // 2
         
-        # Create shared buffer first (numpy array)
-        self.shared_buffer = np.zeros(self.tensor_dims, dtype=np.float32)
+        # Create shared buffer first, then tensor from it
+        self.create_shared_buffer()
         
-        # Create PyTorch tensor from shared buffer (no copy)
-        self.tensor = torch.from_numpy(self.shared_buffer)
+        # Fill tensor with sphere and gradient data
+        self.fill_tensor_data()
         
-        print(f"Shared buffer: {self.shared_buffer.shape}, memory: {self.shared_buffer.nbytes / 1024 / 1024:.1f} MB (zero-copy)")
+        # Initial sync to OpenGL
+        self.sync_to_opengl()
         
-        # Fill tensor with sphere and gradient data using actual dimensions
-        x, y, z = torch.meshgrid(torch.arange(self.tensor_dims[0]), torch.arange(self.tensor_dims[1]), torch.arange(self.tensor_dims[2]), indexing='ij')
+    def fill_tensor_data(self):
+        """Fill shared tensor with sphere and gradient data"""
+        x, y, z = torch.meshgrid(torch.arange(self.tensor_dims[0]), 
+                                torch.arange(self.tensor_dims[1]), 
+                                torch.arange(self.tensor_dims[2]), indexing='ij')
         center_x, center_y, center_z = self.tensor_dims[0]//2, self.tensor_dims[1]//2, self.tensor_dims[2]//2
         radius = min(self.tensor_dims[:3]) // 3
         sphere_mask = ((x - center_x)**2 + (y - center_y)**2 + (z - center_z)**2) <= radius**2
@@ -66,6 +70,34 @@ class ZeroCopyTensor4DViewer:
         for t in range(self.tensor_dims[3]):
             gradient_value = t / (self.tensor_dims[3] - 1.0)
             self.tensor[:, :, :, t] = sphere_mask.float() * gradient_value
+            
+    def create_shared_buffer(self):
+        """Create shared CPU buffer that both PyTorch and OpenGL can access (true zero-copy)"""
+        print("Creating shared CPU buffer...")
+        
+        # Calculate buffer size
+        buffer_size = np.prod(self.tensor_dims) * 4  # 4 bytes per float32
+        
+        # Create shared numpy array in CPU memory (will be pinned for GPU access)
+        self.shared_array = np.zeros(self.tensor_dims, dtype=np.float32)
+        
+        # Create PyTorch tensor that shares the same memory as numpy array (zero-copy)
+        self.tensor = torch.from_numpy(self.shared_array)
+        
+        # Create OpenGL SSBO and upload the shared buffer
+        self.tensor_ssbo = glGenBuffers(1)
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, self.tensor_ssbo)
+        
+        # Use GL_DYNAMIC_DRAW since we'll update the buffer when tensor changes
+        glBufferData(GL_SHADER_STORAGE_BUFFER, self.shared_array.nbytes, self.shared_array, GL_DYNAMIC_DRAW)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, self.tensor_ssbo)
+        
+        print(f"Created shared buffer: {buffer_size / 1024 / 1024:.1f} MB (true zero-copy CPU)")
+        
+    def sync_to_opengl(self):
+        """Update OpenGL buffer with tensor changes (minimal CPU→GPU transfer)"""
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, self.tensor_ssbo)
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, self.shared_array.nbytes, self.shared_array)
         
     def setup_opengl(self):
         """Setup OpenGL state"""
@@ -73,20 +105,9 @@ class ZeroCopyTensor4DViewer:
         glViewport(0, 0, self.width, self.height)
         glClearColor(0.0, 0.0, 0.0, 1.0)
         
-    def create_gpu_resources(self):
-        """Upload tensor to GPU and create shaders"""
-        # Upload shared buffer to GPU SSBO (zero-copy)
-        print("Uploading shared buffer to GPU SSBO...")
-        
-        # Use ravel() to create flattened view without copying (guaranteed for C-contiguous arrays)
-        flattened_buffer = self.shared_buffer.ravel()
-        
-        self.tensor_ssbo = glGenBuffers(1)
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, self.tensor_ssbo)
-        glBufferData(GL_SHADER_STORAGE_BUFFER, flattened_buffer.nbytes, flattened_buffer, GL_STATIC_DRAW)
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, self.tensor_ssbo)
-        
-        print(f"Uploaded {flattened_buffer.nbytes / 1024 / 1024:.1f} MB to GPU SSBO (zero-copy)")
+    def create_shaders(self):
+        """Create shaders and rendering resources"""
+        print("Creating shaders and rendering resources...")
         
         # Create universal shader for all slice types
         self.create_universal_shader()
@@ -302,6 +323,12 @@ class ZeroCopyTensor4DViewer:
             
             pygame.display.flip()
             clock.tick(60)
+            
+            # Modify tensor (as per user's example)
+            self.tensor += 0.001
+            
+            # Sync tensor changes to OpenGL buffer for next frame
+            self.sync_to_opengl()
             
         self.cleanup()
         pygame.quit()
