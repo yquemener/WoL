@@ -143,6 +143,7 @@ def main():
     print('Starting training...')
     for epoch in range(10):
         start = time.time()
+        last_frame = time.time()
         model.train()
         total_loss = 0
         correct = 0
@@ -161,15 +162,18 @@ def main():
             cudart.cudaDeviceSynchronize()
             # cudart.cudaGraphicsUnmapResources(1, gres, None)
 
-            glClear(GL_COLOR_BUFFER_BIT)
-            glUniform1i(glGetUniformLocation(shader, "w"), BATCH_SIZE)
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo)
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4)
+            now = time.time()
+            if now - last_frame > 1.0/60:
+                glClear(GL_COLOR_BUFFER_BIT)
+                glUniform1i(glGetUniformLocation(shader, "w"), BATCH_SIZE)
+                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo)
+                glDrawArrays(GL_TRIANGLE_STRIP, 0, 4)
+                last_frame = now
 
-            glfw.swap_buffers(window)
-            glfw.poll_events()
-            if glfw.window_should_close(window):
-                sys.exit()
+                glfw.swap_buffers(window)
+                glfw.poll_events()
+                if glfw.window_should_close(window):
+                    sys.exit()
 
 
             if batch_idx % 100 == 0:
