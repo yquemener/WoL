@@ -1,7 +1,9 @@
 # MIT License
 # Copyright (c) 2024 Jean-Baptiste Keck
+# Copyright (c) 2025 Yves Quemener
+
 #
-# True zero-copy PyTorch/OpenGL interop using SSBO
+# Zero-copy PyTorch/OpenGL interop using SSBO
 # 
 # Features:
 # - PyTorch tensor created directly in OpenGL SSBO (no copy)
