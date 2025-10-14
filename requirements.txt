@@ -1,0 +1,4 @@
+PyQt5
+ode-python
+protobuf<3.19
+pywavefront

@@ -22,7 +22,10 @@ class ShadersLibrary:
                        open("shaders/texture_frag.shader").read()],
 
         'wireframe': [open("shaders/simple_vert.shader").read(),
-                      open("shaders/color_frag.shader").read()]
+                      open("shaders/color_frag.shader").read()],
+
+        'cuda_viewer': [open("shaders/cuda_viewer_vert.shader").read(),
+                        open("shaders/cuda_viewer_frag.shader").read()]
     }
 
     cached_shaders = {}

@@ -74,13 +74,10 @@ def test_epoch(model, device, test_loader, criterion):
 
 quad = np.array([-1,-1, 1,-1, -1,1, 1,1], dtype=np.float32)
 
-def gl_init():
-    if not glfw.init():
-        exit()
-
 
 def main():
-    gl_init()
+    if not glfw.init():
+        exit()
 
     glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 4)
     glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
@@ -126,6 +123,7 @@ def main():
 
     # Store model.fc1.weight in ssbo with zero copy
     ssbo = glGenBuffers(1)
+    print(f'SSBO: {ssbo}')
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo)
     glBufferData(GL_SHADER_STORAGE_BUFFER, model.probe.numel()*4, None, GL_DYNAMIC_DRAW)
     flags = cudart.cudaGraphicsRegisterFlags.cudaGraphicsRegisterFlagsWriteDiscard
@@ -133,6 +131,7 @@ def main():
 
     cudart.cudaGraphicsMapResources(1, gres, None)
     err, ptr, size = cudart.cudaGraphicsResourceGetMappedPointer(gres)
+    print(f'SSBO pointer: {ptr}, error: {err}')
     mem = cp.cuda.MemoryPointer(cp.cuda.UnownedMemory(ptr, size, None), 0)
     img = cp.ndarray(model.probe.shape, dtype=cp.float32, memptr=mem)
     model.probe.data = torch.as_tensor(img, device='cuda')

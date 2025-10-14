@@ -6,6 +6,7 @@ import sys
 from PyQt5.QtGui import QVector3D, QQuaternion, QMatrix4x4
 from PyQt5.QtWidgets import QApplication
 
+from wol import GeomNodes
 from wol import Behavior, DevScenes, stdout_helpers, ConsoleNode
 from wol.Constants import UserActions
 from wol.SceneNodeEditor import SceneNodeEditor
@@ -111,6 +112,11 @@ if __name__ == '__main__':
     snip.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
 
 
+    sph = GeomNodes.Sphere(name="SpherePointer", parent=context.scene)
+    sph.scale = QVector3D(0.05, 0.05, 0.05)
+    sph.collider_id = None
+    # sph.visible = False
+    context.debug_sphere = sph
 
     # go = SceneNodeEditor(parent=context.scene, target=testobj)
     # go.position = QVector3D(4, 4, -6)
@@ -132,11 +138,14 @@ if __name__ == '__main__':
         DevScenes.scene_ide(context)
         # DevScenes.scene_tests(context)
         # DevScenes.scene_gui_test(context)
-        testobj = instanciate_from_project_file("my_project/TestNode.py", "TestNode", {'parent':context.scene})
+        # testobj = instanciate_from_project_file("my_project/TestNode.py", "TestNode", {'parent':context.scene})
 
     # context.scene.context.current_camera.position = QVector3D(5, 5, 0)
     context.scene.context.current_camera.position = QVector3D(5, 5, -10)
-
     window.show()
+    window.makeCurrent()
+    if not load:
+        DevScenes.scene_shared_memory(context)
+        pass
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     sys.exit(app.exec_())

@@ -1,6 +1,6 @@
 # Just a place to store debug scenes as long as we don't have a good serialization of scenes
 from PyQt5.QtGui import QVector3D, QQuaternion, QVector4D
-
+from wol.CudaMemoryNode import CudaMemoryNode
 from client import MyCamera
 from wol import Behavior
 from wol.CodeEdit import CodeBumperNode, CodeRunnerEditorNode, FileCodeNode
@@ -111,3 +111,22 @@ def scene_gui_test(context):
     objed = WidgetTestNode(parent=context.scene, text="my_project\nserver.py")
     objed.position = QVector3D(3, 4, -5)
     objed.orientation = QQuaternion.fromEulerAngles(0, 180, 0)
+
+
+def scene_shared_memory(context):
+    import torch
+    import torch.nn as nn
+    import torch.optim as optim
+    import torch.nn.functional as F
+    from torch.utils.data import DataLoader
+    import torchvision.transforms as transforms
+    import torchvision.datasets as datasets
+    from cuda import cudart
+    import cupy as cp
+    import numpy as np
+
+    context.tensor = torch.randn(64, 64, device='cuda')
+    context.tensor_node = CudaMemoryNode(parent=context.scene)
+    context.tensor_node.associate_tensor(context.tensor)
+    context.tensor += torch.randn(64, 64, device='cuda')
+    context.tensor_node.position = QVector3D(0, 0, 0)

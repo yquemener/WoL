@@ -1,8 +1,54 @@
 from PyQt5.QtGui import QVector3D, QMatrix4x4
+from PyQt5.QtCore import QCoreApplication, QThread
+from PyQt5.QtWidgets import QApplication
 import threading
 import sys
 import trace
+from functools import wraps
+import queue
 
+
+_gl_call_queue = queue.Queue()
+
+def process_gl_queue():
+    while not _gl_call_queue.empty():
+        try:
+            func, args, kwargs, result_queue = _gl_call_queue.get_nowait()
+            try:
+                result = func(*args, **kwargs)
+                if result_queue is not None:
+                    result_queue.put(('success', result))
+            except Exception as e:
+                if result_queue is not None:
+                    result_queue.put(('error', e))
+        except queue.Empty:
+            break
+
+def require_gl_thread(blocking=False):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            app = QApplication.instance()
+            if app is None:
+                return func(*args, **kwargs)
+            
+            current_thread = QThread.currentThread()
+            main_thread = app.thread()
+            
+            if current_thread == main_thread:
+                return func(*args, **kwargs)
+            else:
+                result_queue = queue.Queue() if blocking else None
+                _gl_call_queue.put((func, args, kwargs, result_queue))
+                
+                if blocking:
+                    status, result = result_queue.get()
+                    if status == 'error':
+                        raise result
+                    return result
+                return None
+        return wrapper
+    return decorator
 
 class DotDict(dict):
     """dot.notation access to dictionary attributes"""

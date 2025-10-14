@@ -20,7 +20,9 @@ from wol.NetworkSync import NetworkSyncer
 from wol.ShadersLibrary import ShadersLibrary
 from wol.PlayerContext import PlayerContext, MappingTypes
 from wol.SceneNode import RootNode, SceneNode
-from wol.utils import DotDict
+from wol.utils import DotDict, process_gl_queue
+from wol.CudaMemoryNode import CudaMemoryNode
+import wol
 
 
 def v(a):
@@ -66,7 +68,7 @@ class View3D(QOpenGLWidget):
 
         screenRect = QApplication.desktop().screenGeometry(0)
 
-        self.setGeometry(10, 10, 1200, 800)
+        self.setGeometry(10, 10, 1920, 1080)
         self.move(QPoint(screenRect.x()+150, screenRect.y()+50))
 
         # HUD definition
@@ -158,6 +160,7 @@ class View3D(QOpenGLWidget):
         self.context.current_camera.ratio = width / height
 
     def scene_update(self):
+        process_gl_queue()
         for k in self.key_pressed:
             actions = self.context.mappings.get((MappingTypes.KeyPressed, k), [])
             for action in actions:
@@ -339,7 +342,10 @@ class View3D(QOpenGLWidget):
         self.context.scene.on_event(Events.AppClose)
         self.updateTimer.stop()
         self.context.running = False
-        self.context.network_syncer.running = False
+        try:
+            self.context.network_syncer.running = False
+        except:
+            pass
 
     def enterEvent(self, evt):
         mid = QPoint(int(self.pos().x() + self.width() / 2), int(self.pos().y() + self.height() / 2))

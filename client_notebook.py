@@ -113,6 +113,8 @@ if __name__ == '__main__':
     context.debug_sphere = sph
     sph.properties["skip serialization"] = True
 
+    
+
     window.show()
     window.setFocus()
 
