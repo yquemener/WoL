@@ -3,6 +3,9 @@ import os
 import threading
 import time
 from ctypes import byref, sizeof, addressof
+import cProfile
+import pstats
+import io
 
 import odepy
 from collections import defaultdict
@@ -76,6 +79,10 @@ class View3D(QOpenGLWidget):
         self.hud.hud1.layer = -1
         self.hud.hud1.position.setX(0.5)
         self.hud.hud1.position.setY(0.5)
+
+        self.profiler = cProfile.Profile()
+        self.frame_count = 0
+        self.profiling_enabled = True
 
     def initializeGL(self):
         GL.glEnable(GL.GL_DEPTH_TEST)
@@ -160,6 +167,10 @@ class View3D(QOpenGLWidget):
         self.context.current_camera.ratio = width / height
 
     def scene_update(self):
+        if self.profiling_enabled and self.frame_count == 0:
+            print("Starting profiler for 300 frames...")
+            self.profiler.enable()
+        
         process_gl_queue()
         for k in self.key_pressed:
             actions = self.context.mappings.get((MappingTypes.KeyPressed, k), [])
@@ -227,6 +238,25 @@ class View3D(QOpenGLWidget):
         odepy.dJointGroupEmpty(self.context.ode_contactgroup)
 
         self.repaint()
+
+        if self.profiling_enabled:
+            self.frame_count += 1
+            if self.frame_count == 300:
+                self.profiler.disable()
+                print("\n" + "="*80)
+                print("PROFILING RESULTS (300 frames)")
+                print("="*80)
+                s = io.StringIO()
+                ps = pstats.Stats(self.profiler, stream=s).sort_stats('cumulative')
+                ps.print_stats(50)
+                print(s.getvalue())
+                print("\nPer-call time breakdown:")
+                s = io.StringIO()
+                ps = pstats.Stats(self.profiler, stream=s).sort_stats('tottime')
+                ps.print_stats(30)
+                print(s.getvalue())
+                print("="*80)
+                self.profiling_enabled = False
 
     def keyReleaseEvent(self, evt):
         if evt.isAutoRepeat():

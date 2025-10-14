@@ -32,6 +32,8 @@ class CudaMemoryNode(SceneNode):
         self.refresh_vertices()
         self.interpolation = GL.GL_LINEAR
         self.buffer_object = None
+        self.weights_scale = 1.0
+        self.temporary = True
 
     def refresh_vertices(self):
         print("refresh_vertices")
@@ -59,10 +61,13 @@ class CudaMemoryNode(SceneNode):
 
     def paint(self, program):
         # cudart.cudaDeviceSynchronize()
-        self.program.bind()
-        self.program.setUniformValue("w", 64)
-        self.program.setUniformValue('matrix', self.proj_matrix)
         if self.buffer_object is not None:
+            self.program.bind()
+            # self.program.setUniformValue("w", self.tensor.shape[-1])
+            self.program.setUniformValue("w", 28)
+            self.program.setUniformValue("scale", self.weights_scale)
+            self.program.setUniformValue('matrix', self.proj_matrix)
+
             GL.glBindBufferBase(GL.GL_SHADER_STORAGE_BUFFER, 0, self.buffer_object)
             self.program.setAttributeArray(0, self.vertices)
             self.program.setAttributeArray(1, self.texCoords)

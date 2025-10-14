@@ -202,9 +202,9 @@ class SceneNode:
         return
 
     def paint_recurs(self, program, layer=1):
-        self.compute_transform(project=(layer != -1))
         if self.visible:
             if self.layer == layer:
+                self.compute_transform(project=(layer != -1))
                 try:
                     if not self.gl_initialized:
                         self.initialize_gl()
@@ -237,7 +237,7 @@ class SceneNode:
         self.scale = QVector3D(p[7], p[8], p[9])
 
     def save_code_file(self):
-        if self.code is not None and len(self.code) > 0:
+        if self.code is not None and len(self.code) > 0 and not getattr(self, "temporary", False):
             if self.source_file is not None:
                 f = open(self.source_file, "w")
                 f.write(self.code)

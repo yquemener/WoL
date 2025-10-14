@@ -125,7 +125,7 @@ def main():
     ssbo = glGenBuffers(1)
     print(f'SSBO: {ssbo}')
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo)
-    glBufferData(GL_SHADER_STORAGE_BUFFER, model.probe.numel()*4, None, GL_DYNAMIC_DRAW)
+    glBufferData(GL_SHADER_STORAGE_BUFFER, model.fc1.weight.numel()*4, None, GL_DYNAMIC_DRAW)
     flags = cudart.cudaGraphicsRegisterFlags.cudaGraphicsRegisterFlagsWriteDiscard
     gres = cudart.cudaGraphicsGLRegisterBuffer(ssbo, flags)[1]
 
@@ -133,8 +133,9 @@ def main():
     err, ptr, size = cudart.cudaGraphicsResourceGetMappedPointer(gres)
     print(f'SSBO pointer: {ptr}, error: {err}')
     mem = cp.cuda.MemoryPointer(cp.cuda.UnownedMemory(ptr, size, None), 0)
-    img = cp.ndarray(model.probe.shape, dtype=cp.float32, memptr=mem)
-    model.probe.data = torch.as_tensor(img, device='cuda')
+    img = cp.ndarray(model.fc1.weight.shape, dtype=cp.float32, memptr=mem)
+    # model.probe.data = torch.as_tensor(img, device='cuda')
+    model.fc1.weight.data = torch.as_tensor(img, device='cuda')
 
 
 
