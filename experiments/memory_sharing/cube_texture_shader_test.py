@@ -36,6 +36,8 @@ uniform int w1;
 uniform int w2;
 uniform int w3;
 uniform float value_scale;
+uniform int highlightSlice;
+uniform bool highlightEnabled;
 
 const float _Alpha = 0.01;
 const vec3 _SliceMin = vec3(-0.91,-0.91,-0.91);
@@ -83,16 +85,18 @@ void main()
     {
         // Convert entry point from box space [-0.5,0.5] to voxel space [0,w1]x[0,w2]x[0,w3]
         vec3 rayStart = (ro + near * rd + vec3(0.5)) * vec3(w1, w2, w3);
+        // Scale ray direction to voxel space
+        vec3 rayDir = rd * vec3(w1, w2, w3);
         
         // Current voxel coordinates (integer)
         ivec3 mapPos = ivec3(floor(rayStart));
         
-        // Distance (in ray parameter t) to cross one full voxel in each axis
-        vec3 deltaDist = abs(vec3(1.0) / rd);
+        // Distance (in voxel space) to cross one full voxel in each axis
+        vec3 deltaDist = abs(vec3(1.0) / rayDir);
         // Direction to step in each axis: +1 or -1
-        ivec3 rayStep = ivec3(sign(rd));
-        // Distance (in ray parameter t) to the next voxel boundary in each axis
-        vec3 sideDist = (sign(rd) * (vec3(mapPos) - rayStart) + (sign(rd) * 0.5) + 0.5) * deltaDist;
+        ivec3 rayStep = ivec3(sign(rayDir));
+        // Distance to the next voxel boundary in each axis
+        vec3 sideDist = (sign(rayDir) * (vec3(mapPos) - rayStart) + (sign(rayDir) * 0.5) + 0.5) * deltaDist;
         
         bvec3 mask; // Which axis was crossed (only one component true per iteration)
         int maxSteps = w1 + w2 + w3;
@@ -116,21 +120,29 @@ void main()
                 float weight = sample3D(uvw);
                 
                 // Color: red=negative, green=positive, alpha=magnitude
-                vec4 weight_color = vec4(abs(weight), abs(clamp(weight, 0.0, 1.0)), abs(clamp(weight, 0.0, 1.0)), abs(weight));
+                vec4 weight_color = vec4(abs(weight), abs(clamp(weight, 0.0, 1.0)), abs(clamp(weight, 0.0, 1.0)), 4*abs(weight));
                 // Accumulate color proportional to distance through voxel
-                if (mapPos.z == 14) {
-                    color += weight_color * distance*10.0;
+                if (highlightEnabled) {
+                  if (mapPos.z == highlightSlice) {
+                    color += weight_color * distance*200.0;
+                    if ((mapPos.y == 0) || (mapPos.y == w2-1) || (mapPos.x == 0) || (mapPos.x == w1-1)) {
+                        color += vec4(0.7) * distance*100.0;
+                    }
+                  }
+                  else {
+                    color.rgb += weight_color.rgb * distance*10.0;
+                    color.a += weight_color.a * distance*5.0;
+                  }
                 }
                 else {
-                    color += weight_color * distance*0.1;
+                    color += weight_color * distance*15.0;
                 }
-                color.a = 1.0;
             }
-            
             // Advance to next voxel: increment sideDist and mapPos along the crossed axis
             tPrev = tNext;
             sideDist += vec3(mask) * deltaDist;
             mapPos += ivec3(mask) * rayStep;
+            color.a = clamp(color.a, 0.0, 1.0);
         }
     }
     
@@ -239,11 +251,24 @@ def main():
     glfw.swap_interval(1)
     
     mouse_x = [400.0]
+    highlight_slice = [14]
+    highlight_enabled = [True]
     
     def cursor_callback(window, xpos, ypos):
         mouse_x[0] = xpos
     
+    def scroll_callback(window, xoffset, yoffset):
+        highlight_slice[0] = max(0, min(highlight_slice[0] + int(yoffset), 127))
+        print(f"Highlight slice: {highlight_slice[0]}")
+    
+    def mouse_button_callback(window, button, action, mods):
+        if button == glfw.MOUSE_BUTTON_MIDDLE and action == glfw.PRESS:
+            highlight_enabled[0] = not highlight_enabled[0]
+            print(f"Highlight: {'ON' if highlight_enabled[0] else 'OFF'}")
+    
     glfw.set_cursor_pos_callback(window, cursor_callback)
+    glfw.set_scroll_callback(window, scroll_callback)
+    glfw.set_mouse_button_callback(window, mouse_button_callback)
     
     program = create_program(VERTEX_SHADER, FRAGMENT_SHADER)
     vertices = create_fullscreen_quad()
@@ -289,6 +314,8 @@ def main():
     w2_location = glGetUniformLocation(program, "w2")
     w3_location = glGetUniformLocation(program, "w3")
     value_scale_location = glGetUniformLocation(program, "value_scale")
+    highlight_slice_location = glGetUniformLocation(program, "highlightSlice")
+    highlight_enabled_location = glGetUniformLocation(program, "highlightEnabled")
     
     while not glfw.window_should_close(window):
         glClear(GL_COLOR_BUFFER_BIT)
@@ -302,6 +329,8 @@ def main():
         glUniform1i(w2_location, h)
         glUniform1i(w3_location, d)
         glUniform1f(value_scale_location, value_scale)
+        glUniform1i(highlight_slice_location, highlight_slice[0])
+        glUniform1i(highlight_enabled_location, 1 if highlight_enabled[0] else 0)
         
         glBindVertexArray(vao)
         glDrawArrays(GL_TRIANGLES, 0, 6)
