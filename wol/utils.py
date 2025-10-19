@@ -110,6 +110,35 @@ def generate_square_vertices_triangles():
     return vertices
 
 
+def generate_cube_vertices():
+    # v1  v2        v5  v6
+    #
+    # v3  v4        v7  v8
+
+    v1 = QVector3D(-1, 1, -1)
+    v2 = QVector3D(1,  1, -1)
+    v3 = QVector3D(-1, 1,  1)
+    v4 = QVector3D(1,  1,  1)
+    v5 = QVector3D(-1, -1, -1)
+    v6 = QVector3D(1, -1,  -1)
+    v7 = QVector3D(-1, -1,  1)
+    v8 = QVector3D(1, -1,   1)
+
+    vertices = list()
+    vertices += [v1, v2, v3, ]
+    vertices += [v3, v2, v4, ]
+    vertices += [v5, v6, v7, ]
+    vertices += [v7, v6, v8, ]
+    vertices += [v3, v4, v7, ]
+    vertices += [v7, v4, v8, ]
+    vertices += [v1, v2, v5, ]
+    vertices += [v5, v2, v6, ]
+    vertices += [v1, v5, v3, ]
+    vertices += [v3, v5, v7, ]
+    vertices += [v2, v6, v4, ]
+    vertices += [v4, v6, v8, ]
+    return vertices
+
 def generate_square_texcoords_triangles():
     tex_coords = list()
     tex_coords.append([1.0, 1.0])

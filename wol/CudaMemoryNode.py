@@ -16,30 +16,26 @@ from wol.utils import require_gl_thread
 from cuda import cudart
 import cupy as cp
 import torch
+from wol.GeomNodes import OdeBoxBehavior
+from wol.Constants import Events
 
 class CudaMemoryNode(SceneNode):
-    def __init__(self, filename=None, name="Card", parent=None, init_collider=True):
+    def __init__(self, name="CudaMemoryNode", parent=None, init_collider=True, tensor=None):
         SceneNode.__init__(self, name, parent)
-        self.filename = filename
-        if filename:
-            self.texture_image = QImage(filename)
-        else:
-            self.texture_image = None
-        self.texture = None
 
-        self.vertices = utils.generate_square_vertices_fan()
-        self.texCoords = utils.generate_square_texcoords_fan()
-        self.refresh_vertices()
+        self.vertices = utils.generate_cube_vertices()
+        # self.texCoords = utils.generate_square_texcoords_fan()
+        self.texCoords = [[(v[0]+1)/2.0,(v[1]+1)/2.0, (v[2]+1)/2.0] for v in self.vertices]
         self.interpolation = GL.GL_LINEAR
         self.buffer_object = None
-        self.weights_scale = 1.0
-        self.temporary = True
-
-    def refresh_vertices(self):
-        print("refresh_vertices")
-        p0 = QVector3D(self.vertices[0][0], self.vertices[0][1], self.vertices[0][2])
-        p1 = QVector3D(self.vertices[1][0], self.vertices[1][1], self.vertices[1][2])
-        p2 = QVector3D(self.vertices[2][0], self.vertices[2][1], self.vertices[2][2])
+        self.value_amplifier = 1.0
+        self.properties["skip serialization"] = True
+        if tensor is not None:
+            self.associate_tensor(tensor)
+        self.reshape = None
+        self.ode = OdeBoxBehavior(obj=self, kinematic=True)
+        self.add_behavior(self.ode)
+        self.last_reshape = None
 
     def initialize_gl(self):
         self.program = ShadersLibrary.create_program('cuda_viewer')
@@ -57,15 +53,38 @@ class CudaMemoryNode(SceneNode):
         err, ptr, size = cudart.cudaGraphicsResourceGetMappedPointer(gres)
         mem = cp.cuda.MemoryPointer(cp.cuda.UnownedMemory(ptr, size, None), 0)
         img = cp.ndarray(tensor.shape, dtype=cp.float32, memptr=mem)
-        tensor.data = torch.as_tensor(img, device='cuda')        
+        tensor.data = torch.as_tensor(img, device='cuda')
+        if not self.reshape:
+            self.reshape = tensor.shape
+            self.on_event(Events.GeometryChanged)
+
+        
+    def update(self, dt):
+        if self.last_reshape != self.reshape:
+            self.last_reshape = self.reshape
+            if len(self.reshape) == 1:
+                self.scale = QVector3D(self.reshape[0]*0.05, 0.05, 0.05)
+            if len(self.reshape) == 2:
+                self.scale = QVector3D(self.reshape[0]*0.05, self.reshape[1]*0.05, 0.05)
+            if len(self.reshape) == 3:
+                self.scale = QVector3D(self.reshape[0]*0.05, self.reshape[1]*0.05, self.reshape[2]*0.05)
+            self.on_event(Events.GeometryChanged)
 
     def paint(self, program):
         # cudart.cudaDeviceSynchronize()
         if self.buffer_object is not None:
             self.program.bind()
             # self.program.setUniformValue("w", self.tensor.shape[-1])
-            self.program.setUniformValue("w", 28)
-            self.program.setUniformValue("scale", self.weights_scale)
+            self.program.setUniformValue("w1", self.reshape[0])
+            if len(self.reshape) > 1:
+                self.program.setUniformValue("w2", self.reshape[1])    
+            else:
+                self.program.setUniformValue("w2", 1)
+            if len(self.reshape) > 2:
+                self.program.setUniformValue("w3", self.reshape[2])
+            else:
+                self.program.setUniformValue("w3", 1)
+            self.program.setUniformValue("value_scale", self.value_amplifier)
             self.program.setUniformValue('matrix', self.proj_matrix)
 
             GL.glBindBufferBase(GL.GL_SHADER_STORAGE_BUFFER, 0, self.buffer_object)
@@ -76,4 +95,4 @@ class CudaMemoryNode(SceneNode):
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, self.interpolation)
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
-            GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
+            GL.glDrawArrays(GL.GL_TRIANGLES, 0, 36)

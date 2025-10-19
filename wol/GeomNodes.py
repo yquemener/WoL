@@ -96,20 +96,8 @@ class CubeNode(SceneNode):
     def __init__(self, name="Cube", parent=None, color=QVector4D(0.2, 0.2, 0.6, 1.0), init_collider=True):
         super().__init__(name, parent)
         self.program = None
-        self.vertices = list()
+        self.vertices = utils.generate_cube_vertices()
         self.normals = list()
-        # v1  v2        v5  v6
-        #
-        # v3  v4        v7  v8
-
-        v1 = QVector3D(-1, 1, -1)
-        v2 = QVector3D(1,  1, -1)
-        v3 = QVector3D(-1, 1,  1)
-        v4 = QVector3D(1,  1,  1)
-        v5 = QVector3D(-1, -1, -1)
-        v6 = QVector3D(1, -1,  -1)
-        v7 = QVector3D(-1, -1,  1)
-        v8 = QVector3D(1, -1,   1)
 
         nup = QVector3D(0., 1., 0.)
         ndown = QVector3D(0., -1., 0.)
@@ -117,37 +105,6 @@ class CubeNode(SceneNode):
         nleft = QVector3D(-1., 0., 0.)
         nfront = QVector3D(0., 0., 1.)
         nback = QVector3D(0., 0., -1.)
-
-        # self.vertices += [v1, nup, v2, nup, v3, nup]
-        # self.vertices += [v3, nup, v2, nup, v4, nup]
-        #
-        # self.vertices += [v5, ndown, v6, ndown, v7, ndown]
-        # self.vertices += [v7, ndown, v6, ndown, v8, ndown]
-        #
-        # self.vertices += [v3, nfront, v4, nfront, v7, nfront]
-        # self.vertices += [v7, nfront, v4, nfront, v8, nfront]
-        #
-        # self.vertices += [v1, nback, v2, nback, v5, nback]
-        # self.vertices += [v5, nback, v2, nback, v6, nback]
-        #
-        # self.vertices += [v1, nleft, v5, nleft, v3, nleft]
-        # self.vertices += [v3, nleft, v5, nleft, v7, nleft]
-        #
-        # self.vertices += [v2, nright, v6, nright, v4, nright]
-        # self.vertices += [v4, nright, v6, nright, v8, nright]
-
-        self.vertices += [v1, v2, v3, ]
-        self.vertices += [v3, v2, v4, ]
-        self.vertices += [v5, v6, v7, ]
-        self.vertices += [v7, v6, v8, ]
-        self.vertices += [v3, v4, v7, ]
-        self.vertices += [v7, v4, v8, ]
-        self.vertices += [v1, v2, v5, ]
-        self.vertices += [v5, v2, v6, ]
-        self.vertices += [v1, v5, v3, ]
-        self.vertices += [v3, v5, v7, ]
-        self.vertices += [v2, v6, v4, ]
-        self.vertices += [v4, v6, v8, ]
 
         self.normals += [nup, nup, nup]
         self.normals += [nup, nup, nup]
